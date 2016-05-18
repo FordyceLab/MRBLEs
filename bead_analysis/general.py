@@ -7,12 +7,12 @@ from __future__ import print_function
 from __future__ import division
 
 # [File header]     | Copy and edit for each file in this project!
-# title             : general.py            [filename]
+# title             : general.py
 # description       : Bead Kinetics module
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
-# date              : 20160308              [Initial date yyyymmdd]
-# version update    : 20160504              [Last update yyyymmdd]
+# date              : 20160308
+# version update    : 20160504
 # version           : v0.3
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
@@ -40,7 +40,7 @@ import sklearn
 from sklearn import metrics
 from sklearn import mixture
 from sklearn import preprocessing
-from skimage import img_as_ubyte
+#from skimage import img_as_ubyte
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 # Image display
@@ -68,25 +68,6 @@ def mmScanPath(path, pattern=".tif"):
     return files_list
 
 
-def getRef(image_data, back=0, sep_min_dist=3, min_dist=9, param_1=10, param_2=10, min_r=7, max_r=10):
-    """Get Reference
-    Get reference spectra from image set
-    """
-    # Object image must be 0
-    objects = Objects(image_data[0])
-    labels, labels_annulus, circles_dim = objects.findObjects(
-        sep_min_dist=sep_min_dist, min_dist=min_dist, param_1=param_1, param_2=param_2, min_r=min_r, max_r=max_r)
-    del objects
-    c_size = image_data[:, 0, 0].size - 1
-    ref_data = np.empty((c_size), dtype="float64")
-    channels = xrange(1, c_size + 1)
-    for ch in channels:
-        data = ndi.median(image_data[ch], labels)
-        ref_data[ch - 1] = data - back  # min background noise
-    sum = ref_data.sum()
-    return np.divide(ref_data, sum)
-
-
 def getBack(image_data, square):
     """Get Background
     Get background reference of specified area
@@ -109,7 +90,15 @@ def unmix(ref_data, image_data):
     ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
     image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
     """
-    # TD add array size check and select last 3 dimensions
+    # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
+    try:
+        ref_shape = ref_data.shape
+        img_shape = image_data.shape
+    except IOError:
+        print("Input not NumPy array")
+    if ref_shape[0] != img_shape[0]:
+        print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
+        raise IndexError
     c_size = image_data[:, 0, 0].size
     y_size = image_data[0, :, 0].size
     x_size = image_data[0, 0, :].size
@@ -117,7 +106,6 @@ def unmix(ref_data, image_data):
     img_flat = image_data.reshape(c_size, (y_size * x_size))
     unmix_flat = np.linalg.lstsq(ref_data, img_flat)[0]
     unmix_result = unmix_flat.reshape(ref_size, y_size, x_size)
-
     return unmix_result
 
 
@@ -312,12 +300,13 @@ class ImageSet(object):
         self.file_path = file_path
         self.imageX = 0
         self.imageY = 0
-        self.sizeC = 0
-        self.sizeT = 0
-        self.sizeZ = 0
-        self.sizeI = 0
+        self.sizeC = 0  # No. channels
+        self.sizeT = 0  # No. timepoints
+        self.sizeZ = 0  # No. Z slices
+        self.sizeM = 0  # No. multipoints
+        self.sizeI = 0  # No. images total
         self.image_reader = None
-        self.init_image = None
+        self.init_image = None  # Initial image to calculate sizes
         self.arrayOrder = None
 
         # Initiate JAVA environment and basic logging
@@ -483,6 +472,9 @@ class Objects(object):
         # Check and/or convert image to 8 bit array. This is required for
         # object search
         self.image = self.imageConvert(image)
+        self.labeled_mask = None
+        self.labeled_annulus_mask = None
+        self.circles_dim = None
 
     def __close__(self):
         """Destructor of Objects"""
@@ -512,35 +504,69 @@ class Objects(object):
         Find objects in image and return data
         """
         # Check if image is set, if not use initial image
-        if image == None:
-            img = self.image
-        else:
-            img = self.imageConvert(image)
-        # Set search parameters
-        if min_dist == None:
-            min_dist = 2 * min_r  # Minimal distance is the minimal diameter
+        if image == None: img = self.image
+        else: img = self.imageConvert(image)
+        
+        # Check if min_dist is set and set to 2 x minimuj radius
+        if min_dist == None: min_dist = 2 * min_r
+        # Find initial circles using Hough transform and make mask
+        mask = self.makeCircleMask(min_dist=min_dist, param_1=param_1, param_2=param_2, min_r=min_r, max_r=max_r)
+        # Find and separate circles using watershed on initial mask
+        labels = self.separateCircles(mask)
+        # Find center of circle and return dimensions
+        circles_dim = self.getCircleDimensions(labels)        
+        
+        # Create annulus mask
+        labels_annulus = labels.copy()  
+        for cd in circles_dim:
+            cv2.circle(labels_annulus, (int(cd[0]), int(cd[1])),
+                       int(cd[2] - ring_size), (0, 0, 0), -1)
+        self.labeled_mask = labels
+        self.labeled_annulus_mask = labels_annulus
+        self.circles_dim = circles_dim
+        return labels, labels_annulus, circles_dim
 
+    def makeCircleMask(self, image = None, min_dist=None, param_1=20, param_2=9, min_r=3, max_r=6):
+        """Make Circle Mask
+        """
+        # Check if image is set, if not use initial image
+        if image == None: img = self.image
+        else: img = self.imageConvert(image)
+
+        # Check if min_dist is set and set to 2 x minimuj radius
+        if min_dist == None: min_dist = 2 * min_r
         # Find initial circles using Hough transform
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1, minDist=min_dist,
-                                   param1=param_1, param2=param_2, minRadius=min_r, maxRadius=max_r)[0]
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1, minDist=min_dist, param1=param_1, param2=param_2, minRadius=min_r, maxRadius=max_r)[0]
         # Make mask
         mask = np.zeros(img.shape, np.uint8)
         for c in circles:
             x, y, r = c[0], c[1], int(np.ceil(c[2] + 0.1))
-            # Draw circle and fill (-1)
-            cv2.circle(mask, (x, y), r, (255, 255, 255), -1)  # -1 fills circle
+            # Draw circle (line width -1 fills circle)
+            cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
+        return mask
 
+    def separateCircles(self, mask, sep_min_dist=2):
+        """
+        """
         # Find and separate circles using watershed on initial mask
-        #thresh = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
         D = ndi.distance_transform_edt(mask)
-        localMax = peak_local_max(
-            D, indices=False, min_distance=sep_min_dist, exclude_border=True, labels=mask)
+        localMax = peak_local_max(D, indices=False, 
+                                  min_distance=sep_min_dist, 
+                                  exclude_border=True, 
+                                  labels=mask)
         markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
         labels = watershed(-D, markers, mask=mask)
-        # Must make copy otherwise just reference to same memory posistion
-        labels_annulus = labels.copy()
         print("Number of unique segments found: {}".format(
             len(np.unique(labels)) - 1))
+        return labels
+
+    def getCircleDimensions(self, labels, image = None):
+        """
+        Find center of circle and return dimensions
+        """
+        # Check if image is set, if not use initial image
+        if image == None: img = self.image
+        else: img = self.imageConvert(image)
 
         idx = np.arange(1, len(np.unique(labels)))
         circles_dim = np.empty((len(np.unique(labels)) - 1, 3))
@@ -548,39 +574,17 @@ class Objects(object):
             # Create single object mask
             mask_detect = np.zeros(img.shape, dtype="uint8")
             mask_detect[labels == label] = 255
-
             # Detect contours in the mask and grab the largest one
-            cnts = cv2.findContours(mask_detect.copy(), cv2.RETR_EXTERNAL,
+            cnts = cv2.findContours(mask_detect.copy(), 
+                                    cv2.RETR_EXTERNAL, 
                                     cv2.CHAIN_APPROX_SIMPLE)[-2]
             c = max(cnts, key=cv2.contourArea)
-
             # Get circle dimensions
             ((x, y), r) = cv2.minEnclosingCircle(c)
             circles_dim[label - 1, 0] = x
             circles_dim[label - 1, 1] = y
             circles_dim[label - 1, 2] = r
-
-            circles_dim = np.array(circles_dim)
-
-            # Update annulus labels mask
-            cv2.circle(labels_annulus, (int(x), int(y)),
-                       int(r - ring_size), (0, 0, 0), -1)
-
-        return labels, labels_annulus, circles_dim
-
-    def makeCircleMask(img):
-        # Find initial circles using Hough transform
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1, minDist=min_dist,
-                                   param1=param_1, param2=param_2, minRadius=min_r, maxRadius=max_r)[0]
-        # Make mask
-        mask = np.zeros(img.shape, np.uint8)
-        for c in circles:
-            x, y, r = c[0], c[1], int(np.ceil(c[2] + 0.1))
-            # Draw circle (line width -1 fills circle)
-            cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
-
-    def separateCircles():
-        pass
+        return circles_dim
 
     def overlayImage(self, dim, img=None, ring_size=0):
         """Overlay Image
@@ -591,13 +595,138 @@ class Objects(object):
         # manipulated.
         if img == None:
             img = self.image.copy()
-
-        #label = 0
         for d in dim:
             if ring_size > 0:
                 cv2.circle(img, (int(d[0]), int(d[1])), int(
                     d[2] - ring_size), (0, 255, 0), 1)
             cv2.circle(img, (int(d[0]), int(d[1])), int(d[2]), (0, 255, 0), 1)
-            #cv2.putText(img, str(label), (int(d[0]) - 10, int(d[1])), cv2.FONT_HERSHEY_SIMPLEX, 0.2, (0, 0, 255), 1)
-            #label = label + 1
         return img
+
+class RefSpec(object):
+    """Reference Spectra
+    Generate reference spectra
+    """
+    def __init__(self, image_files, crop = [100, 400, 100, 400]):
+        """
+        Initialization after instantiation and set local variables
+        """
+        self.image_files = image_files
+        self.crop = crop
+        self.ref_spec_set = None
+        self.objects = None
+
+    def __close__(self):
+        """Destructor of RefSpec"""
+        return 0
+
+    def readSpectra(self):
+        """Read Spectra
+        """
+        ref_spec_set = np.array( [self.readSpectrum(file, 0, self.crop) for file in self.image_files] )
+        self.ref_spec_set = ref_spec_set
+        return ref_spec_set.T
+
+    def readSpectrum(self, file, object_channel, crop = None):
+        """Read Spectrum
+        """
+        if crop == None: crop = self.crop
+        ref_set = ImageSet(file)
+        ref_set_data = ref_set.readSet()[:, crop[0]:crop[1], crop[2]:crop[3]]
+        objects = self.getRefObjects(ref_set_data[object_channel])
+        channels = range(ref_set_data[:, 0, 0].size)
+        channels.remove(object_channel)
+        ref_data = self.getRef(ref_set_data[channels])
+        return ref_data
+
+    def getRefObjects(self, object_image, sep_min_dist=3, min_dist=9, param_1=10, param_2=10, min_r=7, max_r=10):
+        """Get Reference Objects
+        """
+        objects = Objects(object_image)
+        labels, labels_annulus, circles_dim = objects.findObjects(
+            sep_min_dist=sep_min_dist, min_dist=min_dist, 
+            param_1=param_1, param_2=param_2, min_r=min_r, max_r=max_r)
+        self.objects = labels
+        return labels
+
+    def getRef(self, image_data):
+        """Get Reference
+        Get reference spectra from image set
+        """
+        channels = range(image_data[:, 0, 0].size)
+        ref_data = np.array( [self.getMedianObjects(image_data[ch], self.objects) for ch in channels], dtype="float64" )
+        sum = ref_data.sum()
+        return np.divide(ref_data, sum)
+
+    def getMedianObjects(self, image_data, objects):
+        """Get Median Objects"""
+        data = ndi.median(image_data, objects)
+        return data
+
+    def getBack(image_data, square):
+        """Get Background
+        Get background reference of specified area
+        image_data = single image used for background
+        square = coordinates of region of interest [Y1, Y2, X1, X2]
+        """
+        c_size = image_data[:, 0, 0].size - 1
+        channels = xrange(1, c_size + 1)
+        ref_data = np.empty((c_size), dtype="float64")
+        for ch in channels:
+            img_tmp = image_data[ch, square[0]:square[1], square[2]:square[3]]
+            ref_data[ch - 1] = np.median(img_tmp)
+        sum = ref_data.sum()
+        return np.divide(ref_data, sum)
+
+class DecodeBeads(object):
+    """Decode Beads
+    Decode beads based on reference spectra and image set
+    """
+    def __init__(self, objects, reference_spectra):
+        """
+        Initialization after instantiation and set local variables
+        """
+
+    def __close__(self):
+        """Destructor of DecodeBeads"""
+        return 0
+    
+    def unmix(ref_data, image_data):
+        """Unmix
+        Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
+        ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
+        image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
+        """
+        # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
+        try:
+            ref_shape = ref_data.shape
+            img_shape = image_data.shape
+        except IOError:
+            print("Input not NumPy array")
+        if ref_shape[0] != img_shape[0]:
+            print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
+            raise IndexError
+        c_size = image_data[:, 0, 0].size
+        y_size = image_data[0, :, 0].size
+        x_size = image_data[0, 0, :].size
+        ref_size = ref_data[0, :].size
+        img_flat = image_data.reshape(c_size, (y_size * x_size))
+        unmix_flat = np.linalg.lstsq(ref_data, img_flat)[0]
+        unmix_result = unmix_flat.reshape(ref_size, y_size, x_size)
+        return unmix_result
+
+    def getRatios(labels, images, reference):
+        """Get Ratios
+        Get median ratio of each object.
+        """
+        idx = np.arange(1, len(np.unique(labels)))
+        data_size = len(np.unique(labels)) - 1
+        channel_no = images[:, 0, 0].size
+        channels = xrange(channel_no)
+        ratio_data = np.empty((data_size, channel_no))
+        for ch in channels:
+            # Get pixel-by-pixel ratios
+            image_tmp = np.divide(images[ch, :, :], reference)
+            # Get median ratio of each object
+            ratio_data[:, ch] = ndi.labeled_comprehension(
+                image_tmp, labels, idx, np.median, float, -1)
+        return ratio_data

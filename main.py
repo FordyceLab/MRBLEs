@@ -9,13 +9,13 @@ from __future__ import division
 # [File header]     | Copy and edit for each file in this project!
 # title             : main.py               [filename]
 # description       : Main file to call and use BeadKinetics module
-# author            : Bjorn Harink          [Original author of this file]
-# credits           : Kurt Thorn, Huy Nguyen
+# author            : Bjorn Harink          [Original author(s) of this file]
+# credits           : Kurt Thorn, Huy Nguyen[Contributors to this file]
 # date              : 20160308              [Initial date yyyymmdd]
-# version update    : 20160504              [Last update yyyymmdd]
+# version update    : 20160504              [Last version update yyyymmdd]
 # version           : v0.3
 # usage             : As startup file
-# notes             : This is an example file for the module.
+# notes             : This is an example file for the module
 # python_version    : 2.7
 
 # [Main header with project metadata] | Only in the main file!
@@ -55,15 +55,22 @@ import bead_analysis as ba
 
 # [Settings]
 # Reference image location
-REF_FILES = {"CeTb": "Z:/Huy/20150706/20150709_CeTbSolo_1/20150709_CeTbSolo_1_MMStack_Pos0.ome.tif",
-             "Dy": "Z:/Huy/20150706/20150709_DySolo_1/20150709_DySolo_1_MMStack_Pos0.ome.tif",
-             "Sm": "Z:/Huy/20150706/20150709_SmSolo_3/20150709_SmSolo_3_MMStack_Pos0.ome.tif",
-             "Tm": "Z:/Huy/20150706/20150709_TmSolo_3/20150709_TmSolo_3_MMStack_Pos0.ome.tif",
-             "Eu": "Z:/Huy/20150706/20150709_EuSolo_1/20150709_EuSolo_1_MMStack_Pos0.ome.tif",
-             "Trp": "Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif"}
+#REF_FILES = {"CeTb": "Z:/Huy/20150706/20150709_CeTbSolo_1/20150709_CeTbSolo_1_MMStack_Pos0.ome.tif",
+#             "Dy": "Z:/Huy/20150706/20150709_DySolo_1/20150709_DySolo_1_MMStack_Pos0.ome.tif",
+#             "Sm": "Z:/Huy/20150706/20150709_SmSolo_3/20150709_SmSolo_3_MMStack_Pos0.ome.tif",
+#             "Tm": "Z:/Huy/20150706/20150709_TmSolo_3/20150709_TmSolo_3_MMStack_Pos0.ome.tif",
+#             "Eu": "Z:/Huy/20150706/20150709_EuSolo_1/20150709_EuSolo_1_MMStack_Pos0.ome.tif",
+#             "Trp": "Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif"}
+
+REF_FILES = ["Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif",    # Trp
+             "Z:/Huy/20150706/20150709_DySolo_1/20150709_DySolo_1_MMStack_Pos0.ome.tif",        # Dy
+             "Z:/Huy/20150706/20150709_SmSolo_3/20150709_SmSolo_3_MMStack_Pos0.ome.tif",        # Sm
+             "Z:/Huy/20150706/20150709_TmSolo_3/20150709_TmSolo_3_MMStack_Pos0.ome.tif",        # Tm
+             "Z:/Huy/20150706/20150709_EuSolo_1/20150709_EuSolo_1_MMStack_Pos0.ome.tif"]        # Eu
 
 # Target file location
-TARGET_FILE = "Z:/Code Sets/20150714_DySmTm_48codes.csv"
+#TARGET_FILE = "Z:/Code Sets/20150714_DySmTm_48codes.csv"
+TARGET_FILE = "Z:/Code Sets/20160226_DySmTm_48Codes.csv"
 
 # Training set location
 TRAIN_PATH = "Z:/Huy/20160225"
@@ -88,7 +95,8 @@ IMAGE_CHANNELS = {"BF": 1,
 
 # Kinetics image set location
 # Calcineurin
-CALC_PATH_ON_1 = "Z:/Bjorn/20160331 - Calcineurin/20160331 - Start Antibody Calc_3/20160331 - Start Antibody Calc_3_MMStack.ome.tif"
+#CALC_PATH_ON_1 = "Z:/Bjorn/20160331 - Calcineurin/20160331 - Start Antibody Calc_3/20160331 - Start Antibody Calc_3_MMStack.ome.tif"
+CALC_PATH_ON_1 = "Z:/Huy/20160513/20160513_48B_BR0.5_1/20160513_48B_BR0.5_1_MMStack.ome.tif"
 CALC_PATH_ON_S = "Z:/Bjorn/20160331 - Calcineurin/20160331 - Start Antibody Calc - Seq_1/20160331 - Start Antibody Calc - Seq_1_MMStack.ome.tif"
 CALC_PATH_OFF_1 = "Z:/Bjorn/20160331 - Calcineurin/20160331 - Start Antibody Calc - Seq End 4hr - Off start_1/20160331 - Start Antibody Calc - Seq End 4hr - Off start_1_MMStack.ome.tif"
 CALC_PATH_OFF_S = "Z:/Bjorn/20160331 - Calcineurin/20160331 - Start Antibody Calc - Seq End 4hr - Off start_2/20160331 - Start Antibody Calc - Seq End 4hr - Off start_2_MMStack.ome.tif"
@@ -113,114 +121,93 @@ def main():
     ##################################################
 
     print("Create reference spectra")
-    # Lanthanice spectra image sets
-    #image_set = ba.ImageSet(REF_FILES["CeTb"])
-    #image_data_CeTb = image_set.readSet()[:,CROP[0]:CROP[1],CROP[2]:CROP[3]]
-    image_set = ba.ImageSet(REF_FILES["Dy"])
-    image_data_Dy = image_set.readSet()[:, CROP[0]:CROP[1], CROP[2]:CROP[3]]
-    image_set = ba.ImageSet(REF_FILES["Sm"])
-    image_data_Sm = image_set.readSet()[:, CROP[0]:CROP[1], CROP[2]:CROP[3]]
-    image_set = ba.ImageSet(REF_FILES["Tm"])
-    image_data_Tm = image_set.readSet()[:, CROP[0]:CROP[1], CROP[2]:CROP[3]]
-    image_set = ba.ImageSet(REF_FILES["Eu"])
-    image_data_Eu = image_set.readSet()[:, CROP[0]:CROP[1], CROP[2]:CROP[3]]
-    # Tryptophan spectrum
-    image_set = ba.ImageSet(REF_FILES["Trp"])
-    image_data_Trp = image_set.readSet()[:, CROP[0]:CROP[1], CROP[2]:CROP[3]]
-    del image_set
-    # Get reference spectra from image sets and set order
-    ref_data = np.empty((9, 6), dtype="float64")
-    #ref_data[:,1] = ba.getRef(image_data_CeTb)
-    ref_data[:, 1] = ba.getRef(image_data_Trp, min_dist=4, min_r=2, max_r=5, param_2=11)
-    ref_data[:, 2] = ba.getRef(image_data_Dy)
-    ref_data[:, 3] = ba.getRef(image_data_Sm)
-    ref_data[:, 4] = ba.getRef(image_data_Tm)
-    ref_data[:, 5] = ba.getRef(image_data_Eu)
+    ref_data_object = ba.RefSpec(REF_FILES)
+    ref_data = ref_data_object.readSpectra()
 
     ##################################################
     # Get training data and check clustering         #
     ##################################################    
     
-    print("Generate training data")
-    # Get all image files of training set
-    image_files = ba.mmScanPath(TRAIN_PATH)
-    # Background spectrum of training set
-    image_set = ba.ImageSet(TRAIN_BACK)
-    image_data_set = image_set.readSet()
-    ref_data[:, 0] = ba.getBack(image_data_set, TRAIN_BACK_CROP)
-    del image_set
+    #print("Generate training data")
+    ## Get all image files of training set
+    #image_files = ba.mmScanPath(TRAIN_PATH)
+    ## Background spectrum of training set
+    #image_set = ba.ImageSet(TRAIN_BACK)
+    #image_data_set = image_set.readSet()
+    #ref_data[:, 0] = ba.getBack(image_data_set, TRAIN_BACK_CROP)
+    #del image_set
 
-    # Data all
-    raw_data = []
-    data_ratios = []
-    data_circles_dim = []
+    ## Data all
+    #raw_data = []
+    #data_ratios = []
+    #data_circles_dim = []
 
-    # Run on all found files
-    def run_paths(ipath):
-        labels, labels_annulus, circles_dim, median_data, ratio_data = ba.getUnmixedData(
-            ipath, CROP, ref_data, 5)
-        raw_data.append(median_data)
-        data_ratios.append(ratio_data)
-        data_circles_dim.append(circles_dim)
-    map(run_paths, image_files)
+    ## Run on all found files
+    #def run_paths(ipath):
+    #    labels, labels_annulus, circles_dim, median_data, ratio_data = ba.getUnmixedData(
+    #        ipath, CROP, ref_data, 5)
+    #    raw_data.append(median_data)
+    #    data_ratios.append(ratio_data)
+    #    data_circles_dim.append(circles_dim)
+    #map(run_paths, image_files)
     
-    fig = plt.figure()
-    fig.suptitle("Reference Spectra  - Training Set")
-    plt.plot(ref_data)
-    plt.draw()
+    #fig = plt.figure()
+    #fig.suptitle("Reference Spectra  - Training Set")
+    #plt.plot(ref_data)
+    #plt.draw()
 
-    rflatten_1 = [item for sublist in raw_data for item in sublist]
-    data_raw = np.array(rflatten_1)
+    #rflatten_1 = [item for sublist in raw_data for item in sublist]
+    #data_raw = np.array(rflatten_1)
 
-    rat_flatten_1 = [item for sublist in data_ratios for item in sublist]
-    ratio_data = np.array(rat_flatten_1)
+    #rat_flatten_1 = [item for sublist in data_ratios for item in sublist]
+    #ratio_data = np.array(rat_flatten_1)
 
-    c_flatten_1 = [item for sublist in data_circles_dim for item in sublist]
-    circles_dim = np.array(c_flatten_1)
+    #c_flatten_1 = [item for sublist in data_circles_dim for item in sublist]
+    #circles_dim = np.array(c_flatten_1)
 
-    background = data_raw[:, 0]  # Device background
-    reference = data_raw[:, 5]   # Internal reference: Eu
+    #background = data_raw[:, 0]  # Device background
+    #reference = data_raw[:, 5]   # Internal reference: Eu
 
-    # Filter objects based on background and reference
-    data_filter_list = ba.filterObjects(ratio_data, background, reference, circles_dim[:, 2])
-    # Omit CeTb and Trp ratios
-    data_filtered = ratio_data[data_filter_list, 1:4]
-    circles_dim_filt = circles_dim[data_filter_list]
+    ## Filter objects based on background and reference
+    #data_filter_list = ba.filterObjects(ratio_data, background, reference, circles_dim[:, 2])
+    ## Omit CeTb and Trp ratios
+    #data_filtered = ratio_data[data_filter_list, 1:4]
+    #circles_dim_filt = circles_dim[data_filter_list]
 
-    # Iterative closest point
-    data_icp = ba.icp(data_filtered, target, tol=1e-4, max_iter=10)
+    ## Iterative closest point
+    #data_icp = ba.icp(data_filtered, target, tol=1e-4, max_iter=10)
 
-    # Gaussian Mixture Modeling
-    nclusters = len(target[:, 0])
-    naxes = len(target[0, :])
-    sigma = np.eye(naxes) * 1e-5
-    gmix = mixture.GMM(n_components=nclusters, covariance_type='full',
-                       min_covar=1e-7, tol=1e-7, init_params='', params='wmc')
-    gmix.means_ = target
-    gmix.covars_ = np.tile(sigma, (nclusters, 1, 1))
-    gmix.weights_ = np.tile(1 / 48, (nclusters))
-    gmix.fit(data_icp, target)
-    predict = gmix.predict(data_icp)
+    ## Gaussian Mixture Modeling
+    #nclusters = len(target[:, 0])
+    #naxes = len(target[0, :])
+    #sigma = np.eye(naxes) * 1e-5
+    #gmix = mixture.GMM(n_components=nclusters, covariance_type='full',
+    #                   min_covar=1e-7, tol=1e-7, init_params='', params='wmc')
+    #gmix.means_ = target
+    #gmix.covars_ = np.tile(sigma, (nclusters, 1, 1))
+    #gmix.weights_ = np.tile(1 / 48, (nclusters))
+    #gmix.fit(data_icp, target)
+    #predict = gmix.predict(data_icp)
 
-    np.set_printoptions(threshold=1e4)
-    print("Number of unique beads found:", len(np.unique(predict)))
-    colors = np.multiply(predict, 5)
+    #np.set_printoptions(threshold=1e4)
+    #print("Number of unique beads found:", len(np.unique(predict)))
+    #colors = np.multiply(predict, 5)
 
-    fig = plt.figure()
-    fig.suptitle("Clustering pre-ICP - Training Set")
-    ax = fig.gca(projection='3d')
-    ax.scatter(data_filtered[:, 0], data_filtered[:, 1],
-               data_filtered[:, 2], c=colors, alpha=0.8)
-    ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
-    plt.draw()
+    #fig = plt.figure()
+    #fig.suptitle("Clustering pre-ICP - Training Set")
+    #ax = fig.gca(projection='3d')
+    #ax.scatter(data_filtered[:, 0], data_filtered[:, 1],
+    #           data_filtered[:, 2], c=colors, alpha=0.8)
+    #ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
+    #plt.draw()
 
-    fig = plt.figure()
-    fig.suptitle("Clustering post-ICP - Training Set")
-    ax = fig.gca(projection='3d')
-    ax.scatter(data_icp[:, 0], data_icp[:, 1],
-               data_icp[:, 2], c=colors, alpha=0.8)
-    ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
-    plt.draw()
+    #fig = plt.figure()
+    #fig.suptitle("Clustering post-ICP - Training Set")
+    #ax = fig.gca(projection='3d')
+    #ax.scatter(data_icp[:, 0], data_icp[:, 1],
+    #           data_icp[:, 2], c=colors, alpha=0.8)
+    #ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
+    #plt.draw()
 
     ###################################################
     # Get kinetics data clustering and classification #
@@ -238,14 +225,18 @@ def main():
 
     labels_on, labels_annulus_on, circles_dim_on = calc_on_objects.findObjects()
 
-    ba_img_set = ba.ImageSet(CALC_BACK)
-    ba_img_read = ba_img_set.readSet()
-    ref_data[:, 0] = ba.getBack(ba_img_read[0:10], CALC_BACK_CROP)
-    del ba_img_set
+    #ba_img_set = ba.ImageSet(CALC_BACK)
+    #ba_img_read = ba_img_set.readSet()
+    #ref_back = ba.getBack(ba_img_read[0:10], CALC_BACK_CROP)
+    #del ba_img_set
+    crop_area = [253, 274, 167, 171]
+    ref_back = ba.getBack(calc_on_set[0:10], crop_area)
+    
+    ref_data = np.insert(ref_data, 0, ref_back, axis = 1)
 
     fig = plt.figure()
     fig.suptitle("Reference Spectra - Kinetics Set")
-    plt.plot(ref_data)
+    plt.plot(ref_data[:,0])
     plt.draw()
 
     # Unmix images by least squares
@@ -259,19 +250,18 @@ def main():
     reference_on = median_data_on[:, 5]  # Internal reference: Eu
 
     # Filter objects based on background and reference
-    data_filter_list_on = ba.filterObjects(
-        ratio_data_on, background_on, reference_on, circles_dim_on[:, 2])
+    data_filter_list_on = ba.filterObjects(ratio_data_on, background_on, reference_on, circles_dim_on[:, 2])
     data_filtered_on = ratio_data_on[data_filter_list_on]
     circles_dim_on_filt = circles_dim_on[data_filter_list_on]
 
     fig = plt.figure()
     fig.suptitle("Overlay Image Pre-filter - Kinetics Set")
-    plt.imshow(calc_on_objects.overlayImage(circles_dim_on, ring_size=2))
+    plt.imshow(calc_on_objects.overlayImage(circles_dim_on))
     plt.draw()
 
     fig = plt.figure()
     fig.suptitle("Overlay Image Post-filter - Kinetics Set")
-    plt.imshow(calc_on_objects.overlayImage(circles_dim_on_filt, ring_size=2))
+    plt.imshow(calc_on_objects.overlayImage(circles_dim_on_filt))
     plt.draw()
 
     # Iterative closest point
@@ -283,11 +273,10 @@ def main():
     for n in xrange(nLn):
         matrix[n, n] = np.divide(
             np.mean(target[:, n]), np.mean(data_filtered_on[:, n]))
-    matrix[2, 2] = 3
+    matrix[2, 2] = 6
 
     # Iterative Closest Point
-    data_icp_on = ba.icp(data_filtered_on, target,
-                         input_matrix=matrix, tol=1e-4)
+    data_icp_on = ba.icp(data_filtered_on, target, tol=1e-4)
 
     # GMM Setup
     nclusters = len(target[:, 0])
@@ -295,17 +284,17 @@ def main():
     sigma = np.eye(naxes) * 1e-5
 
     # New GMM
-    #gmix_on = mixture.GMM(n_components=nclusters, covariance_type='full',
-    #                      min_covar=1e-7, tol=1e-5, init_params='', params='wmc')
-    #gmix_on.means_ = target
-    #gmix_on.covars_ = np.tile(sigma, (nclusters, 1, 1))
-    #gmix_on.weights_ = np.tile(1 / 48, (nclusters))
-    #gmix_on.fit(data_icp_on, target)
-    #predict_on = gmix_on.predict(data_icp_on)
+    gmix_on = mixture.GMM(n_components=nclusters, covariance_type='full',
+                          min_covar=1e-7, tol=1e-5, init_params='', params='wmc')
+    gmix_on.means_ = target
+    gmix_on.covars_ = np.tile(sigma, (nclusters, 1, 1))
+    gmix_on.weights_ = np.tile(1 / 48, (nclusters))
+    gmix_on.fit(data_icp_on, target)
+    predict_on = gmix_on.predict(data_icp_on)
 
     # Re-use trained GMM
-    gmix.fit(data_icp_on, target)
-    predict_on = gmix.predict(data_icp_on)
+    #gmix.fit(data_icp_on, target)
+    #predict_on = gmix.predict(data_icp_on)
 
     print("Number of unique beads found:", len(np.unique(predict_on)))
     colors_on = np.multiply(predict_on, 5)
@@ -326,125 +315,130 @@ def main():
     ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
     plt.draw()
 
+
     ###################################################
     # Get kinetics data ON-Rate                       #
     ################################################### 
-    calc_on_s = ba.ImageSet(CALC_PATH_ON_S)
-    calc_on_s_set = calc_on_s.readSet()
-    calc_on_s_set = calc_on_s_set[:, :, CROP[0]:CROP[1], CROP[2]:CROP[3]]
+    #calc_on_s = ba.ImageSet(CALC_PATH_ON_S)
+    #calc_on_s_set = calc_on_s.readSet()
+    #calc_on_s_set = calc_on_s_set[:, :, CROP[0]:CROP[1], CROP[2]:CROP[3]]
 
-    t_images = xrange(0, calc_on_s.sizeT)
-    data_set = []
-    idx = np.arange(1, len(np.unique(labels_on)))
-    for i in t_images:
-        # Median from data
-        #data = ndi.labeled_comprehension(calc_on_s_set[i,2,:,:], 
-        #                                 labels_on, idx, np.median, float, -1)
-        # Mean from data
-        data = ndi.mean(calc_on_s_set[i, 2, :, :],
-                        labels=labels_annulus_on, index=idx)
-        data_set.append(data)
+    #t_images = xrange(0, calc_on_s.sizeT)
+    #data_set = []
+    #idx = np.arange(1, len(np.unique(labels_on)))
+    #for i in t_images:
+    #    # Median from data
+    #    #data = ndi.labeled_comprehension(calc_on_s_set[i,2,:,:], 
+    #    #                                 labels_on, idx, np.median, float, -1)
+    #    # Mean from data
+    #    data = ndi.mean(calc_on_s_set[i, 2, :, :],
+    #                    labels=labels_annulus_on, index=idx)
+    #    data_set.append(data)
 
-    data_set = np.array(data_set)
-    data_set = data_set[:, data_filter_list_on]
-    beads = xrange(0, bead_no - 1)
-    # Unmix kinetics data
-    bead_unmixed = np.empty((calc_on_s.sizeT, bead_no))
-    for t in t_images:
-        data_array = data_set[t]
-        for x in beads:
-            where = np.argwhere(predict_on == x)
-            bead_unmixed[t, x] = np.mean(data_array[where[:, 0]])
+    #data_set = np.array(data_set)
+    #data_set = data_set[:, data_filter_list_on]
+    #beads = xrange(0, bead_no - 1)
+    ## Unmix kinetics data
+    #bead_unmixed = np.empty((calc_on_s.sizeT, bead_no))
+    #for t in t_images:
+    #    data_array = data_set[t]
+    #    for x in beads:
+    #        where = np.argwhere(predict_on == x)
+    #        bead_unmixed[t, x] = np.mean(data_array[where[:, 0]])
 
-    ###################################################
-    # Get kinetics data OFF-Rate                      #
-    ################################################### 
-    # Combine ON-rate with OFF-rate
-    bead_unmixed_all = bead_unmixed
-    data_set_all = data_set
+    ####################################################
+    ## Get kinetics data OFF-Rate                      #
+    #################################################### 
+    ## Combine ON-rate with OFF-rate
+    #bead_unmixed_all = bead_unmixed
+    #data_set_all = data_set
 
-    calc_off_s = ba.ImageSet(CALC_PATH_OFF_S)
-    calc_off_s_set = calc_off_s.readSet()
-    calc_off_s_set = calc_off_s_set[:, :, CROP[0]:CROP[1], CROP[2]:CROP[3]]
+    #calc_off_s = ba.ImageSet(CALC_PATH_OFF_S)
+    #calc_off_s_set = calc_off_s.readSet()
+    #calc_off_s_set = calc_off_s_set[:, :, CROP[0]:CROP[1], CROP[2]:CROP[3]]
 
-    t_images = xrange(0, calc_off_s.sizeT)
+    #t_images = xrange(0, calc_off_s.sizeT)
 
-    data_set = []
-    idx = np.arange(1, len(np.unique(labels_on)))
-    for i in t_images:
-        #data = ndi.labeled_comprehension(calc_off_s_set[i,1,:,:], labels_on, idx, np.median, float, -1)
-        data = ndi.mean(calc_off_s_set[i, 1, :, :],
-                        labels=labels_annulus_on, index=idx)
-        data_set.append(data)
+    #data_set = []
+    #idx = np.arange(1, len(np.unique(labels_on)))
+    #for i in t_images:
+    #    #data = ndi.labeled_comprehension(calc_off_s_set[i,1,:,:], labels_on, idx, np.median, float, -1)
+    #    data = ndi.mean(calc_off_s_set[i, 1, :, :],
+    #                    labels=labels_annulus_on, index=idx)
+    #    data_set.append(data)
 
-    data_set = np.array(data_set)
-    data_set = data_set[:, data_filter_list_on]
+    #data_set = np.array(data_set)
+    #data_set = data_set[:, data_filter_list_on]
 
-    beads = xrange(0, bead_no - 1)
+    #beads = xrange(0, bead_no - 1)
 
-    # Unmix kinetics data
-    bead_unmixed = np.empty((calc_off_s.sizeT, bead_no))
-    for t in t_images:
-        data_array = data_set[t]
-        for x in beads:
-            where = np.argwhere(predict_on == x)
-            bead_unmixed[t, x] = np.mean(data_array[where[:, 0]])
+    ## Unmix kinetics data
+    #bead_unmixed = np.empty((calc_off_s.sizeT, bead_no))
+    #for t in t_images:
+    #    data_array = data_set[t]
+    #    for x in beads:
+    #        where = np.argwhere(predict_on == x)
+    #        bead_unmixed[t, x] = np.mean(data_array[where[:, 0]])
 
-    # Combine ON-rate with OFF-rate
-    bead_unmixed_all = np.append(bead_unmixed_all, bead_unmixed, axis=0)
-    bead_unmixed_all = np.subtract(bead_unmixed_all, np.min(bead_unmixed_all))
-    data_set_all = np.append(data_set_all, data_set, axis=0)
-    data_set_all = np.subtract(data_set_all, np.min(data_set_all))
+    ## Combine ON-rate with OFF-rate
+    #bead_unmixed_all = np.append(bead_unmixed_all, bead_unmixed, axis=0)
+    #bead_unmixed_all = np.subtract(bead_unmixed_all, np.min(bead_unmixed_all))
+    #data_set_all = np.append(data_set_all, data_set, axis=0)
+    #data_set_all = np.subtract(data_set_all, np.min(data_set_all))
 
-    # Plots
-    # X Split
-    x_s = circles_dim_on_filt[:, 0]
-    colors = []
-    min_c = np.min(x_s)
-    max_c = np.max(x_s)
-    for x in x_s:
-        colors.append([(x - min_c) / (max_c - min_c), (x - min_c) /
-                       (max_c - min_c), (x - min_c) / (max_c - min_c)])
+    ## Plots
+    ## X Split
+    #x_s = circles_dim_on_filt[:, 0]
+    #colors = []
+    #min_c = np.min(x_s)
+    #max_c = np.max(x_s)
+    #for x in x_s:
+    #    colors.append([(x - min_c) / (max_c - min_c), (x - min_c) /
+    #                   (max_c - min_c), (x - min_c) / (max_c - min_c)])
 
-    fig = plt.figure()
-    fig.suptitle("Training Set - X-Coloring")
-    ax = fig.add_subplot(111)
-    ax.plot(data_set_all[:98])
-    [ax.lines[i].set_color(color) for i, color in enumerate(colors)]
-    plt.draw()
+    #fig = plt.figure()
+    #fig.suptitle("Training Set - X-Coloring")
+    #ax = fig.add_subplot(111)
+    #ax.plot(data_set_all[:98])
+    #[ax.lines[i].set_color(color) for i, color in enumerate(colors)]
+    #plt.draw()
     
-    # Split in 3 sections to see distance variance
-    #x_filter_1 = np.argwhere(np.logical_and(x_s >= 0, x_s < 100))
-    #x_filter_2 = np.argwhere(np.logical_and(x_s >= 100, x_s < 200))
-    #x_filter_3 = np.argwhere(np.logical_and(x_s >= 200, x_s < 300))
-    #plt.figure()
-    #plt.plot(data_set_all[:98, x_filter_1[:,0]])
-    #plt.axis([0, 98, 0, 16000])
-    #plt.draw()
-    #plt.figure()
-    #plt.plot(data_set_all[:98, x_filter_2[:,0]])
-    #plt.axis([0, 98, 0, 16000])
-    #plt.draw()
-    #plt.figure()
-    #plt.plot(data_set_all[:98, x_filter_3[:,0]])
+    ## Split in 3 sections to see distance variance
+    ##x_filter_1 = np.argwhere(np.logical_and(x_s >= 0, x_s < 100))
+    ##x_filter_2 = np.argwhere(np.logical_and(x_s >= 100, x_s < 200))
+    ##x_filter_3 = np.argwhere(np.logical_and(x_s >= 200, x_s < 300))
+    ##plt.figure()
+    ##plt.plot(data_set_all[:98, x_filter_1[:,0]])
+    ##plt.axis([0, 98, 0, 16000])
+    ##plt.draw()
+    ##plt.figure()
+    ##plt.plot(data_set_all[:98, x_filter_2[:,0]])
+    ##plt.axis([0, 98, 0, 16000])
+    ##plt.draw()
+    ##plt.figure()
+    ##plt.plot(data_set_all[:98, x_filter_3[:,0]])
+    ##plt.axis([0, 98, 0, 16000])
+    ##plt.draw()
+
+    ## Plot individual beads data
+    #fig = plt.figure()
+    #fig.suptitle("Training Set - All Beads")
+    #plt.plot(data_set_all[:98])
     #plt.axis([0, 98, 0, 16000])
     #plt.draw()
 
-    # Plot individual beads data
-    fig = plt.figure()
-    fig.suptitle("Training Set - All Beads")
-    plt.plot(data_set_all[:98])
-    plt.axis([0, 98, 0, 16000])
-    plt.draw()
+    ## Plot unmixed codes data
+    #fig = plt.figure()
+    #fig.suptitle("Training Set - Unmixed")
+    #plt.plot(bead_unmixed_all[:98])
+    #plt.axis([0, 98, 0, 16000])
+    #plt.draw()
 
-    # Plot unmixed codes data
-    fig = plt.figure()
-    fig.suptitle("Training Set - Unmixed")
-    plt.plot(bead_unmixed_all[:98])
-    plt.axis([0, 98, 0, 16000])
-    plt.draw()
+
 
     plt.show()
+
+    return 0
 
 
 ### Main loop ###
