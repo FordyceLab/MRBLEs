@@ -106,7 +106,7 @@ CALC_BACK_CROP = [100, 400, 261, 273]
 
 # General Region or interest
 # [Y1, Y2, X1, X2] Y and X are reversed in array since rows (Y) go first and columns go second (X)
-CROP = [100, 400, 100, 400]
+CROP = [70, 430, 70, 430]
 
 ### Main function ###
 def main():
@@ -121,8 +121,10 @@ def main():
     ##################################################
 
     print("Create reference spectra")
-    ref_data_object = ba.RefSpec(REF_FILES)
+    size_parameters = [[3, 4, 10 ,11, 2, 5], None, None, None, None]
+    ref_data_object = ba.RefSpec(REF_FILES, size_param = size_parameters)
     ref_data = ref_data_object.readSpectra()
+    
 
     ##################################################
     # Get training data and check clustering         #
@@ -225,18 +227,28 @@ def main():
 
     labels_on, labels_annulus_on, circles_dim_on = calc_on_objects.findObjects()
 
-    #ba_img_set = ba.ImageSet(CALC_BACK)
-    #ba_img_read = ba_img_set.readSet()
-    #ref_back = ba.getBack(ba_img_read[0:10], CALC_BACK_CROP)
-    #del ba_img_set
-    crop_area = [253, 274, 167, 171]
-    ref_back = ba.getBack(calc_on_set[0:10], crop_area)
+    ba_img_set = ba.ImageSet(CALC_BACK)
+    ba_img_read = ba_img_set.readSet()
+    ref_back = ba.getBack(ba_img_read[0:10], CALC_BACK_CROP)
+    del ba_img_set
+    #crop_area = [253, 274, 167, 171]  # 48B
+    #crop_area = [11, 27, 128, 143]  # 48
+    #ref_back = ba.getBack(calc_on_set[0:10], crop_area)
     
     ref_data = np.insert(ref_data, 0, ref_back, axis = 1)
 
     fig = plt.figure()
-    fig.suptitle("Reference Spectra - Kinetics Set")
-    plt.plot(ref_data[:,0])
+    fig.suptitle("Reference Spectra - Python")
+    plt.plot(ref_data)
+    plt.draw()
+
+    ## Use Matlab refs
+    ref_data = np.genfromtxt("ref_spectra.csv", delimiter=',').T
+    ref_data[:,0] = ref_back
+
+    fig = plt.figure()
+    fig.suptitle("Reference Spectra - Matlab")
+    plt.plot(ref_data)
     plt.draw()
 
     # Unmix images by least squares
@@ -250,7 +262,7 @@ def main():
     reference_on = median_data_on[:, 5]  # Internal reference: Eu
 
     # Filter objects based on background and reference
-    data_filter_list_on = ba.filterObjects(ratio_data_on, background_on, reference_on, circles_dim_on[:, 2])
+    data_filter_list_on = ba.filterObjects(ratio_data_on, background_on, reference_on, circles_dim_on[:, 2], back_std_factor = 1.5, reference_std_factor = 1)
     data_filtered_on = ratio_data_on[data_filter_list_on]
     circles_dim_on_filt = circles_dim_on[data_filter_list_on]
 
@@ -272,11 +284,14 @@ def main():
     matrix = np.eye(nLn)
     for n in xrange(nLn):
         matrix[n, n] = np.divide(
-            np.mean(target[:, n]), np.mean(data_filtered_on[:, n]))
-    matrix[2, 2] = 6
+            np.max(target[:, n]), np.max(data_filtered_on[:, n]))
+    #matrix[0, 0] = 5
+    #matrix[1, 1] = 1.5
+    #matrix[2, 2] = 5
 
     # Iterative Closest Point
-    data_icp_on = ba.icp(data_filtered_on, target, tol=1e-4)
+    data_icp_on = ba.ICP.icp(data_filtered_on, target, input_matrix = matrix, tol=1e-4)
+    
 
     # GMM Setup
     nclusters = len(target[:, 0])
@@ -433,8 +448,6 @@ def main():
     #plt.plot(bead_unmixed_all[:98])
     #plt.axis([0, 98, 0, 16000])
     #plt.draw()
-
-
 
     plt.show()
 

@@ -144,7 +144,7 @@ def getRatios(labels, images, reference):
     return ratio_data
 
 
-def icp(data, target, max_iter=100, tol=1e-3, input_matrix=None, input_offset=None):
+def icp(data, target, max_iter=100, tol=1e-4, input_matrix=None, input_offset=None):
     """ICP
     Iterative Closest Point
     """
@@ -158,7 +158,7 @@ def icp(data, target, max_iter=100, tol=1e-3, input_matrix=None, input_offset=No
     if input_matrix is None:
         matrix = np.eye(nLn)
         for n in xrange(nLn):
-            matrix[n, n] = np.mean(target[:, n]) / np.mean(data[:, n])
+            matrix[n, n] = (np.mean(target[:, n])) / np.mean(data[:, n])
     else:
         matrix = input_matrix
 
@@ -187,7 +187,6 @@ def icp(data, target, max_iter=100, tol=1e-3, input_matrix=None, input_offset=No
         delta = sqrt(d_compare / n_compare)
         print("Delta: ", delta)
     return result
-
 
 def filterObjects(data, back, reference, objects_radius, back_std_factor=3, reference_std_factor=2, radius_min=3, radius_max=6):
     """Filter Objects
@@ -293,32 +292,29 @@ class ImageSet(object):
     Load image set from file(s)
     file_path = File path(s) in list [path, path]
     """
-
     def __init__(self, file_path):
         """Initialize Bioformats & Java and set properties"""
-        # Properties
-        self.file_path = file_path
-        self.imageX = 0
-        self.imageY = 0
-        self.sizeC = 0  # No. channels
-        self.sizeT = 0  # No. timepoints
-        self.sizeZ = 0  # No. Z slices
-        self.sizeM = 0  # No. multipoints
-        self.sizeI = 0  # No. images total
-        self.image_reader = None
-        self.init_image = None  # Initial image to calculate sizes
-        self.arrayOrder = None
-
-        # Initiate JAVA environment and basic logging
+        # Initiate JAVA environment and basic logging for image reader
         self.loadJVE(heap_size='8G')
-        # Getting metadata and load image reader
-        self.loadImageReader()
-        # Extracting data from metadata and set properties
-        self.extractMetaData()
+        # Load image reader for images
+        self._image_reader, self.metadata = self.loadImageReader(file_path)
+
+        # Extract set information from metadata
+        self.sizeC = self.getMetaDataNumber("SizeC", self.metadata)  # No. channels
+        self.sizeT = self.getMetaDataNumber("SizeT", self.metadata)  # No. timepoints
+        self.sizeZ = self.getMetaDataNumber("SizeZ", self.metadata)  # No. Z slices
+        # TO-DO self.sizeP = self.getMetaDataNumber("SizeP", self.metadata)  # No. positions
+        self.sizeI = self.sizeC * self.sizeT * self.sizeZ  # No. images total        
+        self.arrayOrder = self.identifyOrder()
+        # Load initial image to get dimensions
+        init_image = self.readImage(idx=0)
+        self.imageY = init_image[:,0].size  # Y dim first, since columns
+        self.imageX = init_image[0,:].size  # X dim second, since columns
+        del init_image  # Free up memory
 
     def __close__(self):
         """Destructor of ImageSet"""
-        self.image_reader.close()
+        self._image_reader.close()
         return 0
 
     @staticmethod
@@ -330,32 +326,20 @@ class ImageSet(object):
         jb.start_vm(class_path=bf.JARS, max_heap_size=heap_size)
         log4j.basic_config()
 
-    def loadImageReader(self):
+    @staticmethod
+    def loadImageReader(file_path):
         """Initialize Bioformats reader and get metadata"""
         # Getting metadata and load image reader
         try:
-            os.path.isfile(self.file_path)
+            os.path.isfile(file_path)
         except IOError as io:
-            print("Cannot open file:", self.file_path)
+            print("Cannot open file:", file_path)
         except:
             print("Unexpected error:", sys.exc_info())
         else:
-            self.metadata = bf.get_omexml_metadata(self.file_path)
-            self.image_reader = bf.ImageReader(self.file_path)
-            self.init_image = self.readImage(idx=0)
-
-    def extractMetaData(self):
-        """Extract Meta Data
-        Extracting image set numbers from metadata and setting properties
-        """
-        # NumPy array of image is [Y,X]
-        self.imageY = self.init_image[:,0].size  
-        self.imageX = self.init_image[0,:].size
-        self.sizeC = self.getSizeC()
-        self.sizeT = self.getSizeT()
-        self.sizeZ = self.getSizeZ()
-        self.sizeI = self.sizeC * self.sizeT
-        self.identifyOrder()
+            image_reader = bf.ImageReader(file_path)
+            metadata = bf.get_omexml_metadata(file_path)            
+            return image_reader, metadata
 
     @staticmethod
     def getMetaDataNumber(search_keyword, metadata):
@@ -365,31 +349,28 @@ class ImageSet(object):
         """
         search_string = search_keyword + r'=\"\d+\"'
         found_string = re.findall(search_string, metadata)
-        extracted_number = int(re.findall(r'\d+', found_string[0])[0])
+        if len(found_string) >= 1:
+            extracted_number = int(re.findall(r'\d+', found_string[0])[0])
+        else:
+            extracted_number = None
         return extracted_number
 
-    def getSizeC(self):
-        """Get Size Channels
-        Return number of channels
+    def identifyOrder(self):
+        """Identify Order
+        Identify the order of the image set
         """
-        size = self.getMetaDataNumber("SizeC", self.metadata)
-        return size
+        if self.sizeT > 1 and self.sizeC > 1:
+            return "[t,c,y,x]"
+        elif self.sizeT == 1 and self.sizeC > 1:
+            return "[c,y,x]"
+        elif self.sizeT > 1 and self.sizeC == 1:
+            return "[t,y,x]"
+        elif self.sizeT == 1 and self.sizeC == 1:
+            return "[y,x]"
+        else:
+            return None
 
-    def getSizeT(self):
-        """Get Size Timepoints
-        Return the number of timepoints
-        """
-        size = self.getMetaDataNumber("SizeT", self.metadata)
-        return size
-
-    def getSizeZ(self):
-        """Get Size Z-depths
-        Return the number of timepoints
-        """
-        size = self.getMetaDataNumber("SizeZ", self.metadata)
-        return size
-
-    def getIndex(self, c=0, t=0):
+    def getIndex(self, c=0, t=0, idx=0):
         """Get Index Number
         Return index number for given channel and/or timepoint
         c = Channel number starting with 0
@@ -400,17 +381,6 @@ class ImageSet(object):
             return index
         elif c >= self.sizeC or t >= self.sizeT:
             raise IndexError
-        else: return 0
-
-    def selectImage(self, idx=0, c=0, t=0):
-        """Select Image
-        Return image index by index, channel, or timepoint.
-        idx - Index number starting with 0
-        c = Channel number starting with 0
-        t = Timepoint starting with 0
-        """
-        if c > 0 or t > 0:
-            return self.getIndex(c=c, t=t)
         else: return idx
 
     def readImage(self, idx=0, c=0, t=0, rescale=False):
@@ -420,24 +390,9 @@ class ImageSet(object):
         t = Timepoint starting with 0
         idx = Index number starting with 0
         """
-        image = self.image_reader.read(
-            index=self.selectImage(idx=idx, c=c, t=t), rescale=rescale)
+        image = self._image_reader.read(
+            index=self.getIndex(c=c, t=t, idx=idx), rescale=rescale)
         return image
-
-    def identifyOrder(self):
-        """Identify Order
-        Identify the order of the image set
-        """
-        if self.sizeT > 1 and self.sizeC > 1:
-            self.arrayOrder = "[t,c,y,x]"
-        elif self.sizeT == 1 and self.sizeC > 1:
-            self.arrayOrder = "[c,y,x]"
-        elif self.sizeT > 1 and self.sizeC == 1:
-            self.arrayOrder = "[t,y,x]"
-        elif self.sizeT == 1 and self.sizeC == 1:
-            self.arrayOrder = "[y,x]"
-        else:
-            raise StandardError
 
     def readSet(self, idx=None, c=None, t=None, rescale=False):
         """Read Set
@@ -546,7 +501,7 @@ class Objects(object):
         return mask
 
     def separateCircles(self, mask, sep_min_dist=2):
-        """
+        """Separate Circles
         """
         # Find and separate circles using watershed on initial mask
         D = ndi.distance_transform_edt(mask)
@@ -606,7 +561,7 @@ class RefSpec(object):
     """Reference Spectra
     Generate reference spectra
     """
-    def __init__(self, image_files, crop = [100, 400, 100, 400]):
+    def __init__(self, image_files, crop = [100, 400, 100, 400], size_param = [3, 9, 10, 10, 7, 10]):
         """
         Initialization after instantiation and set local variables
         """
@@ -614,6 +569,7 @@ class RefSpec(object):
         self.crop = crop
         self.ref_spec_set = None
         self.objects = None
+        self.size_param = size_param
 
     def __close__(self):
         """Destructor of RefSpec"""
@@ -622,17 +578,22 @@ class RefSpec(object):
     def readSpectra(self):
         """Read Spectra
         """
-        ref_spec_set = np.array( [self.readSpectrum(file, 0, self.crop) for file in self.image_files] )
+        ref_spec_set = np.array( [self.readSpectrum(file, 0,  self.size_param[idx], crop = self.crop) for idx, file in enumerate(self.image_files)] )
         self.ref_spec_set = ref_spec_set
         return ref_spec_set.T
 
-    def readSpectrum(self, file, object_channel, crop = None):
+    def readSpectrum(self, file, object_channel, size_param = [3, 9, 10, 10, 7, 10], crop = None):
         """Read Spectrum
         """
+        if size_param is None:
+            size_param = [3, 9, 10, 10, 7, 10]
         if crop == None: crop = self.crop
         ref_set = ImageSet(file)
         ref_set_data = ref_set.readSet()[:, crop[0]:crop[1], crop[2]:crop[3]]
-        objects = self.getRefObjects(ref_set_data[object_channel])
+        objects = self.getRefObjects(ref_set_data[object_channel], 
+                                     sep_min_dist=size_param[0], min_dist=size_param[1], 
+                                     param_1=size_param[2], param_2=size_param[3], 
+                                     min_r=size_param[4], max_r=size_param[5])
         channels = range(ref_set_data[:, 0, 0].size)
         channels.remove(object_channel)
         ref_data = self.getRef(ref_set_data[channels])
@@ -648,12 +609,13 @@ class RefSpec(object):
         self.objects = labels
         return labels
 
-    def getRef(self, image_data):
+    def getRef(self, image_data, back = 451):
         """Get Reference
         Get reference spectra from image set
         """
         channels = range(image_data[:, 0, 0].size)
         ref_data = np.array( [self.getMedianObjects(image_data[ch], self.objects) for ch in channels], dtype="float64" )
+        ref_data = ref_data - back
         sum = ref_data.sum()
         return np.divide(ref_data, sum)
 
@@ -676,6 +638,78 @@ class RefSpec(object):
             ref_data[ch - 1] = np.median(img_tmp)
         sum = ref_data.sum()
         return np.divide(ref_data, sum)
+
+class ICP(object):
+    """Iterative Closest Points
+    """
+    def __init__(self):
+        """
+        Initialization after instantiation and set local variables
+        """
+
+    @staticmethod
+    def matrix_func(naxes, func, input1, input2):
+        """Matrix
+        Create identity matrix and replace 1 values with function e.g np.mean
+        naxes = number
+        func = function
+        input1 = matrix 1
+        input2 = matrix 2
+        """
+        matrix = np.eye(naxes)
+        for n in xrange(naxes):
+            matrix[n, n] = func(input1[:,n]) / func(input2[:,n])
+        return matrix
+
+    def matrix_mean(self, naxes, input1, input2):
+        func = np.mean
+        matrix = self.matrix_func(naxes, func, input1, input2)
+        return matrix
+
+    @staticmethod
+    def icp(data, target, max_iter=100, tol=1e-4, input_matrix=None, input_offset=None):
+        """ICP
+        Iterative Closest Point
+        """
+        nLn = len(data[0, :])
+        nData = len(data[:, 0])
+        if input_offset is None:
+            offset = np.ones(nLn)
+            for n in xrange(nLn):
+                offset[n] = np.min(target[:, n]) - np.min(data[:, n])
+
+        if input_matrix is None:
+            matrix = np.eye(nLn)
+            for n in xrange(nLn):
+                matrix[n, n] = (np.mean(target[:, n])) / np.mean(data[:, n])
+        else:
+            matrix = input_matrix
+
+        delta = 1
+        for i in xrange(max_iter):
+            if delta < tol:
+                print("Converged after:", i)
+                break
+
+            # Copy old to compare to new
+            matrix_old = matrix
+            offset_old = offset
+            result = np.dot(data, matrix) + offset
+
+            distances = metrics.pairwise.pairwise_distances(result, target)
+            matched_code = np.argmin(distances, axis=1)
+            matched_levels = target[matched_code, :]
+            d = np.c_[data, np.ones(len(data[:, 0]))]
+            m = np.linalg.lstsq(d, matched_levels)[0]
+            matrix = m[0:-1, :]
+            offset = m[-1, :]
+
+            d_compare = np.sum(np.square(np.subtract(matrix, matrix_old)))
+            d_compare = d_compare + np.sum(np.square(np.subtract(offset, offset_old)))
+            n_compare = np.sum(np.square(matrix)) + np.sum(np.square(offset))
+            delta = sqrt(d_compare / n_compare)
+            print("Delta: ", delta)
+        return result
 
 class DecodeBeads(object):
     """Decode Beads
