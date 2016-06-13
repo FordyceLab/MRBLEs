@@ -279,19 +279,14 @@ def main():
     # Iterative closest point
     d_size = data_filtered_on[:, 0].size
 
-    # Initial guess matrix to prevent collapse
-    nLn = len(data_filtered_on[0, :])
-    matrix = np.eye(nLn)
-    for n in xrange(nLn):
-        matrix[n, n] = np.divide(
-            np.max(target[:, n]), np.max(data_filtered_on[:, n]))
-    #matrix[0, 0] = 5
-    #matrix[1, 1] = 1.5
-    #matrix[2, 2] = 5
-
     # Iterative Closest Point
-    data_icp_on = ba.ICP.icp(data_filtered_on, target, input_matrix = matrix, tol=1e-4)
-    
+    icp_on = ba.ICP(matrix_method = 'max', max_iter=100, tol=1e-4)
+    #icp_on.matrix = matrix
+    icp_on.fit(data_filtered_on, target)
+    print(icp_on.matrix)
+    print(icp_on.offset)
+    data_icp_on = icp_on.transform(data_filtered_on)
+    print(icp_on.matrix_func)
 
     # GMM Setup
     nclusters = len(target[:, 0])
@@ -331,9 +326,9 @@ def main():
     plt.draw()
 
 
-    ###################################################
-    # Get kinetics data ON-Rate                       #
-    ################################################### 
+    ####################################################
+    ## Get kinetics data ON-Rate                       #
+    #################################################### 
     #calc_on_s = ba.ImageSet(CALC_PATH_ON_S)
     #calc_on_s_set = calc_on_s.readSet()
     #calc_on_s_set = calc_on_s_set[:, :, CROP[0]:CROP[1], CROP[2]:CROP[3]]
@@ -418,22 +413,22 @@ def main():
     #[ax.lines[i].set_color(color) for i, color in enumerate(colors)]
     #plt.draw()
     
-    ## Split in 3 sections to see distance variance
-    ##x_filter_1 = np.argwhere(np.logical_and(x_s >= 0, x_s < 100))
-    ##x_filter_2 = np.argwhere(np.logical_and(x_s >= 100, x_s < 200))
-    ##x_filter_3 = np.argwhere(np.logical_and(x_s >= 200, x_s < 300))
-    ##plt.figure()
-    ##plt.plot(data_set_all[:98, x_filter_1[:,0]])
-    ##plt.axis([0, 98, 0, 16000])
-    ##plt.draw()
-    ##plt.figure()
-    ##plt.plot(data_set_all[:98, x_filter_2[:,0]])
-    ##plt.axis([0, 98, 0, 16000])
-    ##plt.draw()
-    ##plt.figure()
-    ##plt.plot(data_set_all[:98, x_filter_3[:,0]])
-    ##plt.axis([0, 98, 0, 16000])
-    ##plt.draw()
+    # Split in 3 sections to see distance variance
+    #x_filter_1 = np.argwhere(np.logical_and(x_s >= 0, x_s < 100))
+    #x_filter_2 = np.argwhere(np.logical_and(x_s >= 100, x_s < 200))
+    #x_filter_3 = np.argwhere(np.logical_and(x_s >= 200, x_s < 300))
+    #plt.figure()
+    #plt.plot(data_set_all[:98, x_filter_1[:,0]])
+    #plt.axis([0, 98, 0, 16000])
+    #plt.draw()
+    #plt.figure()
+    #plt.plot(data_set_all[:98, x_filter_2[:,0]])
+    #plt.axis([0, 98, 0, 16000])
+    #plt.draw()
+    #plt.figure()
+    #plt.plot(data_set_all[:98, x_filter_3[:,0]])
+    #plt.axis([0, 98, 0, 16000])
+    #plt.draw()
 
     ## Plot individual beads data
     #fig = plt.figure()
@@ -446,7 +441,7 @@ def main():
     #fig = plt.figure()
     #fig.suptitle("Training Set - Unmixed")
     #plt.plot(bead_unmixed_all[:98])
-    #plt.axis([0, 98, 0, 16000])
+    #plt.axis([0, 98, 0, 9000])
     #plt.draw()
 
     plt.show()

@@ -26,6 +26,7 @@ import sys
 import re
 import os
 import glob
+import types
 # Math
 from math import sqrt
 import numpy as np
@@ -640,76 +641,146 @@ class RefSpec(object):
         return np.divide(ref_data, sum)
 
 class ICP(object):
-    """Iterative Closest Points
+    """Iterative Closest Point
+    
+    Iterative Closest Point (ICP) algorithm to minimize the difference between two clouds of points.
+
+    Parameters
+    ----------
+    matrix_method : string/function/list, optional
+        Transformation matrix method. Standard methods: 'max', 'mean', 'min', 'std'. 
+        Other options: own function or list of initial guesses. 
+        Defaults to 'max'.
+
+    max_iter : int, optional
+        Maximum number of iterations. 
+        Defaults to 100.
+
+    tol : float, optional
+        Convergence threshold. ICP will stop after delta < tol.
+        Defaults to 1e-4.
+
+    Attributes
+    ----------
+    matrix : NumPy array
+        This stores the transformation matrix.
+
+    offset : NumPy vector
+        This stores the offset vector.
+
+    Functions
+    ---------
+    fit : function
+        Function to find ICP using set parameters and attributes.
+
+    transform : function
+        Function to apply transformat data using current transformation matrix and offset vector.
     """
-    def __init__(self):
+    def __init__(self, matrix_method='max', max_iter=100, tol=1e-4):
+        self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
+        self.max_iter = max_iter
+        self.tol = tol
+        self.offset = None
+
+    def _set_matrix_method(matrix_method):
+        """Set matrix method
         """
-        Initialization after instantiation and set local variables
-        """
+        matrix = None
+        if matrix_method == 'max':
+            matrix_func = np.max
+        elif matrix_method == 'mean':
+            matrix_func = np.mean
+        elif matrix_method == 'min':
+            matrix_func = np.min
+        elif matrix_method == 'std':
+            matrix_func = np.std
+        elif isinstance(matrix_method, types.FunctionType):  # Use own or other function
+            matrix_func = matrix_method
+        elif isinstance(matrix_method, types.ListType):  # Use list of initial ratios
+            matrix_func = matrix_method
+            naxes = len(matrix_method)
+            matrix = np.eye(naxes)
+            for n in xrange(naxes):
+                matrix[n, n] = matrix_method[n]
+        else:
+            raise ValueError("Matrix method invalid: %s" % matrix_method)
+        return matrix, matrix_func
 
     @staticmethod
-    def matrix_func(naxes, func, input1, input2):
-        """Matrix
-        Create identity matrix and replace 1 values with function e.g np.mean
+    def matrix_create(func, input1, input2):
+        """Matrix Create
+        Create identity matrix and set values with function on inputs e.g np.mean
         naxes = number
         func = function
         input1 = matrix 1
         input2 = matrix 2
         """
-        matrix = np.eye(naxes)
-        for n in xrange(naxes):
-            matrix[n, n] = func(input1[:,n]) / func(input2[:,n])
+        naxes1 = len(input1[0, :])
+        naxes2 = len(input2[0, :])
+        if naxes1 == naxes2:
+            matrix = np.eye(naxes1)
+            for n in xrange(naxes1):
+                matrix[n, n] = func(input1[:,n]) / func(input2[:,n])
+        else:
+            raise ValueError("Lengths of input1 = %s and input2 = %s do not match", naxes1, naxes2)
         return matrix
 
-    def matrix_mean(self, naxes, input1, input2):
-        func = np.mean
-        matrix = self.matrix_func(naxes, func, input1, input2)
-        return matrix
+    def transform(self, data):
+        result = np.dot(data, self.matrix) + self.offset
+        return result
 
-    @staticmethod
-    def icp(data, target, max_iter=100, tol=1e-4, input_matrix=None, input_offset=None):
+    def fit(self, data, target):
         """ICP
         Iterative Closest Point
         """
-        nLn = len(data[0, :])
-        nData = len(data[:, 0])
-        if input_offset is None:
-            offset = np.ones(nLn)
-            for n in xrange(nLn):
-                offset[n] = np.min(target[:, n]) - np.min(data[:, n])
+        if self.offset is None:
+            self.offset = self._set_offset(data, target)
 
-        if input_matrix is None:
-            matrix = np.eye(nLn)
-            for n in xrange(nLn):
-                matrix[n, n] = (np.mean(target[:, n])) / np.mean(data[:, n])
-        else:
-            matrix = input_matrix
+        if self.matrix is None:
+            self.matrix = self._set_matrix(data, target)
 
         delta = 1
-        for i in xrange(max_iter):
-            if delta < tol:
+        for i in xrange(self.max_iter):
+            if delta < self.tol:
                 print("Converged after:", i)
                 break
 
             # Copy old to compare to new
-            matrix_old = matrix
-            offset_old = offset
-            result = np.dot(data, matrix) + offset
+            matrix_old = self.matrix
+            offset_old = self.offset
 
-            distances = metrics.pairwise.pairwise_distances(result, target)
+            # Apply transform
+            data_transform = self.transform(data)
+
+            # Compare distances between tranformed data and target
+            distances = metrics.pairwise.pairwise_distances(data_transform, target)
             matched_code = np.argmin(distances, axis=1)
             matched_levels = target[matched_code, :]
             d = np.c_[data, np.ones(len(data[:, 0]))]
             m = np.linalg.lstsq(d, matched_levels)[0]
-            matrix = m[0:-1, :]
-            offset = m[-1, :]
+            # Store new tranformation matrix and offset vector
+            self.matrix = m[0:-1, :]
+            self.offset = m[-1, :]
 
-            d_compare = np.sum(np.square(np.subtract(matrix, matrix_old)))
-            d_compare = d_compare + np.sum(np.square(np.subtract(offset, offset_old)))
-            n_compare = np.sum(np.square(matrix)) + np.sum(np.square(offset))
+            # Compare step by step delta
+            d_compare = np.sum(np.square(np.subtract(self.matrix, matrix_old)))
+            d_compare = d_compare + np.sum(np.square(np.subtract(self.offset, offset_old)))
+            n_compare = np.sum(np.square(self.matrix)) + np.sum(np.square(self.offset))
             delta = sqrt(d_compare / n_compare)
             print("Delta: ", delta)
-        return result
+
+    def _set_matrix(self, data, target):
+        """Set Matrix
+        Set initial guess matrix"""
+        matrix = self.matrix_create(self.matrix_func, target, data)
+        return matrix
+
+    def _set_offset(self, data, target):
+        naxes = len(data[0, :])
+        offset = np.ones(naxes)
+        for n in xrange(naxes):
+            offset[n] = np.min(target[:, n]) - np.min(data[:, n])
+        return offset
 
 class DecodeBeads(object):
     """Decode Beads
