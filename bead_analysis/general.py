@@ -18,6 +18,25 @@ from __future__ import division
 # notes             : Do not quick fix functions for specific needs, keep them general!
 # python_version    : 2.7
 
+# [Main header with project metadata] | Only in the main file!
+# Copyright and credits
+__copyright__   = ("Copyright 2016 - "
+                   "The Encoded Beads Project - "
+                   "ThornLab@UCSF and "
+                   "FordyceLab@Stanford")
+# Original author(s) of this Python project, like: ("...", 
+__author__      = ("Bjorn Harink")  #        "name")
+# People who contributed to this Python project, like: ["...",
+__credits__     = ["Kurt Thorn",  #              "name"] 
+                   "Huy Nguyen"]
+# Maintainer contact information
+__maintainer__  = "Bjorn Harink" 
+__email__       = "bjorn@harink.info" 
+# Software information
+__license__     = "MIT" 
+__version__     = "v0.3"
+__status__      = "Prototype"
+
 # [TO-DO]
 
 # [Modules]
@@ -34,6 +53,7 @@ import numpy as np
 import bioformats as bf
 from bioformats import log4j
 import javabridge as jb  # Used for bioformats
+import fnmatch
 # Image processing
 import cv2
 from scipy import ndimage as ndi
@@ -49,6 +69,8 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 # File processing
 from sklearn.externals import joblib
+from sklearn import linear_model
+import statsmodels.api as sm
 
 # TO-DO
 # Check error exceptions
@@ -56,18 +78,6 @@ from sklearn.externals import joblib
 
 # Main functions and classes
 # Software-package specific functions
-def mmScanPath(path, pattern=".tif"):
-    """Micro-Manager Scan Path
-    Scan a Micro-Manager images directory structure
-    path = Micro-Manager image path
-    """
-    files_list = []
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if file.endswith(pattern):
-                files_list.append(os.path.join(root, file))
-    return files_list
-
 
 def getBack(image_data, square):
     """Get Background
@@ -144,50 +154,6 @@ def getRatios(labels, images, reference):
             image_tmp, labels, idx, np.median, float, -1)
     return ratio_data
 
-
-def icp(data, target, max_iter=100, tol=1e-4, input_matrix=None, input_offset=None):
-    """ICP
-    Iterative Closest Point
-    """
-    nLn = len(data[0, :])
-    nData = len(data[:, 0])
-    if input_offset is None:
-        offset = np.ones(nLn)
-        for n in xrange(nLn):
-            offset[n] = np.min(target[:, n]) - np.min(data[:, n])
-
-    if input_matrix is None:
-        matrix = np.eye(nLn)
-        for n in xrange(nLn):
-            matrix[n, n] = (np.mean(target[:, n])) / np.mean(data[:, n])
-    else:
-        matrix = input_matrix
-
-    delta = 1
-    for i in xrange(max_iter):
-        if delta < tol:
-            print("Converged after:", i)
-            break
-
-        # Copy old to compare to new
-        matrix_old = matrix
-        offset_old = offset
-        result = np.dot(data, matrix) + offset
-
-        distances = metrics.pairwise.pairwise_distances(result, target)
-        matched_code = np.argmin(distances, axis=1)
-        matched_levels = target[matched_code, :]
-        d = np.c_[data, np.ones(len(data[:, 0]))]
-        m = np.linalg.lstsq(d, matched_levels)[0]
-        matrix = m[0:-1, :]
-        offset = m[-1, :]
-
-        d_compare = np.sum(np.square(np.subtract(matrix, matrix_old)))
-        d_compare = d_compare + np.sum(np.square(np.subtract(offset, offset_old)))
-        n_compare = np.sum(np.square(matrix)) + np.sum(np.square(offset))
-        delta = sqrt(d_compare / n_compare)
-        print("Delta: ", delta)
-    return result
 
 def filterObjects(data, back, reference, objects_radius, back_std_factor=3, reference_std_factor=2, radius_min=3, radius_max=6):
     """Filter Objects
@@ -277,17 +243,6 @@ def getUnmixedData(file_path, CROP, ref_data, ref_channel, object_channel=0):
     return labels, labels_annulus, circles_dim, median_data, ratio_data
 
 
-def multiImageSetData(base_path):
-    """Multi Image Set
-    Load multiple image sets from base path(s) recursively.
-    """
-    if isinstance(base_path, basekeyword):
-        image_files = mmScanPath(base_path)
-    elif len(base_path) > 1:
-        image_files = map(mmScanPath, base_path)
-    else:
-        print("Can't resolve base path(s).")
-
 class ImageSet(object):
     """Image Set
     Load image set from file(s)
@@ -304,14 +259,11 @@ class ImageSet(object):
         self.sizeC = self.getMetaDataNumber("SizeC", self.metadata)  # No. channels
         self.sizeT = self.getMetaDataNumber("SizeT", self.metadata)  # No. timepoints
         self.sizeZ = self.getMetaDataNumber("SizeZ", self.metadata)  # No. Z slices
-        # TO-DO self.sizeP = self.getMetaDataNumber("SizeP", self.metadata)  # No. positions
+        # TO-DO self.sizeS = self.getMetaDataNumber("SizeS", self.metadata)  # No. series/positions
         self.sizeI = self.sizeC * self.sizeT * self.sizeZ  # No. images total        
+        self.imageY = self._image_reader.rdr.getSizeY()
+        self.imageX = self._image_reader.rdr.getSizeX()
         self.arrayOrder = self.identifyOrder()
-        # Load initial image to get dimensions
-        init_image = self.readImage(idx=0)
-        self.imageY = init_image[:,0].size  # Y dim first, since columns
-        self.imageX = init_image[0,:].size  # X dim second, since columns
-        del init_image  # Free up memory
 
     def __close__(self):
         """Destructor of ImageSet"""
@@ -356,6 +308,35 @@ class ImageSet(object):
             extracted_number = None
         return extracted_number
 
+    @staticmethod
+    def scanPath(path, pattern=".tif"):
+        """Scan Path
+        Scan directory recursively for files matching the pattern.
+        path = stgring, path to scan
+        pattern = string, file extension
+        """
+        image_files = []
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if fnmatch.fnmatch(file, pattern):
+                    image_files.append(os.path.join(root, file))
+        return image_files
+
+    @classmethod
+    def multiScanPath(cls, paths, pattern=".tif"):
+        """Multi Image Set
+        Load multiple image sets from base path(s) recursively.
+        paths = string, list of strings
+        pattern = string, file extension
+        """
+        if isinstance(paths, basekeyword):
+            image_files = cls.scanPath(paths, pattern=pattern)
+        elif len(paths) > 1:
+            image_files = map(cls.scanPath, paths, pattern=pattern)
+        else:
+            print("Can't resolve base path(s).")
+        return image_files
+
     def identifyOrder(self):
         """Identify Order
         Identify the order of the image set
@@ -391,19 +372,14 @@ class ImageSet(object):
         t = Timepoint starting with 0
         idx = Index number starting with 0
         """
-        image = self._image_reader.read(
-            index=self.getIndex(c=c, t=t, idx=idx), rescale=rescale)
+        index = self.getIndex(c=c, t=t, idx=idx)
+        image = self._image_reader.read(index=index, rescale=rescale)
         return image
 
     def readSet(self, idx=None, c=None, t=None, rescale=False):
         """Read Set
         Read defined image set and return data array
         """
-        # Check array order
-        if self.arrayOrder == "[y,x]" or "":
-            print("Sigle image or not an image set:", self.arrayOrder)
-            raise IOError
-        
         # Set length timepoints and channels
         timepoints = xrange(self.sizeT)
         channels = xrange(self.sizeC) 
@@ -414,6 +390,8 @@ class ImageSet(object):
             image_set = np.array( [self.readImage(c=ch, rescale=rescale) for ch in channels] )
         elif self.arrayOrder == "[t,y,x]":
             image_set = np.array( [self.readImage(t=tp, rescale=rescale) for tp in timepoints] )
+        else:
+            raise ValueError("Sigle image or not an image set: %s" % self.arrayOrder)
         return image_set
 
 class Objects(object):
@@ -444,16 +422,15 @@ class Objects(object):
         """
         try:
             img_type = image.dtype
-        except IOError:
-            print("Not a NumPy array of image", image)
+        except ValueError:
+            print("Not a NumPy array of image: %s" % image)
         except:
             print("Unexpected error:", sys.exc_info())
         else:
-            if img_type == 'uint8':
-                return image
-            else:
-                image = np.array(((image / 2**16) * 2**8), dtype='uint8')
-                return image
+            if img_type == 'uint16':
+                image = np.array( ((image / 2**16) * 2**8), dtype='uint8')
+        finally:
+            return image
 
     def findObjects(self, image=None, sep_min_dist=2, min_dist=None, param_1=20, param_2=9, min_r=3, max_r=6, ring_size=2):
         """Find Objects
@@ -496,7 +473,8 @@ class Objects(object):
         # Make mask
         mask = np.zeros(img.shape, np.uint8)
         for c in circles:
-            x, y, r = c[0], c[1], int(np.ceil(c[2] + 0.1))
+            r = int(np.ceil(c[2]))
+            x, y = c[0], c[1]
             # Draw circle (line width -1 fills circle)
             cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
         return mask
@@ -549,7 +527,7 @@ class Objects(object):
         # Check if image is set, if not a copy is made. Numpy array namespaces
         # are memory locators. If no copy is made the original data is
         # manipulated.
-        if img == None:
+        if img is None:
             img = self.image.copy()
         for d in dim:
             if ring_size > 0:
@@ -558,14 +536,166 @@ class Objects(object):
             cv2.circle(img, (int(d[0]), int(d[1])), int(d[2]), (0, 255, 0), 1)
         return img
 
+### To replace Objects
+class Objects2(object):
+    """Objects
+    Identify objects from image and store
+    """
+    def __init__(self, min_r=1, max_r=10, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1.25):
+        self.min_r = min_r
+        self.max_r = max_r
+        self.annulus_width = annulus_width
+        self.param_1 = param_1
+        self.param_2 = param_2
+        self.enlarge = enlarge
+        # TO-DO proper method
+        if min_dist is not None:
+            self.min_dist = min_dist
+        else:
+            self.min_dist = 2*min_r
+        self._labeled_mask = None
+        self._labeled_annulus_mask = None
+        self._circles_dim = None
+
+    @property
+    def labeled_mask(self):
+        return self._labeled_mask
+
+    @property
+    def labeled_annulus_mask(self):
+        return self._labeled_annulus_mask
+
+    @property
+    def circles_dim(self):
+        return self._circles_dim
+
+    @staticmethod
+    def convert(image):
+        """8 Bit Convert
+        Checks image data type and converts if necessary to uint8 array.
+        image = M x N image array
+        """
+        try:
+            img_type = image.dtype
+        except ValueError:
+            print("Not a NumPy array of image: %s" % image)
+        except:
+            print("Unexpected error:", sys.exc_info())
+        else:
+            if img_type == 'uint16':
+                image = np.array( ((image / 2**16) * 2**8), dtype='uint8')
+        finally:
+            return image
+
+    @staticmethod
+    def circle_mask(image, min_dist, min_r, max_r, param_1, param_2, enlarge):
+        """Make Circle Mask
+        """
+        # Find initial circles using Hough transform
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
+                                   minDist=min_dist, 
+                                   param1=param_1, 
+                                   param2=param_2, 
+                                   minRadius=min_r, 
+                                   maxRadius=max_r)[0]
+        # Make mask
+        mask = np.zeros(image.shape, np.uint8)
+        for c in circles:
+            x, y, r = c[0], c[1], int(np.ceil(c[2]*enlarge))
+            # Draw circle (line width -1 fills circle)
+            cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
+        return mask
+
+    @staticmethod
+    def circle_separate(mask):
+        """Circle Separate
+        """
+        # Find and separate circles using watershed on initial mask
+        D = ndi.distance_transform_edt(mask)
+        localMax = peak_local_max(D, indices=False, 
+                                  min_distance=1, 
+                                  exclude_border=True, 
+                                  labels=mask)
+        markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
+        labels = watershed(-D, markers, mask=mask)
+        print("Number of unique segments found: {}".format(
+            len(np.unique(labels)) - 1))
+        return labels
+
+    def _get_dimensions(self, labels):
+        """
+        Find center of circle and return dimensions
+        """
+        idx = np.arange(1, len(np.unique(labels)))
+        circles_dim = np.empty((len(np.unique(labels)) - 1, 3))
+        for label in idx:
+            # Create single object mask
+            mask_detect = np.zeros(labels.shape, dtype="uint8")
+            mask_detect[labels == label] = 255
+            # Detect contours in the mask and grab the largest one
+            cnts = cv2.findContours(mask_detect.copy(), 
+                                    cv2.RETR_EXTERNAL, 
+                                    cv2.CHAIN_APPROX_SIMPLE)[-2]
+            c = max(cnts, key=cv2.contourArea)
+            # Get circle dimensions
+            ((x, y), r) = cv2.minEnclosingCircle(c)
+            circles_dim[label - 1, 0] = x
+            circles_dim[label - 1, 1] = y
+            circles_dim[label - 1, 2] = r
+        return circles_dim
+
+    def find(self, image):
+        """Find Objects
+        Find objects in image and return data
+        """
+        img = self.convert(image)
+        # Find initial circles using Hough transform and make mask
+        mask = self.circle_mask(img, self.min_dist, 
+                                     self.min_r, 
+                                     self.max_r, 
+                                     self.param_1, 
+                                     self.param_2,
+                                     self.enlarge)
+        # Find and separate circles using watershed on initial mask
+        self._labeled_mask = self.circle_separate(mask)
+        # Find center of circle and return dimensions
+        self._circles_dim = self._get_dimensions(self._labeled_mask)
+        
+        # Create annulus mask
+        self._labeled_annulus_mask = self._labeled_mask.copy()
+        for cd in self._circles_dim:
+            if (int(cd[2] - self.annulus_width)) < ((self.min_r+1) - self.annulus_width): 
+                r_dim = 1
+            else:
+                r_dim = int(cd[2] - self.annulus_width)
+            cv2.circle(self._labeled_annulus_mask, 
+                       (int(cd[0]), int(cd[1])), r_dim, 
+                       (0, 0, 0), -1)
+
+    def overlay_image(self, image, annulus=None, dim=None):
+        """Overlay Image
+        Overlay image with circles of labeled mask
+        """
+        img = image.copy()
+        if dim is not None:
+            circ_dim = dim
+        else:
+            circ_dim = self._circles_dim
+        for dim in circ_dim:
+            if annulus is not None and annulus > 0:
+                if (int(dim[2] - self.annulus_width)) < ((self.min_r+1) - self.annulus_width): 
+                    r_dim = 1
+                else:
+                    r_dim = int(dim[2] - self.annulus_width)
+                cv2.circle(img, (int(dim[0]), int(dim[1])), r_dim, (0, 255, 0), 1)
+            cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), (0, 255, 0), 1)
+        return img
+
 class RefSpec(object):
     """Reference Spectra
     Generate reference spectra
     """
-    def __init__(self, image_files, crop = [100, 400, 100, 400], size_param = [3, 9, 10, 10, 7, 10]):
-        """
-        Initialization after instantiation and set local variables
-        """
+    def __init__(self, image_files, crop = [100, 400, 100, 400], size_param = [1, 9, 10, 10, 7, 10]):
         self.image_files = image_files
         self.crop = crop
         self.ref_spec_set = None
@@ -682,7 +812,7 @@ class ICP(object):
         self.tol = tol
         self.offset = None
 
-    def _set_matrix_method(matrix_method):
+    def _set_matrix_method(self, matrix_method):
         """Set matrix method
         """
         matrix = None
@@ -738,7 +868,8 @@ class ICP(object):
 
         if self.matrix is None:
             self.matrix = self._set_matrix(data, target)
-
+        
+        weights = list(range(1, len(data[:,0])+1))
         delta = 1
         for i in xrange(self.max_iter):
             if delta < self.tol:
@@ -758,13 +889,24 @@ class ICP(object):
             matched_levels = target[matched_code, :]
             d = np.c_[data, np.ones(len(data[:, 0]))]
             m = np.linalg.lstsq(d, matched_levels)[0]
+            
+            ### TEST ###
+            factor = 1
+            dist_med = np.median(distances)
+            weights = np.ceil((dist_med/np.mean(distances, axis=1)) * factor)
+            mod_wls = sm.WLS(matched_levels, d, weights=weights)
+            res = mod_wls.fit()
+            #print(res.params)
+            m = res.params
+            ### TEST ###
+
             # Store new tranformation matrix and offset vector
             self.matrix = m[0:-1, :]
             self.offset = m[-1, :]
 
             # Compare step by step delta
-            d_compare = np.sum(np.square(np.subtract(self.matrix, matrix_old)))
-            d_compare = d_compare + np.sum(np.square(np.subtract(self.offset, offset_old)))
+            d_compare = np.sum(np.square(self.matrix - matrix_old))
+            d_compare = d_compare + np.sum(np.square(self.offset - offset_old))
             n_compare = np.sum(np.square(self.matrix)) + np.sum(np.square(self.offset))
             delta = sqrt(d_compare / n_compare)
             print("Delta: ", delta)
@@ -782,18 +924,30 @@ class ICP(object):
             offset[n] = np.min(target[:, n]) - np.min(data[:, n])
         return offset
 
-class DecodeBeads(object):
-    """Decode Beads
-    Decode beads based on reference spectra and image set
+class Unmix(object):
+    """Unmix
+    Unmix images based on reference spectra
     """
-    def __init__(self, objects, reference_spectra):
-        """
-        Initialization after instantiation and set local variables
-        """
+    def __init__(self, objects, ref_spec, data_method = "median"):
+        self.objects = objects  # Object
+        self.ref_spec = ref_spec  # Data
+        self.data_method = self._set_method(data_method)  # Intensity data method
 
-    def __close__(self):
-        """Destructor of DecodeBeads"""
-        return 0
+    def _set_method(self, method):
+        """Set matrix method
+        """
+        matrix = None
+        if method == 'median':
+            method_func = np.max
+        elif method == 'mean':
+            method_func = np.mean
+        elif method == 'std':
+            method_func = np.std
+        elif isinstance(data_method, types.FunctionType):  # Use own or other function
+            method_func = method
+        else:
+            raise ValueError("Method invalid: %s" % method)
+        return method_func
     
     def unmix(ref_data, image_data):
         """Unmix
@@ -832,6 +986,30 @@ class DecodeBeads(object):
             # Get pixel-by-pixel ratios
             image_tmp = np.divide(images[ch, :, :], reference)
             # Get median ratio of each object
-            ratio_data[:, ch] = ndi.labeled_comprehension(
-                image_tmp, labels, idx, np.median, float, -1)
+            ratio_data[:, ch] = ndi.labeled_comprehension(image_tmp, labels, idx, np.median, float, -1)
         return ratio_data
+
+class Classify(object):
+    def classify():
+        # GMM Setup
+        nclusters = len(target[:, 0])
+        naxes = len(target[0, :])
+        sigma = np.eye(naxes) * 1e-5
+
+        # New GMM
+        gmix_on = mixture.GMM(n_components=nclusters, covariance_type='full',
+                              min_covar=1e-7, tol=1e-5, init_params='', params='wmc')
+        gmix_on.means_ = target
+        gmix_on.covars_ = np.tile(sigma, (nclusters, 1, 1))
+        gmix_on.weights_ = np.tile(1 / 48, (nclusters))
+        gmix_on.fit(data_icp_on, target)
+        predict_on = gmix_on.predict(data_icp_on)
+
+class Decode(object):
+    pass
+
+class Tools(object):
+    @staticmethod
+    def getData(image, lables, method):
+        ratio_data[:, ch] = ndi.labeled_comprehension(image, labels, idx, method, float, -1)
+

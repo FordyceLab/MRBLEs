@@ -28,3 +28,6 @@ import bead_analysis as ba
 
 class TimeData():
     pass
+
+def unmix_time_data():
+    pass

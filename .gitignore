@@ -216,3 +216,6 @@ ModelManifest.xml
 /.vs
 /.vscode
 /.git
+/test
+/data/referencespectra.csv
+/Final  Peptide List with CN Binding data 20160604.xlsx
