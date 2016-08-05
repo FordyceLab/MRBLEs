@@ -49,6 +49,7 @@ import types
 # Math
 from math import sqrt
 import numpy as np
+import pandas as pd
 # Image import
 import bioformats as bf
 from bioformats import log4j
@@ -64,6 +65,7 @@ from sklearn import preprocessing
 #from skimage import img_as_ubyte
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
+from skimage.external import tifffile as tff
 # Image display
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
@@ -71,6 +73,8 @@ from mpl_toolkits.mplot3d import axes3d
 from sklearn.externals import joblib
 from sklearn import linear_model
 import statsmodels.api as sm
+# Project
+import bead_analysis.data as bd
 
 # TO-DO
 # Check error exceptions
@@ -196,27 +200,6 @@ def filterObjects(data, back, reference, objects_radius, back_std_factor=3, refe
 
     # Return list of indices of filtered-in objects
     return filter_list
-
-# TO-DO
-def trainGMM(base_path, retrain=False):
-    """Training GMM
-    Load pre-trained GMM or train GMM with training data.
-    """
-    gmm_trained = None
-    stored_gmm_file = base_path + "/" + "StoredModel.jbl"
-    # Checking if file exists
-    try:
-        os.path.isfile(base_path)
-    except:
-        pass
-    else:
-        gmm_trained = joblib.load(stored_gmm_file)
-
-    if gmm_trained == None or retrain == True:
-        image_files = mmScanPath(base_path)
-
-    return gmm_trained
-
 
 def getUnmixedData(file_path, CROP, ref_data, ref_channel, object_channel=0):
     """Get Unmixed Data
@@ -394,6 +377,25 @@ class ImageSet(object):
             raise ValueError("Sigle image or not an image set: %s" % self.arrayOrder)
         return image_set
 
+    def read_set_rec(self, idx=None, c=None, t=None, rescale=False):
+        """Read Set
+        Read defined image set and return data array
+        """
+        # Set length timepoints and channels
+        timepoints = xrange(self.sizeT)
+        channels = xrange(self.sizeC) 
+        # Iterate over timepoints and channels
+        if self.arrayOrder == "[t,c,y,x]":
+            image_set = np.array( [np.array( [self.readImage(c=ch, t=tp, rescale=rescale) for ch in channels], dtype=[(ch, 'float64')] ) for tp in timepoints], dtype=[(tp, 'float64')] )
+        elif self.arrayOrder == "[c,y,x]":
+            image_set = np.array( [np.array(self.readImage(c=ch, rescale=rescale), dtype=[('ch%s'%ch, 'float64')]) for ch in channels] )
+        elif self.arrayOrder == "[t,y,x]":
+            image_set = np.array( [self.readImage(t=tp, rescale=rescale) for tp in timepoints], dtype=[('t')] )
+        else:
+            raise ValueError("Sigle image or not an image set: %s" % self.arrayOrder)
+        return image_set
+
+# TO BE DEPRECATED --> Use Objects2 (will become Objects)
 class Objects(object):
     """Objects
     Identify objects from image and store
@@ -541,7 +543,7 @@ class Objects2(object):
     """Objects
     Identify objects from image and store
     """
-    def __init__(self, min_r=1, max_r=10, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1.25):
+    def __init__(self, min_r=1, max_r=10, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1):
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width
@@ -691,6 +693,7 @@ class Objects2(object):
             cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), (0, 255, 0), 1)
         return img
 
+# TO BE DEPRECRATED
 class RefSpec(object):
     """Reference Spectra
     Generate reference spectra
@@ -770,10 +773,61 @@ class RefSpec(object):
         sum = ref_data.sum()
         return np.divide(ref_data, sum)
 
+class SpectralUnmix(object):
+    """Spectral Unmix
+    Spectrally unmix images using reference spectra
+    """
+    def __init__(self, ref_data):
+        if isinstance(ref_data, bd.Spectra):
+            self._ref_data = ref_data.all
+        if isinstance(ref_data, np.ndarray):
+            self._ref_data = ref_data
+        else:
+            raise TypeError("Wrong type. Only Spectra or Numpy array types.")
+
+    def unmix(self, images):
+        """Unmix
+        Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
+        ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
+        image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
+        """
+        # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
+        try:
+            ref_shape = self._ref_data.shape
+            img_shape = images.shape
+        except IOError:
+            print("Input not NumPy array")
+        if ref_shape[0] != img_shape[0]:
+            print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
+            raise IndexError
+        img_flat = self._flatten(images)
+        unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
+        unmix_result = self._rebuilt(unmix_flat)
+        return unmix_result
+
+    def get_ratios(self):
+        pass
+
+    def _flatten(self, images):
+        """Flatten
+        Flatten X and Y of images in NumPy array
+        """
+        self._c_size = images[:, 0, 0].size
+        self._y_size = images[0, :, 0].size
+        self._x_size = images[0, 0, :].size
+        self._ref_size = ref_data[0, :].size
+        images_flat = images.reshape(c_size, (y_size * x_size))
+        return images_flat
+
+    def _rebuilt(self, images_flat):
+        """Rebuilt
+        Rebuilt images to NumPy array
+        """
+        images = images_flat.reshape(self._ref_size, self._y_size, self._x_size)
+        return images
+
 class ICP(object):
-    """Iterative Closest Point
-    
-    Iterative Closest Point (ICP) algorithm to minimize the difference between two clouds of points.
+    """Iterative Closest Point (ICP) algorithm to minimize the difference between two clouds of points.
 
     Parameters
     ----------
@@ -891,13 +945,13 @@ class ICP(object):
             m = np.linalg.lstsq(d, matched_levels)[0]
             
             ### TEST ###
-            factor = 1
-            dist_med = np.median(distances)
-            weights = np.ceil((dist_med/np.mean(distances, axis=1)) * factor)
-            mod_wls = sm.WLS(matched_levels, d, weights=weights)
-            res = mod_wls.fit()
-            #print(res.params)
-            m = res.params
+            #factor = 1
+            #dist_med = np.median(distances)
+            #weights = np.ceil((dist_med/np.mean(distances, axis=1)) * factor)
+            #mod_wls = sm.WLS(matched_levels, d, weights=weights)
+            #res = mod_wls.fit()
+            ##print(res.params)
+            #m = res.params
             ### TEST ###
 
             # Store new tranformation matrix and offset vector
@@ -924,71 +978,6 @@ class ICP(object):
             offset[n] = np.min(target[:, n]) - np.min(data[:, n])
         return offset
 
-class Unmix(object):
-    """Unmix
-    Unmix images based on reference spectra
-    """
-    def __init__(self, objects, ref_spec, data_method = "median"):
-        self.objects = objects  # Object
-        self.ref_spec = ref_spec  # Data
-        self.data_method = self._set_method(data_method)  # Intensity data method
-
-    def _set_method(self, method):
-        """Set matrix method
-        """
-        matrix = None
-        if method == 'median':
-            method_func = np.max
-        elif method == 'mean':
-            method_func = np.mean
-        elif method == 'std':
-            method_func = np.std
-        elif isinstance(data_method, types.FunctionType):  # Use own or other function
-            method_func = method
-        else:
-            raise ValueError("Method invalid: %s" % method)
-        return method_func
-    
-    def unmix(ref_data, image_data):
-        """Unmix
-        Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
-        ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
-        image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
-        """
-        # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
-        try:
-            ref_shape = ref_data.shape
-            img_shape = image_data.shape
-        except IOError:
-            print("Input not NumPy array")
-        if ref_shape[0] != img_shape[0]:
-            print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
-            raise IndexError
-        c_size = image_data[:, 0, 0].size
-        y_size = image_data[0, :, 0].size
-        x_size = image_data[0, 0, :].size
-        ref_size = ref_data[0, :].size
-        img_flat = image_data.reshape(c_size, (y_size * x_size))
-        unmix_flat = np.linalg.lstsq(ref_data, img_flat)[0]
-        unmix_result = unmix_flat.reshape(ref_size, y_size, x_size)
-        return unmix_result
-
-    def getRatios(labels, images, reference):
-        """Get Ratios
-        Get median ratio of each object.
-        """
-        idx = np.arange(1, len(np.unique(labels)))
-        data_size = len(np.unique(labels)) - 1
-        channel_no = images[:, 0, 0].size
-        channels = xrange(channel_no)
-        ratio_data = np.empty((data_size, channel_no))
-        for ch in channels:
-            # Get pixel-by-pixel ratios
-            image_tmp = np.divide(images[ch, :, :], reference)
-            # Get median ratio of each object
-            ratio_data[:, ch] = ndi.labeled_comprehension(image_tmp, labels, idx, np.median, float, -1)
-        return ratio_data
-
 class Classify(object):
     def classify():
         # GMM Setup
@@ -1004,12 +993,4 @@ class Classify(object):
         gmix_on.weights_ = np.tile(1 / 48, (nclusters))
         gmix_on.fit(data_icp_on, target)
         predict_on = gmix_on.predict(data_icp_on)
-
-class Decode(object):
-    pass
-
-class Tools(object):
-    @staticmethod
-    def getData(image, lables, method):
-        ratio_data[:, ch] = ndi.labeled_comprehension(image, labels, idx, method, float, -1)
 
