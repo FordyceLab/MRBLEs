@@ -7,203 +7,306 @@ from __future__ import print_function
 from __future__ import division
 
 # [File header]     | Copy and edit for each file in this project!
-# title             : main.py               [filename]
+# title             : exampleMulti.py           [filename]
 # description       : Main file to call and use BeadKinetics module
-# author            : Bjorn Harink          [Original author(s) of this file]
-# credits           : Kurt Thorn, Huy Nguyen[Contributors to this file]
-# date              : 20160308              [Initial date yyyymmdd]
-# version update    : 20160504              [Last version update yyyymmdd]
-# version           : v0.3
-# usage             : As startup file
-# notes             : This is an example file for the module
+# author            : Bjorn Harink              [Original author(s) of this file]
+# credits           : Kurt Thorn, Huy Nguyen    [Contributors to this file]
+# date              : 20160308                  [Initial date yyyymmdd]
+# version update    : 20160808                  [Last version update yyyymmdd]
+# version           : v0.4
+# usage             : This is an example file for the Bead Analysis module.
+# notes             : Multiple file code set.
 # python_version    : 2.7
-
-# [Main header with project metadata] | Only in the main file!
-# Copyright and credits
-__copyright__   = ("Copyright 2016 - "
-                   "The Encoded Beads Project - "
-                   "ThornLab@UCSF and "
-                   "FordyceLab@Stanford")
-# Original author(s) of this Python project, like: ("...", 
-__author__      = ("Bjorn Harink")  #        "name")
-# People who contributed to this Python project, like: ["...",
-__credits__     = ["Kurt Thorn",  #              "name"] 
-                   "Huy Nguyen"]
-# Maintainer contact information
-__maintainer__  = "Bjorn Harink" 
-__email__       = "bjorn@harink.info" 
-# Software information
-__license__     = "MIT" 
-__version__     = "v0.3"
-__status__      = "Prototype"
 
 # [TO-DO]
 
 # [Modules]
 # General
 import sys
-# Math
+sys.path.append('./')
+from itertools import cycle
+import re
+# Data structures
 import numpy as np
-from scipy import ndimage as ndi
-# Machine learning
-from sklearn import mixture
-# Image disply
+import pandas as pd
+# Math
+from scipy import ndimage as ndi   # Imaging
+from sklearn import mixture   # GMM
+# Image display
 from matplotlib import pyplot as plt
+import matplotlib.animation as manimation
 from mpl_toolkits.mplot3d import axes3d
 # Project
 import bead_analysis as ba
 
-# [Settings]
-# Reference image location
-#REF_FILES = {"CeTb": "Z:/Huy/20150706/20150709_CeTbSolo_1/20150709_CeTbSolo_1_MMStack_Pos0.ome.tif",
-#             "Dy": "Z:/Huy/20150706/20150709_DySolo_1/20150709_DySolo_1_MMStack_Pos0.ome.tif",
-#             "Sm": "Z:/Huy/20150706/20150709_SmSolo_3/20150709_SmSolo_3_MMStack_Pos0.ome.tif",
-#             "Tm": "Z:/Huy/20150706/20150709_TmSolo_3/20150709_TmSolo_3_MMStack_Pos0.ome.tif",
-#             "Eu": "Z:/Huy/20150706/20150709_EuSolo_1/20150709_EuSolo_1_MMStack_Pos0.ome.tif",
-#             "Trp": "Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif"}
+##################################################
+#                    [NOTES]                     # 
+##################################################
+"""[Notes]:
+Notes here...
+"""
 
-REF_FILES = ["Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif",    # Trp
-             "Z:/Huy/20150706/20150709_DySolo_1/20150709_DySolo_1_MMStack_Pos0.ome.tif",        # Dy
-             "Z:/Huy/20150706/20150709_SmSolo_3/20150709_SmSolo_3_MMStack_Pos0.ome.tif",        # Sm
-             "Z:/Huy/20150706/20150709_TmSolo_3/20150709_TmSolo_3_MMStack_Pos0.ome.tif",        # Tm
-             "Z:/Huy/20150706/20150709_EuSolo_1/20150709_EuSolo_1_MMStack_Pos0.ome.tif"]        # Eu
+
+##################################################
+#                   [SETINGS]                    # 
+##################################################
+"""[Notes SETINGS]:
+Notes here...
+"""
+# Reference image location
+REF_FILES = {"Trp":"Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif",
+             "Dy" : "Z:/Huy/20160315_Solo/20160315_Solo_Dy_9/20160315_Solo_Dy_9_MMStack.ome.tif",
+             "Sm" : "Z:/Huy/20160315_Solo/20160315_Solo_Sm_4/20160315_Solo_Sm_4_MMStack.ome.tif",
+             "Tm" : "Z:/Huy/20160315_Solo/20160315_Solo_Tm_4/20160315_Solo_Tm_4_MMStack.ome.tif",
+             "Eu" : "Z:/Huy/20160315_Solo/20160315_Solo_Eu_4/20160315_Solo_Eu_4_MMStack.ome.tif"}
 
 # Target file location
-TARGET_FILE = "Z:/Code Sets/20150714_DySmTm_48codes.csv"
-#TARGET_FILE = "Z:/Code Sets/20160226_DySmTm_48Codes.csv"
-
-# Training set location
-TRAIN_PATH = "Z:/Huy/20160225"
-TRAIN_BACK = "Z:/Huy/20160225/20160226_48codes_1to48Test_1/20160226_48codes_1to48Test_1_MMStack.ome.tif"
-# [Y1, Y2, X1, X2] Y and X are reversed in array since rows (Y) go first and columns go second (X)
-TRAIN_BACK_CROP = [280, 300, 230, 270]
-
-# Image set channels
-IMAGE_CHANNELS = {"BF": 1,
-                  "435": 2,
-                  "474": 3,
-                  "527": 4,
-                  "536": 5,
-                  "546": 6,
-                  "572": 7,
-                  "620": 8,
-                  "630": 9,
-                  "650": 10,
-                  "Cy3": 11,
-                  "Cy5": 12,
-                  "FITC": 13}
+TARGET_FILE = "Z:/Code Sets/20160226_DySmTm_48Codes.csv"
 
 # General Region or interest
-# [Y1, Y2, X1, X2] Y and X are reversed in array since rows (Y) go first and columns go second (X)
-CROP = [70, 430, 70, 430]
+# slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
+CROPy = slice(80, 420)
+CROPx = slice(80, 420)
 
-### Main function ###
-def main():
-    print(__copyright__)
+# Bead image set file location
+BEAD_IMAGE_FOLDER = "Z:/Bjorn/20160721 Mixed 96 CN Assay"
+BEAD_IMAGE_PATTERN = "20160721_Mixed_CN_96_250nMb*"
 
-    # Set target file of code set and choose targets
-    target = np.genfromtxt(TARGET_FILE, delimiter=',')
-    target = target[:, 1:]  # Target set to Dy, Sm and Tm (no CeTb)
+# Background image set file location
+BACK_FILE = "Z:/Bjorn/20160721 Mixed 96 CN Assay/20160721_Mixed_CN_96_250nMb_1/20160721_Mixed_CN_96_250nMb_1_MMStack.ome.tif"
+# slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
+BACK_CROPy = slice(100, 400)
+BACK_CROPx = slice(261, 273)
 
-    ##################################################
-    # Get reference spectra of solo lanthanide beads #
-    ##################################################
 
-    print("Create reference spectra")
-    size_parameters = [[3, 4, 10 ,11, 2, 5], None, None, None, None]
-    ref_data_object = ba.RefSpec(REF_FILES, size_param = size_parameters)
-    ref_data = ref_data_object.readSpectra()
+##################################################
+#                 [MAIN SCRIPT]                  # 
+##################################################
+
+
+#########################
+###   Targets/Codes   ###
+"""[NOTES - Target File]
+The target file contains the code ratios and are stored 
+in a csv file with makeup [CeTb, Dy, Sm, Tm], e.g.:
+>>> target
+array([[ 0.20061,  0.08155,  0.     ,  0.65606],
+       [ 0.     ,  0.08155,  0.10822,  0.     ],
+       [ 0.     ,  0.08155,  0.10822,  0.19141],
+       ...
+"""
+
+target = np.genfromtxt(TARGET_FILE, delimiter=',')
+target = target[:, 1:]  # Target set to Dy, Sm and Tm (no CeTb)
+
+
+#########################
+### Reference Spectra ###
+"""[NOTES - Reference Spectra]
+Get reference spectra of solo lanthanide beads
+"""
+print("[Creating reference spectra]")
+
+# Find beads objects with search parameters
+ref_objects = ba.FindBeads(min_r=3, max_r=6, min_dist=10, param_1=10, param_2=7)
+# Reference spectra data object
+ref_data_object = ba.data.Spectra()
+
+# Dark noise is subtracted from the lanthanide spectra and then normalized with the sum of the data.
+dark_noise = 451   # Dark noise value
+for name, file in REF_FILES.iteritems():
+    print("Spectrum %s:" % name)
+    ref_img_obj = ba.ImageSetRead(file)
+    ref_objects.find(ref_img_obj['BF',CROPy,CROPx])
+    ref_data_tmp = np.array([ndi.median(ch, ref_objects.labeled_mask) for ch in ref_img_obj['Ex292-Em435':'Ex292-Em650',CROPy,CROPx]])
+    ref_data_tmp -= dark_noise              # Dark noise subtract
+    ref_data_tmp /= ref_data_tmp.sum()      # Normalize
+    ref_data_object.spec_add(name, data=ref_data_tmp, channels=ref_img_obj.c_names[1:10])
     
-    ##################################################
-    # Get training data and check clustering         #
-    ##################################################    
-    
-    print("Generate training data")
-    # Get all image files of training set
-    image_files = ba.ImageSet.scanPath(TRAIN_PATH)
-    # Background spectrum of training set
-    image_set = ba.ImageSet(TRAIN_BACK)
-    image_data_set = image_set.readSet()
-    ref_data[:, 0] = ba.getBack(image_data_set, TRAIN_BACK_CROP)
-    del image_set
+# Get background spectrum
+print("Spectrum Bkg: %s, %s" % (BACK_CROPy, BACK_CROPy))
+bkg_img_obj = ba.ImageSetRead(BACK_FILE)
+ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['Ex292-Em435':'Ex292-Em650',BACK_CROPy,BACK_CROPx]])
+ref_data_tmp /= ref_data_tmp.sum()   # Normalize
+ref_data_object.spec_add('Bkg', ref_data_tmp, channels=bkg_img_obj.c_names[1:10])
 
-    # Data all
-    raw_data = []
-    data_ratios = []
-    data_circles_dim = []
+# Plot reference spectrum
+ref_data_object.plot()
 
-    # Run on all found files
-    def run_paths(ipath):
-        labels, labels_annulus, circles_dim, median_data, ratio_data = ba.getUnmixedData(
-            ipath, CROP, ref_data, 5)
-        raw_data.append(median_data)
-        data_ratios.append(ratio_data)
-        data_circles_dim.append(circles_dim)
-    map(run_paths, image_files)
-    
-    fig = plt.figure()
-    fig.suptitle("Reference Spectra  - Training Set")
-    plt.plot(ref_data)
-    plt.draw()
 
-    rflatten_1 = [item for sublist in raw_data for item in sublist]
-    data_raw = np.array(rflatten_1)
+#########################
+###    Bead Objects   ###
+"""[NOTES - Bead Objects]
+"""
+print("[Load bead images and find objects]")
 
-    rat_flatten_1 = [item for sublist in data_ratios for item in sublist]
-    ratio_data = np.array(rat_flatten_1)
+bead_image_files = ba.ImageSetRead.scan_path(BEAD_IMAGE_FOLDER, BEAD_IMAGE_PATTERN)
+bead_image_obj = ba.ImageSetRead(bead_image_files)
+bead_image_set_bf = bead_image_obj[:,'BF',CROPy,CROPx]
+bead_image_set_ln = bead_image_obj[:,'Ex292-Em435':'Ex292-Em650',CROPy,CROPx]
 
-    c_flatten_1 = [item for sublist in data_circles_dim for item in sublist]
-    circles_dim = np.array(c_flatten_1)
+bead_objects = ba.FindBeads(min_r=3, max_r=6, param_1=20, param_2=6, annulus_width=3, enlarge = 1)
 
-    background = data_raw[:, 0]  # Device background
-    reference = data_raw[:, 5]   # Internal reference: Eu
+bead_set = pd.DataFrame(index=['no','img','lbl', 'dim','ratios','bkg','ref','code'])
 
-    # Filter objects based on background and reference
-    data_filter_list = ba.filterObjects(ratio_data, background, reference, circles_dim[:, 2])
-    # Omit CeTb and Trp ratios
-    data_filtered = ratio_data[data_filter_list, 1:4]
-    circles_dim_filt = circles_dim[data_filter_list]
+labels = []
+labels_annulus = []
+bead_no = 0
+for idx in xrange(bead_image_obj.f_size):
+    bead_objects.find(bead_image_set_bf[idx])
+    labels.append(bead_objects.labeled_mask)
+    labels_annulus.append(bead_objects.labeled_annulus_mask)
+    circles_dim = np.array(bead_objects.circles_dim)
+    for lbl in np.arange(1, len(np.unique(labels[idx]))):
+        bead_set[bead_no] = [bead_no, idx, lbl, circles_dim[lbl-1], None, None, None, None]
+        bead_no += 1
 
-    # Iterative closest point
-    data_icp = ba.icp(data_filtered, target, tol=1e-4, max_iter=10)
+fig = plt.figure()
+fig.suptitle("Overlay Image Pre-filter")
+plt.imshow(bead_objects.overlay_image(bead_image_set_bf[0]), cmap='Greys_r')
+plt.draw()
 
-    # Gaussian Mixture Modeling
-    nclusters = len(target[:, 0])
-    naxes = len(target[0, :])
-    sigma = np.eye(naxes) * 1e-5
-    gmix = mixture.GMM(n_components=nclusters, covariance_type='full',
-                       min_covar=1e-7, tol=1e-7, init_params='', params='wmc')
-    gmix.means_ = target
-    gmix.covars_ = np.tile(sigma, (nclusters, 1, 1))
-    gmix.weights_ = np.tile(1 / 48, (nclusters))
-    gmix.fit(data_icp, target)
-    predict = gmix.predict(data_icp)
 
-    np.set_printoptions(threshold=1e4)
-    print("Number of unique beads found:", len(np.unique(predict)))
-    colors = np.multiply(predict, 5)
+#########################
+### Unmix and Ratios  ###
+"""[NOTES - Unmix and Ratios]
+"""
+print("[Unmix and get ratios]")
+spec_unmix = ba.SpectralUnmixing(ref_data_object)
+bead_no = 0
+# Unmix images by least squares
+for lbls_idx, lbls in enumerate(labels):
+    #unmixed = ba.unmix(ref_data_object.ndata, bead_image_set_ln[lbls_idx])
+    spec_unmix.unmix(bead_image_set_ln[lbls_idx])
+    #unmixed = spec_unmix.ndata
 
-    fig = plt.figure()
-    fig.suptitle("Clustering pre-ICP - Training Set")
-    ax = fig.gca(projection='3d')
-    ax.scatter(data_filtered[:, 0], data_filtered[:, 1],
-               data_filtered[:, 2], c=colors, alpha=0.8)
-    ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
-    plt.draw()
+    background = spec_unmix['Bkg']  # Device background
+    reference = spec_unmix['Eu']  # Internal reference: Eu
+    # Ratio images
+    ratio_Dy = spec_unmix['Dy'] / reference
+    ratio_Sm = spec_unmix['Sm'] / reference
+    ratio_Tm = spec_unmix['Tm'] / reference
+    # Get ratios from images
+    idx = np.arange(1, len(np.unique(lbls)))
+    ratio_data = np.empty((len(idx), 3))
+    ratio_data[:, 0] = ndi.labeled_comprehension(ratio_Dy, lbls, idx, np.median, float, -1)
+    ratio_data[:, 1] = ndi.labeled_comprehension(ratio_Sm, lbls, idx, np.median, float, -1)
+    ratio_data[:, 2] = ndi.labeled_comprehension(ratio_Tm, lbls, idx, np.median, float, -1)
 
-    fig = plt.figure()
-    fig.suptitle("Clustering post-ICP - Training Set")
-    ax = fig.gca(projection='3d')
-    ax.scatter(data_icp[:, 0], data_icp[:, 1],
-               data_icp[:, 2], c=colors, alpha=0.8)
-    ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.8)
-    plt.draw()
+    background_data = ndi.labeled_comprehension(background, lbls, idx, np.median, float, -1)
+    reference_data = ndi.labeled_comprehension(reference, lbls, idx, np.median, float, -1)
 
-    plt.show()
+    for lbl in np.arange(1, len(np.unique(lbls))):
+        bead_set[bead_no][['ratios', 'bkg', 'ref']] = [ratio_data[lbl-1], background_data[lbl-1], reference_data[lbl-1]]
+        bead_no += 1
 
-    return 0
+#########################
+###     Filtering     ###
+"""[NOTES - Filtering]
+"""
+print("[Filtering]")
 
-### Main loop ###
-if __name__ == '__main__':
-    status = main()
-    sys.exit(status)
+ratio_data = np.vstack(bead_set.ix['ratios'])
+background_data = bead_set.ix['bkg'].values
+reference_data = bead_set.ix['ref']
+circles_dim = np.vstack(bead_set.ix['dim'])
+
+# Filter objects based on background and reference
+radius_min = 3
+radius_max = 7
+reference_std_factor_low = 1
+reference_std_factor_high = 3
+back_std_factor = 3
+mean_back = np.mean(background_data)
+std_back = np.std(background_data)
+mean_reference = np.mean(reference_data)
+std_reference = np.std(reference_data)
+# Filter objects based on background and reference
+size_filter = np.logical_and(circles_dim[:, 2] >= radius_min, circles_dim[:, 2] <= radius_max)
+back_filter = np.logical_and(background_data < (mean_back + back_std_factor * std_back),
+                                background_data > (mean_back - back_std_factor * std_back))
+ref_filter = np.logical_and(reference_data > (mean_reference - reference_std_factor_low * std_reference),
+                                        reference_data < (mean_reference + reference_std_factor_high * std_reference))
+data_filter_list = np.argwhere(np.logical_and(size_filter, np.logical_and(back_filter, ref_filter)))[:, 0]
+data_filtered = ratio_data[data_filter_list]
+circles_dim_filt = circles_dim[data_filter_list]
+
+print("Pre filter: %s" % len(ratio_data))
+print("Post filter: %s" % len(data_filtered))
+
+fig = plt.figure()
+fig.suptitle("Overlay Image Post-filter")
+plt.imshow(bead_objects.overlay_image(bead_image_set_bf[0], dim=np.vstack(bead_set.ix['dim'][bead_set.ix['img'] == 0])), cmap='Greys_r')
+plt.draw()
+
+#########################
+###        ICP        ###
+"""[NOTES - ICP]
+"""
+print("[Iterative Closest Point]")
+
+icp=ba.ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.001)
+icp.fit(data_filtered, target)
+data_icp = icp.transform(data_filtered)
+print("Tranformation matrix: ", icp.matrix)
+print("Offset vector: ", icp.offset)
+
+#########################
+###        GMM        ###
+"""[NOTES - GMM]
+"""
+print("[Gaussian Mixture Modeling]")
+
+# GMM Setup
+nclusters = len(target[:, 0])
+naxes = len(target[0, :])
+sigma = np.eye(naxes) * 1e-5
+
+# GMM
+gmix = mixture.GMM(n_components=nclusters, covariance_type='full',
+                   min_covar=1e-7, tol=1e-5, init_params='', params='wmc')
+gmix.means_ = target
+gmix.covars_ = np.tile(sigma, (nclusters, 1, 1))
+gmix._weights_ = np.tile(1 / 48, (nclusters))
+gmix.fit(data_icp, target)
+predict = gmix.predict(data_icp)
+
+print("Number of unique beads found:", len(np.unique(predict)))
+
+# Clustering graphs
+colors = np.multiply(predict, 5)
+colors_target = np.empty([48,3])
+colors_target.fill(0)
+
+fig = plt.figure()
+fig.suptitle("Clustering pre-ICP & Pre-filter")
+ax = fig.gca(projection='3d')
+ax.scatter(ratio_data[:, 0], ratio_data[:, 1], ratio_data[:, 2], alpha=0.7)
+ax.scatter(target[:, 0], target[:, 1], target[:, 2], c=colors_target, alpha=0.5, s=100)
+ax.set_xlabel('Dy')
+ax.set_ylabel('Sm')
+ax.set_zlabel('Tm')
+plt.draw()
+
+fig = plt.figure()
+fig.suptitle("Clustering pre-ICP")
+ax = fig.gca(projection='3d')
+ax.scatter(data_filtered[:, 0], data_filtered[:, 1], data_filtered[:, 2], c=colors, alpha=0.7)
+ax.scatter(target[:, 0], target[:, 1], target[:, 2], c=colors_target, alpha=0.5, s=100)
+ax.set_xlabel('Dy')
+ax.set_ylabel('Sm')
+ax.set_zlabel('Tm')
+plt.draw()
+
+fig = plt.figure()
+fig.suptitle("Clustering post-ICP")
+ax = fig.gca(projection='3d')
+ax.scatter(data_icp[:, 0], data_icp[:, 1], data_icp[:, 2], c=colors, alpha=0.7)
+ax.scatter(target[:, 0], target[:, 1], target[:, 2], c=colors_target, alpha=0.5, s=100)
+ax.set_xlabel('Dy')
+ax.set_ylabel('Sm')
+ax.set_zlabel('Tm')
+plt.draw()
+
+# Show all images at once
+plt.show()

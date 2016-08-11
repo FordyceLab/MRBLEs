@@ -12,8 +12,8 @@ from __future__ import division
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
-# version update    : 20160504
-# version           : v0.3
+# version update    : 20160808
+# version           : v0.4
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
 # python_version    : 2.7
@@ -46,6 +46,7 @@ import re
 import os
 import glob
 import types
+import warnings
 # Math
 from math import sqrt
 import numpy as np
@@ -74,7 +75,7 @@ from sklearn.externals import joblib
 from sklearn import linear_model
 import statsmodels.api as sm
 # Project
-import bead_analysis.data as bd
+import bead_analysis.data as ba
 
 # TO-DO
 # Check error exceptions
@@ -112,8 +113,7 @@ def unmix(ref_data, image_data):
     except IOError:
         print("Input not NumPy array")
     if ref_shape[0] != img_shape[0]:
-        print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
-        raise IndexError
+        raise IndexError("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
     c_size = image_data[:, 0, 0].size
     y_size = image_data[0, :, 0].size
     x_size = image_data[0, 0, :].size
@@ -233,6 +233,7 @@ class ImageSet(object):
     """
     def __init__(self, file_path):
         """Initialize Bioformats & Java and set properties"""
+        warnings.warn("Please use ImageSetRead instead!", DeprecationWarning)
         # Initiate JAVA environment and basic logging for image reader
         self.loadJVE(heap_size='8G')
         # Load image reader for images
@@ -405,6 +406,8 @@ class Objects(object):
         Initialization after instantiation
         Set local variables
         """
+        warnings.warn("Please use FindBeads instead!", DeprecationWarning)
+
         # Check and/or convert image to 8 bit array. This is required for
         # object search
         self.image = self.imageConvert(image)
@@ -539,9 +542,8 @@ class Objects(object):
         return img
 
 ### To replace Objects
-class Objects2(object):
-    """Objects
-    Identify objects from image and store
+class FindBeads(object):
+    """Find and identify bead objects from image.
     """
     def __init__(self, min_r=1, max_r=10, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1):
         self.min_r = min_r
@@ -773,17 +775,36 @@ class RefSpec(object):
         sum = ref_data.sum()
         return np.divide(ref_data, sum)
 
-class SpectralUnmix(object):
+class SpectralUnmixing(ba.FrozenClass):
     """Spectral Unmix
-    Spectrally unmix images using reference spectra
+    
+    Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
+    ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
+    image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
     """
-    def __init__(self, ref_data):
-        if isinstance(ref_data, bd.Spectra):
-            self._ref_data = ref_data.all
-        if isinstance(ref_data, np.ndarray):
+    def __init__(self, ref_data, names=None):
+        if isinstance(ref_data, ba.Spectra):
+            self._ref_object = ref_data
+            self._ref_data = ref_data.ndata
+            self._names = ref_data.spec_names
+        elif isinstance(ref_data, np.ndarray):
             self._ref_data = ref_data
+            if self._names is None:
+                self._names = range(len(self._ref_data[0,:]))
         else:
-            raise TypeError("Wrong type. Only Spectra or Numpy array types.")
+            raise TypeError("Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")
+        self._dataframe = pd.Panel(items=self._names)
+        #self._freeze()
+
+    def __repr__(self):
+        """Returns Pandas dataframe representation.
+        """
+        return repr([self._dataframe])
+
+    def __getitem__(self, index):
+        """Get method, see method 'spec_get'.
+        """
+        return self._dataframe.ix[index].values
 
     def unmix(self, images):
         """Unmix
@@ -792,31 +813,31 @@ class SpectralUnmix(object):
         image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
         """
         # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
-        try:
-            ref_shape = self._ref_data.shape
-            img_shape = images.shape
-        except IOError:
-            print("Input not NumPy array")
-        if ref_shape[0] != img_shape[0]:
+        self._ref_size = self._ref_data[0, :].size
+        self._c_size = images[:, 0, 0].size
+        self._y_size = images[0, :, 0].size
+        self._x_size = images[0, 0, :].size
+        if self._ref_data.shape[0] != images.shape[0]:
             print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
             raise IndexError
         img_flat = self._flatten(images)
         unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
         unmix_result = self._rebuilt(unmix_flat)
-        return unmix_result
-
-    def get_ratios(self):
-        pass
+        # TO-DO Change to proper insert
+        self._dataframe = pd.Panel(unmix_result, items=self._names)
+    
+    @property
+    def pdata(self):
+        return self._dataframe
+    @property
+    def ndata(self):
+        return self._dataframe.values
 
     def _flatten(self, images):
         """Flatten
         Flatten X and Y of images in NumPy array
         """
-        self._c_size = images[:, 0, 0].size
-        self._y_size = images[0, :, 0].size
-        self._x_size = images[0, 0, :].size
-        self._ref_size = ref_data[0, :].size
-        images_flat = images.reshape(c_size, (y_size * x_size))
+        images_flat = images.reshape(self._c_size, (self._y_size * self._x_size))
         return images_flat
 
     def _rebuilt(self, images_flat):
@@ -844,6 +865,10 @@ class ICP(object):
         Convergence threshold. ICP will stop after delta < tol.
         Defaults to 1e-4.
 
+    outlier_pct : float, optional
+        Discard percentile 0.x of furthest distance from target. Percentile given in fraction [0-1], e.g. '0.001'.
+        Defaults to 0.
+
     Attributes
     ----------
     matrix : NumPy array
@@ -860,10 +885,11 @@ class ICP(object):
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
-    def __init__(self, matrix_method='max', max_iter=100, tol=1e-4):
+    def __init__(self, matrix_method='max', max_iter=100, tol=1e-4, outlier_pct = 0):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
+        self.outlierpct = outlier_pct
         self.offset = None
 
     def _set_matrix_method(self, matrix_method):
@@ -939,12 +965,15 @@ class ICP(object):
 
             # Compare distances between tranformed data and target
             distances = metrics.pairwise.pairwise_distances(data_transform, target)
+            min_dist = np.min(distances, axis=1)
+            min_dist_pct = np.percentile(min_dist, [0, (1-self.outlierpct)*100])[1]
+            min_dist_filt = np.argwhere(min_dist < min_dist_pct)[:, 0]
             matched_code = np.argmin(distances, axis=1)
-            matched_levels = target[matched_code, :]
-            d = np.c_[data, np.ones(len(data[:, 0]))]
+            matched_levels = target[matched_code[min_dist_filt], :]
+            d = np.c_[data[min_dist_filt], np.ones(len(data[min_dist_filt, 0]))]
             m = np.linalg.lstsq(d, matched_levels)[0]
             
-            ### TEST ###
+            ### TEST Weighted ICP ###
             #factor = 1
             #dist_med = np.median(distances)
             #weights = np.ceil((dist_med/np.mean(distances, axis=1)) * factor)
@@ -952,7 +981,7 @@ class ICP(object):
             #res = mod_wls.fit()
             ##print(res.params)
             #m = res.params
-            ### TEST ###
+            ### TEST Weighted ICP ###
 
             # Store new tranformation matrix and offset vector
             self.matrix = m[0:-1, :]
@@ -977,6 +1006,7 @@ class ICP(object):
         for n in xrange(naxes):
             offset[n] = np.min(target[:, n]) - np.min(data[:, n])
         return offset
+
 
 class Classify(object):
     def classify():
