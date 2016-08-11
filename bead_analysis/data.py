@@ -21,15 +21,15 @@ from __future__ import division
 # [TO-DO]
 
 # [Modules]
-# General
+# General Python
 import sys
 import os
 import warnings
 import fnmatch
-# Math
+# Data Structures
 import numpy as np
-from skimage.external import tifffile as tff
 import pandas as pd
+from skimage.external import tifffile as tff
 # Graphs
 import matplotlib.pyplot as plt
 

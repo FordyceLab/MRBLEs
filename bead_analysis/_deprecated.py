@@ -390,3 +390,83 @@ def getRatios(labels, images, reference):
         ratio_data[:, ch] = ndi.labeled_comprehension(
             image_tmp, labels, idx, np.median, float, -1)
     return ratio_data
+
+# DEPRECRATED
+class RefSpec(object):
+    """Reference Spectra
+    Generate reference spectra
+    """
+    def __init__(self, image_files, crop = [100, 400, 100, 400], size_param = [1, 9, 10, 10, 7, 10]):
+        self.image_files = image_files
+        self.crop = crop
+        self.ref_spec_set = None
+        self.objects = None
+        self.size_param = size_param
+
+    def __close__(self):
+        """Destructor of RefSpec"""
+        return 0
+
+    def readSpectra(self):
+        """Read Spectra
+        """
+        ref_spec_set = np.array( [self.readSpectrum(file, 0,  self.size_param[idx], crop = self.crop) for idx, file in enumerate(self.image_files)] )
+        self.ref_spec_set = ref_spec_set
+        return ref_spec_set.T
+
+    def readSpectrum(self, file, object_channel, size_param = [3, 9, 10, 10, 7, 10], crop = None):
+        """Read Spectrum
+        """
+        if size_param is None:
+            size_param = [3, 9, 10, 10, 7, 10]
+        if crop == None: crop = self.crop
+        ref_set = ImageSet(file)
+        ref_set_data = ref_set.readSet()[:, crop[0]:crop[1], crop[2]:crop[3]]
+        objects = self.getRefObjects(ref_set_data[object_channel], 
+                                     sep_min_dist=size_param[0], min_dist=size_param[1], 
+                                     param_1=size_param[2], param_2=size_param[3], 
+                                     min_r=size_param[4], max_r=size_param[5])
+        channels = range(ref_set_data[:, 0, 0].size)
+        channels.remove(object_channel)
+        ref_data = self.getRef(ref_set_data[channels])
+        return ref_data
+
+    def getRefObjects(self, object_image, sep_min_dist=3, min_dist=9, param_1=10, param_2=10, min_r=7, max_r=10):
+        """Get Reference Objects
+        """
+        objects = Objects(object_image)
+        labels, labels_annulus, circles_dim = objects.findObjects(
+            sep_min_dist=sep_min_dist, min_dist=min_dist, 
+            param_1=param_1, param_2=param_2, min_r=min_r, max_r=max_r)
+        self.objects = labels
+        return labels
+
+    def getRef(self, image_data, back = 451):
+        """Get Reference
+        Get reference spectra from image set
+        """
+        channels = range(image_data[:, 0, 0].size)
+        ref_data = np.array( [self.getMedianObjects(image_data[ch], self.objects) for ch in channels], dtype="float64" )
+        ref_data = ref_data - back
+        sum = ref_data.sum()
+        return np.divide(ref_data, sum)
+
+    def getMedianObjects(self, image_data, objects):
+        """Get Median Objects"""
+        data = ndi.median(image_data, objects)
+        return data
+
+    def getBack(image_data, square):
+        """Get Background
+        Get background reference of specified area
+        image_data = single image used for background
+        square = coordinates of region of interest [Y1, Y2, X1, X2]
+        """
+        c_size = image_data[:, 0, 0].size - 1
+        channels = xrange(1, c_size + 1)
+        ref_data = np.empty((c_size), dtype="float64")
+        for ch in channels:
+            img_tmp = image_data[ch, square[0]:square[1], square[2]:square[3]]
+            ref_data[ch - 1] = np.median(img_tmp)
+        sum = ref_data.sum()
+        return np.divide(ref_data, sum)

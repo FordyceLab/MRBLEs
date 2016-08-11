@@ -21,23 +21,22 @@ from __future__ import division
 # [TO-DO]
 
 # [Modules]
-# General
+# General Python
 import sys
 sys.path.append('./')
-from itertools import cycle
-import re
 # Data structures
 import numpy as np
 import pandas as pd
-# Math
-from scipy import ndimage as ndi   # Imaging
-from sklearn import mixture   # GMM
+# Image Processing
+from scipy import ndimage as ndi # Imaging
+from sklearn.mixture import GMM # Gaussian Mixture Modeling
 # Image display
 from matplotlib import pyplot as plt
 import matplotlib.animation as manimation
 from mpl_toolkits.mplot3d import axes3d
 # Project
 import bead_analysis as ba
+
 
 ##################################################
 #                    [NOTES]                     # 
@@ -263,7 +262,7 @@ naxes = len(target[0, :])
 sigma = np.eye(naxes) * 1e-5
 
 # GMM
-gmix = mixture.GMM(n_components=nclusters, covariance_type='full',
+gmix = GMM(n_components=nclusters, covariance_type='full',
                    min_covar=1e-7, tol=1e-5, init_params='', params='wmc')
 gmix.means_ = target
 gmix.covars_ = np.tile(sigma, (nclusters, 1, 1))

@@ -40,42 +40,29 @@ __status__      = "Prototype"
 # [TO-DO]
 
 # [Modules]
-# General
+# General Python
 import sys
-import re
 import os
-import glob
 import types
 import warnings
-# Math
 from math import sqrt
+# Data Structure
 import numpy as np
 import pandas as pd
-# Image import
-import bioformats as bf
-from bioformats import log4j
-import javabridge as jb  # Used for bioformats
-import fnmatch
-# Image processing
+# Image Processing
 import cv2
 from scipy import ndimage as ndi
-import sklearn
-from sklearn import metrics
-from sklearn import mixture
-from sklearn import preprocessing
-#from skimage import img_as_ubyte
+from sklearn.metrics.pairwise import pairwise_distances
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 from skimage.external import tifffile as tff
-# Image display
+# Statistics
+import statsmodels.api as sm # Weighted ICP
+# Graphs
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
-# File processing
-from sklearn.externals import joblib
-from sklearn import linear_model
-import statsmodels.api as sm
 # Project
-import bead_analysis.data as ba
+from bead_analysis.data import *
 
 # TO-DO
 # Check error exceptions
@@ -279,87 +266,8 @@ class FindBeads(object):
             cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), (0, 255, 0), 1)
         return img
 
-# DEPRECRATED
-#class RefSpec(object):
-#    """Reference Spectra
-#    Generate reference spectra
-#    """
-#    def __init__(self, image_files, crop = [100, 400, 100, 400], size_param = [1, 9, 10, 10, 7, 10]):
-#        self.image_files = image_files
-#        self.crop = crop
-#        self.ref_spec_set = None
-#        self.objects = None
-#        self.size_param = size_param
 
-#    def __close__(self):
-#        """Destructor of RefSpec"""
-#        return 0
-
-#    def readSpectra(self):
-#        """Read Spectra
-#        """
-#        ref_spec_set = np.array( [self.readSpectrum(file, 0,  self.size_param[idx], crop = self.crop) for idx, file in enumerate(self.image_files)] )
-#        self.ref_spec_set = ref_spec_set
-#        return ref_spec_set.T
-
-#    def readSpectrum(self, file, object_channel, size_param = [3, 9, 10, 10, 7, 10], crop = None):
-#        """Read Spectrum
-#        """
-#        if size_param is None:
-#            size_param = [3, 9, 10, 10, 7, 10]
-#        if crop == None: crop = self.crop
-#        ref_set = ImageSet(file)
-#        ref_set_data = ref_set.readSet()[:, crop[0]:crop[1], crop[2]:crop[3]]
-#        objects = self.getRefObjects(ref_set_data[object_channel], 
-#                                     sep_min_dist=size_param[0], min_dist=size_param[1], 
-#                                     param_1=size_param[2], param_2=size_param[3], 
-#                                     min_r=size_param[4], max_r=size_param[5])
-#        channels = range(ref_set_data[:, 0, 0].size)
-#        channels.remove(object_channel)
-#        ref_data = self.getRef(ref_set_data[channels])
-#        return ref_data
-
-#    def getRefObjects(self, object_image, sep_min_dist=3, min_dist=9, param_1=10, param_2=10, min_r=7, max_r=10):
-#        """Get Reference Objects
-#        """
-#        objects = Objects(object_image)
-#        labels, labels_annulus, circles_dim = objects.findObjects(
-#            sep_min_dist=sep_min_dist, min_dist=min_dist, 
-#            param_1=param_1, param_2=param_2, min_r=min_r, max_r=max_r)
-#        self.objects = labels
-#        return labels
-
-#    def getRef(self, image_data, back = 451):
-#        """Get Reference
-#        Get reference spectra from image set
-#        """
-#        channels = range(image_data[:, 0, 0].size)
-#        ref_data = np.array( [self.getMedianObjects(image_data[ch], self.objects) for ch in channels], dtype="float64" )
-#        ref_data = ref_data - back
-#        sum = ref_data.sum()
-#        return np.divide(ref_data, sum)
-
-#    def getMedianObjects(self, image_data, objects):
-#        """Get Median Objects"""
-#        data = ndi.median(image_data, objects)
-#        return data
-
-#    def getBack(image_data, square):
-#        """Get Background
-#        Get background reference of specified area
-#        image_data = single image used for background
-#        square = coordinates of region of interest [Y1, Y2, X1, X2]
-#        """
-#        c_size = image_data[:, 0, 0].size - 1
-#        channels = xrange(1, c_size + 1)
-#        ref_data = np.empty((c_size), dtype="float64")
-#        for ch in channels:
-#            img_tmp = image_data[ch, square[0]:square[1], square[2]:square[3]]
-#            ref_data[ch - 1] = np.median(img_tmp)
-#        sum = ref_data.sum()
-#        return np.divide(ref_data, sum)
-
-class SpectralUnmixing(ba.FrozenClass):
+class SpectralUnmixing(FrozenClass):
     """Spectral Unmix
     
     Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
@@ -367,7 +275,7 @@ class SpectralUnmixing(ba.FrozenClass):
     image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
     """
     def __init__(self, ref_data, names=None):
-        if isinstance(ref_data, ba.Spectra):
+        if isinstance(ref_data, Spectra):
             self._ref_object = ref_data
             self._ref_data = ref_data.ndata
             self._names = ref_data.spec_names
@@ -548,7 +456,7 @@ class ICP(object):
             data_transform = self.transform(data)
 
             # Compare distances between tranformed data and target
-            distances = metrics.pairwise.pairwise_distances(data_transform, target)
+            distances = pairwise_distances(data_transform, target)
             min_dist = np.min(distances, axis=1)
             min_dist_pct = np.percentile(min_dist, [0, (1-self.outlierpct)*100])[1]
             min_dist_filt = np.argwhere(min_dist < min_dist_pct)[:, 0]
