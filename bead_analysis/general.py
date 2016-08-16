@@ -268,11 +268,18 @@ class FindBeads(object):
 
 
 class SpectralUnmixing(FrozenClass):
-    """Spectral Unmix
+    """Spectrally unmix images using reference spectra.
     
     Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
-    ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
-    image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
+    
+    parameters
+    ----------
+    ref_data : list, ndarray, bead_analysis.data.Spectra
+        Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels.
+    image_data : list, ndarray
+        Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
+    names : list
+        List of channel names. When using Spectra object, names are imlied.
     """
     def __init__(self, ref_data, names=None):
         if isinstance(ref_data, Spectra):
@@ -347,7 +354,7 @@ class ICP(object):
     matrix_method : string/function/list, optional
         Transformation matrix method. Standard methods: 'max', 'mean', 'min', 'std'. 
         Other options: own function or list of initial guesses. 
-        Defaults to 'max'.
+        Defaults to 'std'.
 
     max_iter : int, optional
         Maximum number of iterations. 
@@ -377,7 +384,7 @@ class ICP(object):
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
-    def __init__(self, matrix_method='max', max_iter=100, tol=1e-4, outlier_pct = 0):
+    def __init__(self, matrix_method='std', max_iter=100, tol=1e-4, outlier_pct = 0):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
@@ -408,14 +415,40 @@ class ICP(object):
             raise ValueError("Matrix method invalid: %s" % matrix_method)
         return matrix, matrix_func
 
+    def _set_matrix(self, data, target):
+        """Set initial guess matrix
+        """
+        matrix = self.matrix_create(self.matrix_func, target, data)
+        return matrix
+
+    def _set_offset(self, data, target):
+        """Set initial guess offset
+        """
+        naxes = len(data[0, :])
+        offset = np.ones(naxes)
+        for n in xrange(naxes):
+            offset[n] = np.min(target[:, n]) - np.min(data[:, n])
+        return offset
+
     @staticmethod
     def matrix_create(func, input1, input2):
-        """Matrix Create
-        Create identity matrix and set values with function on inputs e.g np.mean
-        naxes = number
-        func = function
-        input1 = matrix 1
-        input2 = matrix 2
+        """Create identity matrix and set values with function on inputs e.g 'np.mean'.
+
+        parameters
+        ----------
+        naxes : int
+            Number of axes or features.
+        
+        func : function
+            Function to apply on input1 divided by input2, e.g. 'np.std'. 
+            Insert function without function call: ().
+        input1 : list, ndarray
+        input2 : list, ndarray
+
+        returns
+        -------
+        matrix : ndarray
+            Returns func(input1/input2)
         """
         naxes1 = len(input1[0, :])
         naxes2 = len(input2[0, :])
@@ -428,6 +461,8 @@ class ICP(object):
         return matrix
 
     def transform(self, data):
+        """Apply transformation matrix to data.
+        """
         result = np.dot(data, self.matrix) + self.offset
         return result
 
@@ -485,17 +520,4 @@ class ICP(object):
             n_compare = np.sum(np.square(self.matrix)) + np.sum(np.square(self.offset))
             delta = sqrt(d_compare / n_compare)
             print("Delta: ", delta)
-
-    def _set_matrix(self, data, target):
-        """Set Matrix
-        Set initial guess matrix"""
-        matrix = self.matrix_create(self.matrix_func, target, data)
-        return matrix
-
-    def _set_offset(self, data, target):
-        naxes = len(data[0, :])
-        offset = np.ones(naxes)
-        for n in xrange(naxes):
-            offset[n] = np.min(target[:, n]) - np.min(data[:, n])
-        return offset
 

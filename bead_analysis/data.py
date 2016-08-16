@@ -452,7 +452,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
     def ndata(self):
         """Return Pandas dataframe as NumPy ndarray.
         """
-        return self._dataframe.as_matrix()
+        return self._dataframe.values
 
     @property
     def pdata(self):
