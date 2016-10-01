@@ -25,9 +25,9 @@ __copyright__   = ("Copyright 2016 - "
                    "ThornLab@UCSF and "
                    "FordyceLab@Stanford")
 # Original author(s) of this Python project, like: ("...", 
-__author__      = ("Bjorn Harink")  #        "name")
+__author__      = ("Bjorn Harink")  #               "name")
 # People who contributed to this Python project, like: ["...",
-__credits__     = ["Kurt Thorn",  #              "name"] 
+__credits__     = ["Kurt Thorn",  #                     "name"] 
                    "Huy Nguyen"]
 # Maintainer contact information
 __maintainer__  = "Bjorn Harink" 
@@ -188,9 +188,9 @@ class FindBeads(object):
         # Find and separate circles using watershed on initial mask
         D = ndi.distance_transform_edt(mask)
         localMax = peak_local_max(D, indices=False, 
-                                  min_distance=1, 
-                                  exclude_border=True, 
-                                  labels=mask)
+                                    min_distance=1, 
+                                    exclude_border=True, 
+                                    labels=mask)
         markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
         labels = watershed(-D, markers, mask=mask)
         print("Number of unique segments found: {}".format(
@@ -246,6 +246,66 @@ class FindBeads(object):
             cv2.circle(self._labeled_annulus_mask, 
                        (int(cd[0]), int(cd[1])), r_dim, 
                        (0, 0, 0), -1)
+    
+    # TEST VERSION
+    def find2(self, image):
+        image = self.convert(image)
+        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
+                                   minDist=10, 
+                                   param1=10, 
+                                   param2=7, 
+                                   minRadius=3, 
+                                   maxRadius=6)[0]
+
+        thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+        print("[INFO] {} unique contours found".format(len(cnts)))
+        img = image.copy()
+        for (i, c) in enumerate(cnts):
+            ((x, y), _) = cv2.minEnclosingCircle(c)
+            cv2.putText(img, "#{}".format(i + 1), (int(x) - 10, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.drawContours(img, [c], -1, (0, 255, 0), 2)
+        plt.figure()
+        plt.imshow(img)
+        plt.draw()
+        D = ndi.distance_transform_edt(thresh)
+        #localMax = peak_local_max(D, indices=False, min_distance=1, labels=thresh)
+        #markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
+        markers = np.zeros_like(image)
+        for idx, circle in np.nditer(circles, ):
+            markers[int(circle[1]),int(circle[0])] = idx + 1
+        plt.figure()
+        plt.imshow(markers)
+        plt.draw()
+        labels = watershed(-D, markers, mask=thresh)
+        print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
+        img = image.copy()
+        for label in np.unique(labels):
+	        # if the label is zero, we are examining the 'background'
+	        # so simply ignore it
+            if label == 0:
+                continue
+ 
+	        # otherwise, allocate memory for the label region and draw
+	        # it on the mask
+            mask = np.zeros(image.shape, dtype="uint8")
+            mask[labels == label] = 255
+ 
+            # detect contours in the mask and grab the largest one
+            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
+	            cv2.CHAIN_APPROX_SIMPLE)[-2]
+            c = max(cnts, key=cv2.contourArea)
+ 
+            # draw a circle enclosing the object
+            ((x, y), r) = cv2.minEnclosingCircle(c)
+            cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
+            cv2.putText(img, "#{}".format(label), (int(x) - 10, int(y)),
+	            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            # show the output image
+        plt.figure()
+        plt.imshow(img)
+        plt.draw()
+
 
     def overlay_image(self, image, annulus=None, dim=None):
         """Overlay Image

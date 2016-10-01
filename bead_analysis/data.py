@@ -484,22 +484,29 @@ class ImageSetRead(FrozenClass, OutputMethod):
         image_data = None
         image_metadata = None
         files = None
-        if type(file_path) is list:
+        if type(file_path) is list or str:
+            if type(file_path) is str: file_path = [file_path]
             try:
                 with tff.TiffSequence(file_path) as ts, tff.TiffFile(file_path[0]) as tf:
                     files = ts.files
                     image_metadata = cls._get_metadata(tf)
-                    image_data = pd.Panel4D(ts.asarray(series=series), 
-                                            items=image_metadata['summary']['ChNames'])
+                    panel_data = ts.asarray(series=series)
+                    panel_data_shape_pre = panel_data.shape
+                    if panel_data.ndim > 4:
+                        panel_data = np.vstack(panel_data)
+                        warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 
+                                      % (panel_data_shape_pre, panel_data.shape))
+                    if panel_data.ndim > 3:
+                        image_data = pd.Panel4D(panel_data, 
+                                                items=image_metadata['summary']['ChNames'])
+                    elif panel_data.ndim > 2:
+                        image_data = pd.Panel(panel_data, 
+                                              items=image_metadata['summary']['ChNames'])
+                    else:
+                        raise ValueError("Not the right shape: '%s' '%s'" % (panel_data.ndim, sys.exc_info()[1]))
             except ValueError:
                 print("Not all images are the same shape: '%s'" %
                       sys.exc_info()[1])
-        elif type(file_path) is str:
-            with tff.TiffFile(file_path) as tf:
-                files = [tf.filename]
-                image_metadata = cls._get_metadata(tf)
-                image_data = pd.Panel(tf.asarray(series=series), 
-                                      items=image_metadata['summary']['ChNames'])
         else:
             raise TypeError(
                 "'file_path' is not of type 'str' or 'list' %s" % type(file_path))
@@ -554,15 +561,32 @@ class ImageSetRead(FrozenClass, OutputMethod):
             metadata['series'] = image_object.series
             return metadata
         else:
-            raise ValueError("Not a Micro Manager TIFF file.")
+            warnings.warn("Not a Micro Manager TIFF file.")
+            return None
 
+class BeadImage(object):
+    def __init__(self, data):
+        dedault_columns = ('code',
+                           'dim')
+        self._dataframe = pd.DataFrame(columns=dedault_columns)
+
+    def __repr__(self):
+        return repr([self._dataframe])
+
+    def __setitem__(self, index, value):
+        if type(index) is int:
+            index = self.columns[index]
+        self._dataframe[index] = value
+
+    def __getitem__(self, index):
+        return self._dataframe.ix[index]
 
 class BeadSet(object):
     """Bead Set
     Per-set data object"""
 
     def __init__(self):
-        self._dataframe = pd.DataFrame(columns=('img','lbl','code','R','Y','X'))
+        self._dataframe = None
 
     def __repr__(self):
         return repr([self._dataframe])
@@ -584,8 +608,11 @@ class BeadSet(object):
         return self._dataframe.index.size
 
     @property
-    def code(self):
-        return self._dataframe['code'].values
+    def code(self, value=None):
+        if key is not None:
+            return self._dataframe[self._dataframe['code']==value].values
+        else:
+            return self._dataframe['code'].values
     @code.setter
     def code(self, value):
         self._dataframe['code'] = value
