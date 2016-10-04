@@ -497,7 +497,9 @@ class ImageSetRead(FrozenClass, OutputMethod):
                         panel_data = np.vstack(panel_data)
                         warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 
                                       % (panel_data_shape_pre, panel_data.shape))
-                    if panel_data.ndim > 3 and len(file_path) > 1:
+                        image_data = pd.Panel4D(panel_data, 
+                                                items=image_metadata['summary']['ChNames'])
+                    elif panel_data.ndim > 3 and len(file_path) > 1:
                         image_data = pd.Panel4D(panel_data, 
                                                 items=image_metadata['summary']['ChNames'])
                     elif len(file_path) == 1:
