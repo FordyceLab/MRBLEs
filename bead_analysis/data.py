@@ -492,14 +492,16 @@ class ImageSetRead(FrozenClass, OutputMethod):
                     image_metadata = cls._get_metadata(tf)
                     panel_data = ts.asarray(series=series)
                     panel_data_shape_pre = panel_data.shape
+                    print(panel_data.ndim)
                     if panel_data.ndim > 4:
                         panel_data = np.vstack(panel_data)
                         warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 
                                       % (panel_data_shape_pre, panel_data.shape))
-                    if panel_data.ndim > 3:
+                    if panel_data.ndim > 3 and len(file_path) > 1:
                         image_data = pd.Panel4D(panel_data, 
                                                 items=image_metadata['summary']['ChNames'])
-                    elif panel_data.ndim > 2:
+                    elif len(file_path) == 1:
+                        panel_data = np.vstack(panel_data)
                         image_data = pd.Panel(panel_data, 
                                               items=image_metadata['summary']['ChNames'])
                     else:

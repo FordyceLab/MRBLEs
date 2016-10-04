@@ -115,8 +115,8 @@ dark_noise = 451   # Dark noise value
 for name, file in REF_FILES.iteritems():
     print("Spectrum %s:" % name)
     ref_img_obj = ba.ImageSetRead(file)
-    ref_objects.find(ref_img_obj['BF'][CROPy,CROPx])
-    ref_data_tmp = np.array([ndi.median(ch, ref_objects.labeled_mask) for ch in ref_img_obj['Ex292-Em435':'Ex292-Em650'][:,CROPy,CROPx]])
+    ref_objects.find(ref_img_obj['BF',CROPy,CROPx])
+    ref_data_tmp = np.array([ndi.median(ch, ref_objects.labeled_mask) for ch in ref_img_obj['Ex292-Em435':'Ex292-Em650',CROPy,CROPx]])
     ref_data_tmp -= dark_noise              # Dark noise subtract
     ref_data_tmp /= ref_data_tmp.sum()      # Normalize
     ref_data_object.spec_add(name, data=ref_data_tmp, channels=ref_img_obj.c_names[1:10])
@@ -124,7 +124,7 @@ for name, file in REF_FILES.iteritems():
 # Get background spectrum
 print("Spectrum Bkg: %s, %s" % (BACK_CROPy, BACK_CROPy))
 bkg_img_obj = ba.ImageSetRead(BACK_FILE)
-ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['Ex292-Em435':'Ex292-Em650'][:,BACK_CROPy,BACK_CROPx]])
+ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['Ex292-Em435':'Ex292-Em650',BACK_CROPy,BACK_CROPx]])
 ref_data_tmp /= ref_data_tmp.sum()   # Normalize
 ref_data_object.spec_add('Bkg', ref_data_tmp, channels=bkg_img_obj.c_names[1:10])
 
@@ -139,10 +139,10 @@ ref_data_object.plot()
 print("[Load bead images and find objects]")
 
 bead_image_obj = ba.ImageSetRead(BEAD_IMAGE_FILE)
-bead_image_set = bead_image_obj[:][:,CROPy, CROPx]
+bead_image_set = bead_image_obj[:,CROPy, CROPx]
 
 bead_objects = ba.FindBeads(min_r=3, max_r=6, param_1=20, param_2=6, annulus_width=3, enlarge = 1)
-bead_objects.find(bead_image_obj['BF'][CROPy, CROPx])
+bead_objects.find(bead_image_obj['BF',CROPy, CROPx])
 labels = bead_objects.labeled_mask
 labels_annulus = bead_objects.labeled_annulus_mask
 circles_dim = bead_objects.circles_dim
