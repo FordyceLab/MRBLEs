@@ -427,6 +427,13 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """
         return self._metadata['summary']['Slices']
 
+    # Time properties and methods
+    @property
+    def t_size(self):
+        """Return time count.
+        """
+        return self._dataframe.shape[0]
+
     @property
     def axes(self):
         """Return data order.
@@ -492,7 +499,6 @@ class ImageSetRead(FrozenClass, OutputMethod):
                     image_metadata = cls._get_metadata(tf)
                     panel_data = ts.asarray(series=series)
                     panel_data_shape_pre = panel_data.shape
-                    print(panel_data.ndim)
                     if panel_data.ndim > 4:
                         panel_data = np.vstack(panel_data)
                         warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 

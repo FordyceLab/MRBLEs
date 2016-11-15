@@ -225,7 +225,7 @@ print("Post filter: %s" % len(data_filtered))
 
 fig = plt.figure()
 fig.suptitle("Overlay Image Post-filter")
-plt.imshow(bead_objects.overlay_image(bead_image_obj['BF'][CROPy,CROPx], dim=circles_dim_filt), cmap='Greys_r')
+plt.imshow(bead_objects.overlay_image(bead_image_obj['BF',CROPy,CROPx], dim=circles_dim_filt), cmap='Greys_r')
 plt.draw()
 
 #########################

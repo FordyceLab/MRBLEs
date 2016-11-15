@@ -38,6 +38,9 @@ __version__     = "v0.3"
 __status__      = "Prototype"
 
 # [TO-DO]
+# Check error exceptions
+# Create error checking functions for clustering
+# Update filterObjects
 
 # [Modules]
 # General Python
@@ -57,17 +60,12 @@ from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 from skimage.external import tifffile as tff
 # Statistics
-import statsmodels.api as sm # Weighted ICP
+#import statsmodels.api as sm # Weighted ICP
 # Graphs
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 # Project
 from bead_analysis.data import *
-
-# TO-DO
-# Check error exceptions
-# Create error checking functions for clustering
-# Update filterObjects
 
 # TO-DO: UPDATE
 def filterObjects(data, back, reference, objects_radius, back_std_factor=3, reference_std_factor=2, radius_min=3, radius_max=6):
