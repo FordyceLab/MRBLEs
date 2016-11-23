@@ -289,7 +289,11 @@ class ImageSetRead(FrozenClass, OutputMethod):
 
     output : str, optional
         Sets default output method. Options: 'nd', NumPy ndarray, or 'pd', Pandas Panel4D.
-        Defaults to 'ndarray'
+        Defaults to 'ndarray'.
+
+    all : boolean (True/False), optional
+        Loads all series/positions. If True, then loads all series/positions, if False: loads only first serie/position.
+        Defaults to False.
 
     Attributes
     ----------
@@ -313,9 +317,9 @@ class ImageSetRead(FrozenClass, OutputMethod):
     (301L, 301L)
     """
 
-    def __init__(self, file_path, series=0, output='nd'):
+    def __init__(self, file_path, series=0, output='nd', all=False):
         self._dataframe, self._metadata, self._files = \
-            self.load(file_path, series)
+            self.load(file_path, series, all)
         self.output = output
         self._freeze()
 
@@ -418,7 +422,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
     def p_size(self):
         """Return position count.
         """
-        return len(self._metadata['summary']['Positions'])
+        return len(self._metadata['series'])
 
     # Z-slice properties and methods
     @property
@@ -468,7 +472,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         return self._dataframe
 
     @classmethod
-    def load(cls, file_path, series=0):
+    def load(cls, file_path, series=0, all=False):
         """Load image files into data structures.
 
         Class method. Can be used without instantiating.
@@ -506,6 +510,13 @@ class ImageSetRead(FrozenClass, OutputMethod):
                         image_data = pd.Panel4D(panel_data, 
                                                 items=image_metadata['summary']['ChNames'])
                     elif panel_data.ndim > 3 and len(file_path) > 1:
+                        image_data = pd.Panel4D(panel_data, 
+                                                items=image_metadata['summary']['ChNames'])
+                    elif tf.series > 1 and all is True:
+                        data = []
+                        for idx, serie in enumerate(tf.series):
+                            data.append(ts.asarray(series=idx))
+                        panel_data = np.vstack(data)
                         image_data = pd.Panel4D(panel_data, 
                                                 items=image_metadata['summary']['ChNames'])
                     elif len(file_path) == 1:

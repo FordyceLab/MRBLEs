@@ -113,8 +113,37 @@ def filterObjects(data, back, reference, objects_radius, back_std_factor=3, refe
 
 class FindBeads(object):
     """Find and identify bead objects from image.
+
+    Parameters changes for each setup/magnification/bead-set.
+
+    Parameters
+    ----------
+    min_r : int
+        Sets the minimum diameter of the bead in pixels.
+
+    max_r : int
+        Sets the maximum diameter of the bead in pixels.
+
+    param_1 : int
+        Sets the gradient steepness. CHECK
+
+    param_2 : int
+        Sets the sparsity. CHECK
+
+    annulus_width : int, optional
+        Sets the width of the annulus in pixels.
+        Defaults to 2 pixels.
+
+    min_dist : int, optional
+        Sets the minimal distance between the centers of the beads in pixels.
+        Defaults to 2x of the minimum diameter (min_r).
+
+    enlarge : float, optional
+        Enlarges the found diameter by this factor. 
+        1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
+        Defaults to 1, no enlarging/shrinking.
     """
-    def __init__(self, min_r=1, max_r=10, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1):
+    def __init__(self, min_r, max_r, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1):
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width
@@ -305,7 +334,7 @@ class FindBeads(object):
         plt.draw()
 
 
-    def overlay_image(self, image, annulus=None, dim=None):
+    def overlay_image(self, image, annulus=None, dim=False):
         """Overlay Image
         Overlay image with circles of labeled mask
         """
@@ -315,7 +344,7 @@ class FindBeads(object):
         else:
             circ_dim = self._circles_dim
         for dim in circ_dim:
-            if annulus is not None and annulus > 0:
+            if annulus is True:
                 if (int(dim[2] - self.annulus_width)) < ((self.min_r+1) - self.annulus_width): 
                     r_dim = 1
                 else:
@@ -414,6 +443,8 @@ class ICP(object):
         Other options: own function or list of initial guesses. 
         Defaults to 'std'.
 
+    offset : list of float, optional
+
     max_iter : int, optional
         Maximum number of iterations. 
         Defaults to 100.
@@ -442,12 +473,12 @@ class ICP(object):
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
-    def __init__(self, matrix_method='std', max_iter=100, tol=1e-4, outlier_pct = 0):
+    def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct = 0):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
         self.outlierpct = outlier_pct
-        self.offset = None
+        self.offset = offset
 
     def _set_matrix_method(self, matrix_method):
         """Set matrix method
