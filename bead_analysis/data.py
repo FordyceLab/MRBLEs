@@ -316,7 +316,6 @@ class ImageSetRead(FrozenClass, OutputMethod):
     >>> image_data['BF', 100:400, 100:400]
     (301L, 301L)
     """
-
     def __init__(self, file_path, series=0, output='nd', all=False):
         self._dataframe, self._metadata, self._files = \
             self.load(file_path, series, all)

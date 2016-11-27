@@ -293,7 +293,10 @@ class Cluster(object):
             fig = plt.figure()
             fig.suptitle(title)
             ax = fig.add_subplot(111)
-            ax.scatter(data[:, 0], data[:, 1], c=colors, alpha=0.7)
+            if colors is None:
+                ax.scatter(data[:, 0], data[:, 1], alpha=0.7)
+            else:
+                ax.scatter(data[:, 0], data[:, 1], c=colors, alpha=0.7)
             ax.scatter(target[:, 0], target[:, 1], alpha=0.5, s=100)
             ax.set_xlabel(axes_names[0])
             ax.set_ylabel(axes_names[1])
@@ -302,8 +305,11 @@ class Cluster(object):
             fig = plt.figure()
             fig.suptitle(title)
             ax = fig.gca(projection='3d')
-            ax.scatter(data[:, 0], data[:, 1], c=colors, alpha=0.7)
-            ax.scatter(target[:, 0], target[:, 1], alpha=0.5, s=100)
+            if colors is None:
+                ax.scatter(data[:, 0], data[:, 1], data[:, 2], alpha=0.7)
+            else:
+                ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=colors, alpha=0.7)
+            ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.5, s=100)
             ax.set_xlabel(axes_names[0])
             ax.set_ylabel(axes_names[1])
             ax.set_zlabel(axes_names[2])
