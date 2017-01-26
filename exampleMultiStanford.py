@@ -75,14 +75,11 @@ CROPy_ref = slice(600, 1550)
 
 
 # Bead image set file location
-BEAD_IMAGE_FOLDER = "Z:/Bjorn/[Stanford]/20161118 48B20160929"
-BEAD_IMAGE_PATTERN = "20161118_48B_20160929_1to48b_*"
+BEAD_IMAGE_FOLDER = r"Z:\Bjorn\[Stanford]\CN Biotin"
+BEAD_IMAGE_PATTERN = "20161209_HQN71_CN_250nMc_*"
 
 # Background image set file location
 BACK_FILE = "Z:/Bjorn/[Stanford]/20161118 48B20160929/20161118_48B_20160929_1to48b_2/20161118_48B_20160929_1to48b_2_MMStack_Pos0.ome.tif"
-# slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
-BACK_CROPx = slice(950, 1150)
-BACK_CROPy = slice(950, 1150)
 
 
 ##################################################
@@ -136,6 +133,10 @@ for name, file in REF_FILES.iteritems():
     plt.draw()
     
 # Get background spectrum
+# slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
+BACK_CROPx = slice(339, 445)
+BACK_CROPy = slice(420, 508)
+
 print("Spectrum Bkg: %s, %s" % (BACK_CROPy, BACK_CROPy))
 bkg_img_obj = ba.ImageSetRead(BACK_FILE)
 ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['l-435':'l-780',BACK_CROPy,BACK_CROPx]])
@@ -143,8 +144,8 @@ ref_data_tmp /= ref_data_tmp.sum()   # Normalize
 ref_data_object.spec_add('Bkg', ref_data_tmp)
 # Show Bkg image region
 fig = plt.figure()
-fig.suptitle("Bkg Image region %s:" % name)
-plt.imshow(bkg_img_obj['Brightfield', BACK_CROPy, BACK_CROPx], cmap='Greys_r')
+fig.suptitle("Bkg Image region")
+plt.imshow(bkg_img_obj['Brightfield',BACK_CROPy,BACK_CROPx], cmap='Greys_r')
 plt.draw()
 
 # Plot reference spectrum
@@ -163,7 +164,7 @@ bead_image_set_ln = bead_image_obj[:,'l-435':'l-780',CROPy,CROPx]
 
 bead_objects = ba.FindBeads(min_r=5, max_r=7, param_1=10, param_2=8, annulus_width=3, enlarge = 1)
 
-bead_set = pd.DataFrame(columns=['no','img','lbl', 'dim','ratios','bkg','ref','code'])
+bead_set = pd.DataFrame(columns=['no','img','lbl', 'dim','ratios','bkg','ref','code', 'ratios_icp'])
 
 labels = []
 labels_annulus = []
@@ -174,7 +175,7 @@ for idx in xrange(bead_image_obj.f_size):
     labels_annulus.append(bead_objects.labeled_annulus_mask)
     circles_dim = np.array(bead_objects.circles_dim)
     for lbl in np.arange(1, len(np.unique(labels[idx]))):
-        bead_set.loc[bead_no] = [bead_no, idx, lbl, circles_dim[lbl-1], None, None, None, None]
+        bead_set.loc[bead_no] = [bead_no, idx, lbl, circles_dim[lbl-1], None, None, None, None, None]
         bead_no += 1
 
 imgs = xrange(3)
@@ -215,7 +216,7 @@ for lbls_idx, lbls in enumerate(labels):
     reference_data = ndi.labeled_comprehension(reference, lbls, idx, np.median, float, -1)
 
     for lbl in np.arange(1, len(np.unique(lbls))):
-        bead_set.loc[bead_no,('ratios', 'bkg', 'ref')] = [ratio_data[lbl-1], background_data[lbl-1], reference_data[lbl-1]]
+        bead_set.loc[bead_no,('ratios', 'bkg', 'ref')] = [ ratio_data[lbl-1], background_data[lbl-1], reference_data[lbl-1] ]
         bead_no += 1
 
 #########################
@@ -230,10 +231,10 @@ reference_data = bead_set['ref']
 circles_dim = np.vstack(bead_set['dim'])
 
 # Filter objects based on background and reference
-radius_min = 5
-radius_max = 7
-reference_std_factor_low = 2
-reference_std_factor_high = 2
+radius_min = 4.9
+radius_max = 7.1
+reference_std_factor_low = 1.5
+reference_std_factor_high = 1.5
 back_std_factor = 3
 mean_back = np.mean(background_data)
 std_back = np.std(background_data)
@@ -265,7 +266,7 @@ for idx in imgs:
 """
 print("[Iterative Closest Point]")
 
-icp=ba.ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.001)
+icp=ba.ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.01)
 icp.fit(data_filtered, target)
 data_icp = icp.transform(data_filtered)
 print("Tranformation matrix: ", icp.matrix)
@@ -293,9 +294,18 @@ predict = gmix.predict(data_icp)
 
 print("Number of unique beads found:", len(np.unique(predict)))
 
+bead_no = 0
+for idx in data_filter_list:
+    bead_set.loc[idx,('ratios_icp', 'code')] = [ data_icp[bead_no], predict[bead_no] ]
+    bead_no += 1
+
 ba.inspect.Cluster.scatter(ratio_data, target, title="Clustering pre-ICP & Pre-filter", axes_names=['Dy', 'Sm', 'Tm'])
 ba.inspect.Cluster.scatter(data_filtered, target, codes=predict, title="Clustering pre-ICP", axes_names=['Dy', 'Sm', 'Tm'])
 ba.inspect.Cluster.scatter(data_icp, target, codes=predict, title="Clustering post-ICP", axes_names=['Dy', 'Sm', 'Tm'])
+
+code_no = 19
+code_data = np.vstack(bead_set.ratios_icp[bead_set.code == code_no].as_matrix())
+ba.inspect.Cluster.scatter(code_data, target, title="Clustering post-ICP", axes_names=['Dy', 'Sm', 'Tm'])
 
 # Show all images at once
 plt.show()

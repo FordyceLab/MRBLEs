@@ -191,7 +191,7 @@ class FindBeads(object):
 
     @staticmethod
     def circle_mask(image, min_dist, min_r, max_r, param_1, param_2, enlarge):
-        """Make Circle Mask
+        """Make circle mask using Hough transform.
         """
         # Find initial circles using Hough transform
         circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
@@ -200,33 +200,31 @@ class FindBeads(object):
                                    param2=param_2, 
                                    minRadius=min_r, 
                                    maxRadius=max_r)[0]
+        if circles is None: return None
         # Make mask
         mask = np.zeros(image.shape, np.uint8)
         for c in circles:
             x, y, r = c[0], c[1], int(np.ceil(c[2]*enlarge))
             # Draw circle (line width -1 fills circle)
             cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
-        return mask
+        return mask, circles
 
     @staticmethod
-    def circle_separate(mask):
-        """Circle Separate
+    def circle_separate(mask, circles):
+        """Find and separate circles using watershed on initial mask.
         """
-        # Find and separate circles using watershed on initial mask
-        D = ndi.distance_transform_edt(mask)
-        localMax = peak_local_max(D, indices=False, 
-                                    min_distance=1, 
-                                    exclude_border=True, 
-                                    labels=mask)
-        markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
+        D = ndi.distance_transform_edt(mask, sampling=1)
+        markers_circles = np.zeros_like(mask)
+        for idx, circle in enumerate(circles):
+            markers_circles[int(circle[1]),int(circle[0])] = 1
+        markers = ndi.label(markers_circles, structure=np.ones((3, 3)))[0]
         labels = watershed(-D, markers, mask=mask)
         print("Number of unique segments found: {}".format(
             len(np.unique(labels)) - 1))
         return labels
 
     def _get_dimensions(self, labels):
-        """
-        Find center of circle and return dimensions
+        """Find center of circle and return dimensions.
         """
         idx = np.arange(1, len(np.unique(labels)))
         circles_dim = np.empty((len(np.unique(labels)) - 1, 3))
@@ -247,92 +245,37 @@ class FindBeads(object):
         return circles_dim
 
     def find(self, image):
-        """Find Objects
-        Find objects in image and return data
+        """Find objects in image and return data.
         """
         img = self.convert(image)
         # Find initial circles using Hough transform and make mask
-        mask = self.circle_mask(img, self.min_dist, 
+        mask, circles = self.circle_mask(img, self.min_dist, 
                                      self.min_r, 
                                      self.max_r, 
                                      self.param_1, 
                                      self.param_2,
                                      self.enlarge)
+        if mask is None: return None
         # Find and separate circles using watershed on initial mask
-        self._labeled_mask = self.circle_separate(mask)
+        self._labeled_mask = self.circle_separate(mask, circles)
         # Find center of circle and return dimensions
         self._circles_dim = self._get_dimensions(self._labeled_mask)
-        
         # Create annulus mask
-        self._labeled_annulus_mask = self._labeled_mask.copy()
+        self._labeled_annulus_mask = self.create_annulus_mask(self._labeled_mask)
+
+    def create_annulus_mask(self, labeled_mask):
+        """Create annulus mask from regular mask.
+        """
+        labeled_annulus_mask = labeled_mask.copy()
         for cd in self._circles_dim:
             if (int(cd[2] - self.annulus_width)) < ((self.min_r+1) - self.annulus_width): 
                 r_dim = 1
             else:
                 r_dim = int(cd[2] - self.annulus_width)
-            cv2.circle(self._labeled_annulus_mask, 
+            cv2.circle(labeled_annulus_mask, 
                        (int(cd[0]), int(cd[1])), r_dim, 
                        (0, 0, 0), -1)
-    
-    # TEST VERSION
-    def find2(self, image):
-        image = self.convert(image)
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
-                                   minDist=10, 
-                                   param1=10, 
-                                   param2=7, 
-                                   minRadius=3, 
-                                   maxRadius=6)[0]
-
-        thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        print("[INFO] {} unique contours found".format(len(cnts)))
-        img = image.copy()
-        for (i, c) in enumerate(cnts):
-            ((x, y), _) = cv2.minEnclosingCircle(c)
-            cv2.putText(img, "#{}".format(i + 1), (int(x) - 10, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-            cv2.drawContours(img, [c], -1, (0, 255, 0), 2)
-        plt.figure()
-        plt.imshow(img)
-        plt.draw()
-        D = ndi.distance_transform_edt(thresh)
-        #localMax = peak_local_max(D, indices=False, min_distance=1, labels=thresh)
-        #markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
-        markers = np.zeros_like(image)
-        for idx, circle in np.nditer(circles, ):
-            markers[int(circle[1]),int(circle[0])] = idx + 1
-        plt.figure()
-        plt.imshow(markers)
-        plt.draw()
-        labels = watershed(-D, markers, mask=thresh)
-        print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
-        img = image.copy()
-        for label in np.unique(labels):
-	        # if the label is zero, we are examining the 'background'
-	        # so simply ignore it
-            if label == 0:
-                continue
- 
-	        # otherwise, allocate memory for the label region and draw
-	        # it on the mask
-            mask = np.zeros(image.shape, dtype="uint8")
-            mask[labels == label] = 255
- 
-            # detect contours in the mask and grab the largest one
-            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-	            cv2.CHAIN_APPROX_SIMPLE)[-2]
-            c = max(cnts, key=cv2.contourArea)
- 
-            # draw a circle enclosing the object
-            ((x, y), r) = cv2.minEnclosingCircle(c)
-            cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
-            cv2.putText(img, "#{}".format(label), (int(x) - 10, int(y)),
-	            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-            # show the output image
-        plt.figure()
-        plt.imshow(img)
-        plt.draw()
-
+        return labeled_annulus_mask
 
     def overlay_image(self, image, annulus=None, dim=False):
         """Overlay Image
@@ -439,7 +382,7 @@ class ICP(object):
     Parameters
     ----------
     matrix_method : string/function/list, optional
-        Transformation matrix method. Standard methods: 'max', 'mean', 'min', 'std'. 
+        Transformation matrix method. Standard methods: 'max', 'mean', 'std'. 
         Other options: own function or list of initial guesses. 
         Defaults to 'std'.
 
@@ -488,8 +431,6 @@ class ICP(object):
             matrix_func = np.max
         elif matrix_method == 'mean':
             matrix_func = np.mean
-        elif matrix_method == 'min':
-            matrix_func = np.min
         elif matrix_method == 'std':
             matrix_func = np.std
         elif isinstance(matrix_method, types.FunctionType):  # Use own or other function

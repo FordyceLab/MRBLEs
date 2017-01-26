@@ -24,6 +24,7 @@ from __future__ import division
 # General Python
 import sys
 sys.path.append('./')
+import random
 # Data structures
 import numpy as np
 import pandas as pd
@@ -38,7 +39,7 @@ from mpl_toolkits.mplot3d import axes3d
 import bead_analysis as ba
 # Image display
 import matplotlib as mpl
-dpi = 200
+dpi = 300
 mpl.rc("savefig", dpi=dpi)
 
 
@@ -57,14 +58,14 @@ Multiple position image set (grid).
 Notes here...
 """
 # Reference image location
-REF_FILES = {"Trp":"Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif",
+REF_FILES = {#"Trp":"Z:/Huy/20160314_WBlank/20160314_W_blank_4/20160314_W_blank_4_MMStack.ome.tif",
              "Dy" : "Z:/Huy/20160315_Solo/20160315_Solo_Dy_9/20160315_Solo_Dy_9_MMStack.ome.tif",
              "Sm" : "Z:/Huy/20160315_Solo/20160315_Solo_Sm_4/20160315_Solo_Sm_4_MMStack.ome.tif",
-             "Tm" : "Z:/Huy/20160315_Solo/20160315_Solo_Tm_4/20160315_Solo_Tm_4_MMStack.ome.tif",
+             #"Tm" : "Z:/Huy/20160315_Solo/20160315_Solo_Tm_4/20160315_Solo_Tm_4_MMStack.ome.tif",
              "Eu" : "Z:/Huy/20160315_Solo/20160315_Solo_Eu_4/20160315_Solo_Eu_4_MMStack.ome.tif"}
 
 # Target file location
-TARGET_FILE = "Z:/Code Sets/20161121_DySm_27codes.csv"
+TARGET_FILE = r"Z:\Code Sets\20161206_DySm_24_codes.csv"
 
 # General Region or interest
 # slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
@@ -72,11 +73,11 @@ CROPy = slice(80, 420)
 CROPx = slice(80, 420)
 
 # Bead image set file location
-BEAD_IMAGE_FOLDER = "Z:/Bjorn/20161120 - 27 Code set test"
-BEAD_IMAGE_PATTERN = "Codes mix Bin2 - All_1*"
+BEAD_IMAGE_FOLDER = r"Z:\Bjorn\20161215 - 24 Code set test"
+BEAD_IMAGE_PATTERN = "20161215_24Codes_Bin2_All_3*"
 
 # Background image set file location
-BACK_FILE = "Z:/Bjorn/20161120 - 27 Code set test/Codes mix Bin2 - All_1/Codes mix Bin2 - All_1_MMStack.ome.tif"
+BACK_FILE = r"Z:\Bjorn\20161215 - 24 Code set test\20161215_24Codes_Bin2_All_1\20161215_24Codes_Bin2_All_1_MMStack.ome.tif"
 # slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
 BACK_CROPy = slice(100, 400)
 BACK_CROPx = slice(150, 250)
@@ -132,9 +133,21 @@ bkg_img_obj = ba.ImageSetRead(BACK_FILE)
 ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['Ex292-Em435':'Ex292-Em650',BACK_CROPy,BACK_CROPx]])
 ref_data_tmp /= ref_data_tmp.sum()   # Normalize
 ref_data_object.spec_add('Bkg', ref_data_tmp, channels=bkg_img_obj.c_names[1:10])
+# Show Bkg image region
+fig = plt.figure()
+fig.suptitle("Bkg Image region:")
+plt.imshow(bkg_img_obj['BF', BACK_CROPy, BACK_CROPx], cmap='Greys_r')
+plt.draw()
 
 # Plot reference spectrum
 ref_data_object.plot()
+
+bead_objects = ba.FindBeads(min_r=5, max_r=7, min_dist=10, param_1=10, param_2=6, annulus_width=2, enlarge = 1)
+radius_min = 4.9
+radius_max = 7.1
+reference_std_factor_low = 1.5
+reference_std_factor_high = 1.5
+back_std_factor = 3
 
 #########################
 ###    Bead Objects   ###
@@ -147,15 +160,17 @@ bead_image_obj = ba.ImageSetRead(bead_image_files, all=True)
 bead_image_set_bf = bead_image_obj[:,'BF',CROPy,CROPx]
 bead_image_set_ln = bead_image_obj[:,'Ex292-Em435':'Ex292-Em650',CROPy,CROPx]
 
-bead_objects = ba.FindBeads(min_r=3, max_r=7, param_1=20, param_2=6, annulus_width=2, enlarge = 1.15)
-
 bead_set = pd.DataFrame(columns=['no','img','lbl', 'dim','ratios','bkg','ref','code'])
 
 labels = []
 labels_annulus = []
+img_set = []
 bead_no = 0
-for idx in xrange(bead_image_obj.s_size):
+for idx in xrange(len(bead_image_set_bf)):
     bead_objects.find(bead_image_set_bf[idx])
+    if bead_objects.labeled_mask is None:
+        continue
+    img_set.append(idx)
     labels.append(bead_objects.labeled_mask)
     labels_annulus.append(bead_objects.labeled_annulus_mask)
     circles_dim = np.array(bead_objects.circles_dim)
@@ -163,11 +178,11 @@ for idx in xrange(bead_image_obj.s_size):
         bead_set.loc[bead_no] = [bead_no, idx, lbl, circles_dim[lbl-1], None, None, None, None]
         bead_no += 1
 
-imgs = xrange(3)
-for idx in imgs:
+for x in xrange(3):
+    idx = random.choice(img_set)
     fig = plt.figure()
-    fig.suptitle("Overlay Image Pre-filter")
-    plt.imshow(bead_objects.overlay_image(bead_image_set_bf[idx], dim=bead_set.dim[bead_set['img'] == idx], annulus=True), cmap='Greys_r')
+    fig.suptitle("Overlay Image Pre-filter image #: %s" % idx)
+    plt.imshow(bead_objects.overlay_image(bead_image_set_bf[idx], dim=bead_set.dim[bead_set['img'] == idx], annulus=True))
     plt.draw()
 
 #########################
@@ -179,9 +194,7 @@ spec_unmix = ba.SpectralUnmixing(ref_data_object)
 bead_no = 0
 # Unmix images by least squares
 for lbls_idx, lbls in enumerate(labels):
-    #unmixed = ba.unmix(ref_data_object.ndata, bead_image_set_ln[lbls_idx])
     spec_unmix.unmix(bead_image_set_ln[lbls_idx])
-    #unmixed = spec_unmix.ndata
 
     background = spec_unmix['Bkg']  # Device background
     reference = spec_unmix['Eu']  # Internal reference: Eu
@@ -215,11 +228,6 @@ reference_data = bead_set['ref']
 circles_dim = np.vstack(bead_set['dim'])
 
 # Filter objects based on background and reference
-radius_min = 3
-radius_max = 7
-reference_std_factor_low = 2
-reference_std_factor_high = 3
-back_std_factor = 3
 mean_back = np.mean(background_data)
 std_back = np.std(background_data)
 mean_reference = np.mean(reference_data)

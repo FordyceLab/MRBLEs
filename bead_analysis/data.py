@@ -288,7 +288,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Defaults to 0.
 
     output : str, optional
-        Sets default output method. Options: 'nd', NumPy ndarray, or 'pd', Pandas Panel4D.
+        Sets default output method. Options: 'nd' for NumPy ndarray or 'pd' for Pandas Dataframe/Panel4D.
         Defaults to 'ndarray'.
 
     all : boolean (True/False), optional
@@ -547,9 +547,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """
         image_files = []
         for root, dirs, files in os.walk(path):
-            for file in files:
-                if fnmatch.fnmatch(file, pattern):
-                    image_files.append(os.path.join(root, file))
+            for file in fnmatch.filter(files, pattern):
+                image_files.append(os.path.join(root, file))
         return image_files
 
     @classmethod

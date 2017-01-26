@@ -25,6 +25,7 @@ import os
 import types
 import warnings
 import itertools
+import random
 # Data
 import numpy as np
 import pandas as pd
@@ -150,18 +151,18 @@ class GenerateCodes(object):
 
 
     # Experimental
-    def to_csv_rep(self, filename, repeats):
-        data = pd.DataFrame(columns = ['CeTb', 'Dy', 'Sm', 'Tm', 'pos'])
+    def to_csv_rep(self, filename, repeats, labels=['CeTb', 'Dy', 'Sm', 'Tm'], pos=True):
+        if pos is True:
+            labels.append('pos')
+        data = pd.DataFrame(columns = labels)
         position = 1
         no = 0
         for code in xrange(self.result.count()[0]):
             for r in xrange(repeats):
-                data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], self.result.loc[code, 'Tm'], code+1]
+                #data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], self.result.loc[code, 'Tm'], code+1]
+                data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], 0, code+1]
                 no += 1
         data.to_csv(filename, sep=',', encoding='utf-8')
-
-
-        result.to_csv(filename, sep=',', encoding='utf-8')
 
     def generate(self, nsigma=None, depends=None):
         """Generate codes with default nsigma or given nsigma.
@@ -300,6 +301,8 @@ class Cluster(object):
             ax.scatter(target[:, 0], target[:, 1], alpha=0.5, s=100)
             ax.set_xlabel(axes_names[0])
             ax.set_ylabel(axes_names[1])
+            for i in xrange(nclusters):
+                ax.annotate(i+1, (target[i, 0],target[i, 1]))
             plt.draw()
         if naxes == 3:
             fig = plt.figure()
@@ -308,9 +311,34 @@ class Cluster(object):
             if colors is None:
                 ax.scatter(data[:, 0], data[:, 1], data[:, 2], alpha=0.7)
             else:
-                ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=colors, alpha=0.7)
-            ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.5, s=100)
+                ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=colors, alpha=0.7, s=10)
+            ax.scatter(target[:, 0], target[:, 1], target[:, 2], alpha=0.3, s=75)
             ax.set_xlabel(axes_names[0])
             ax.set_ylabel(axes_names[1])
             ax.set_zlabel(axes_names[2])
+            for i in xrange(nclusters):
+                ax.text(target[i, 0],target[i, 1],target[i, 2], i+1)
             plt.draw()
+
+class PeptideScramble(object):
+    """Randomizes amino acid sequence
+    
+    Parameters
+    ----------
+    seq : string
+        Inset amino acid sequence as a string.
+
+    Returns
+    -------
+    seq : string
+        Returns string of shuffled amino acid sequence.
+    """
+    def __init__(self, seq):
+        self.seq = seq
+
+    def random(self, seq=None):
+        if seq is None:
+            seq = self.seq
+        seq_list = list(seq)
+        random.shuffle(seq_list)
+        return ''.join(seq_list)
