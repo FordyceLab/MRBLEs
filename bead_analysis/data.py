@@ -284,16 +284,13 @@ class ImageSetRead(FrozenClass, OutputMethod):
         File path as string, e.g. 'C:/folder/file.tif', or as list of file paths, e.g. ['C:/folder/file.tif', 'C:/folder/file.tif'].
 
     series : int, optional
-        Sets the series number if file(s) has/have multiple series.
+        Sets the series number if file has multiple series. 
+        To Loads all series set to series='all'.
         Defaults to 0.
 
     output : str, optional
         Sets default output method. Options: 'nd' for NumPy ndarray or 'pd' for Pandas Dataframe/Panel4D.
         Defaults to 'ndarray'.
-
-    all : boolean (True/False), optional
-        Loads all series/positions. If True, then loads all series/positions, if False: loads only first serie/position.
-        Defaults to False.
 
     Attributes
     ----------
@@ -316,9 +313,9 @@ class ImageSetRead(FrozenClass, OutputMethod):
     >>> image_data['BF', 100:400, 100:400]
     (301L, 301L)
     """
-    def __init__(self, file_path, series=0, output='nd', all=False):
+    def __init__(self, file_path, series=0, output='nd'):
         self._dataframe, self._metadata, self._files = \
-            self.load(file_path, series, all)
+            self.load(file_path, series)
         self.output = output
         self._freeze()
 
@@ -377,12 +374,12 @@ class ImageSetRead(FrozenClass, OutputMethod):
         return self.c_names.get_loc(name)
 
     def c_get(self, index, output=None):
-        """Return channel data by name or number.
+        """Return data by chanel name and/or number.
 
         Parameters
         ----------
         index : str/int
-           Number or string of channel.
+           Number or string of channel name.
 
         output : string, optional
             Sets output method. Options: 'ndarray', NumPy array, or 'pandas', Pandas dataframe.
@@ -410,11 +407,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Major_axis axis: 0 to 500
         Minor_axis axis: 0 to 501
         """
-        #if type(index) is int:
-        #    index = self.c_names[index]
         data = self._dataframe.ix[index]
         return self._data_out(data, output)
-        #return self._dataframe.ix[index]
 
     # Position properties and methods
     @property
@@ -459,6 +453,12 @@ class ImageSetRead(FrozenClass, OutputMethod):
     
     # Data properties and methods
     @property
+    def data(self):
+        """Return data as Pandas dataframe or NumPy ndarray, as set by default output argument.
+        """
+        return self._data_out(self._dataframe, self.output)
+
+    @property
     def ndata(self):
         """Return Pandas dataframe as NumPy ndarray.
         """
@@ -471,7 +471,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         return self._dataframe
 
     @classmethod
-    def load(cls, file_path, series=0, all=False):
+    def load(cls, file_path, series=0):
         """Load image files into data structures.
 
         Class method. Can be used without instantiating.
@@ -482,7 +482,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
             File path as string, e.g. 'C:/folder/file.tif', or as list of file paths, e.g. ['C:/folder/file.tif', 'C:/folder/file.tif'].
 
         series : int, optional
-            Sets the series number if file(s) has/have multiple series.
+            Sets the series number if file has multiple series. Use series='all' for loading all series.
             Defaults to 0.
 
         Examples
@@ -491,46 +491,41 @@ class ImageSetRead(FrozenClass, OutputMethod):
         >>> image_files = ['C:/folder/file.tif', 'C:/folder/file.tif']
         >>> ImageSetRead.load(image_files)
         """
-        image_data = None
-        image_metadata = None
-        files = None
-        if type(file_path) is list or str:
-            if type(file_path) is str: file_path = [file_path]
-            try:
-                with tff.TiffSequence(file_path) as ts, tff.TiffFile(file_path[0]) as tf:
-                    files = ts.files
-                    image_metadata = cls._get_metadata(tf)
-                    panel_data = ts.asarray(series=series)
-                    panel_data_shape_pre = panel_data.shape
-                    if panel_data.ndim > 4:
-                        panel_data = np.vstack(panel_data)
-                        warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 
-                                      % (panel_data_shape_pre, panel_data.shape))
-                        image_data = pd.Panel4D(panel_data, 
-                                                items=image_metadata['summary']['ChNames'])
-                    elif panel_data.ndim > 3 and len(file_path) > 1:
-                        image_data = pd.Panel4D(panel_data, 
-                                                items=image_metadata['summary']['ChNames'])
-                    elif tf.series > 1 and all is True:
-                        data = []
-                        for idx, serie in enumerate(tf.series):
-                            data.append(ts.asarray(series=idx))
-                        panel_data = np.vstack(data)
-                        image_data = pd.Panel4D(panel_data, 
-                                                items=image_metadata['summary']['ChNames'])
-                    elif len(file_path) == 1:
-                        panel_data = np.vstack(panel_data)
-                        image_data = pd.Panel(panel_data, 
-                                              items=image_metadata['summary']['ChNames'])
-                    else:
-                        raise ValueError("Not the right shape: '%s' '%s'" % (panel_data.ndim, sys.exc_info()[1]))
-            except ValueError:
-                print("Not all images are the same shape: '%s'" %
-                      sys.exc_info()[1])
-        else:
-            raise TypeError(
-                "'file_path' is not of type 'str' or 'list' %s" % type(file_path))
+        if type(file_path) is str: 
+            file_path = [file_path]
+        with tff.TiffSequence(file_path) as ts, tff.TiffFile(file_path[0]) as tf:
+            files = ts.files
+            image_metadata = cls._get_metadata(tf)
+            if tf.series > 1 and series == 'all':
+                data = []
+                for idx, serie in enumerate(tf.series):
+                    data.append(ts.asarray(series=idx))
+                panel_data = np.vstack(data)
+            else:
+                panel_data = ts.asarray(series=series)
+        if panel_data.ndim > 4:
+            panel_data = np.vstack(panel_data)
+            warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 
+                            % (panel_data.shape, panel_data.shape))
+        elif len(file_path) == 1 and series != 'all':
+            panel_data = np.vstack(panel_data)
+        image_data = cls.convert_to_pd(panel_data, image_metadata)
         return image_data, image_metadata, files
+
+    @staticmethod
+    def convert_to_pd(data, metadata):
+        """Convert data and metadata to Pandas Panel/Panel4D, depending on size of data.
+        """
+        if data.ndim == 4:
+            panel_data = pd.Panel4D(data, 
+                                    items=metadata['summary']['ChNames'])
+        elif data.ndim == 3:
+            panel_data = pd.Panel(data, 
+                                  items=metadata['summary']['ChNames'])
+        else:
+            ValueError("Not the right shape: '%s' '%s'" % (data.ndim, sys.exc_info()[1]))
+        return panel_data
+
 
     @staticmethod
     def scan_path(path, pattern="*.tif"):
