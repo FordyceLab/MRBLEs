@@ -81,7 +81,7 @@ class OutputMethod():
         """
         if output is None:
             output = self.output
-        if output is "pd":
+        if output is "pd" or "xr":
             return func
         elif output is "nd":
             return func.values
@@ -324,7 +324,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Defaults to 0.
 
     output : str, optional
-        Sets default output method. Options: 'nd' for NumPy ndarray or 'pd' for Pandas Dataframe/Panel4D.
+        Sets default output method. Options: 'nd' for NumPy ndarray or 'xr' for xarray.
         Defaults to 'ndarray'.
 
     Attributes
@@ -333,7 +333,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
 
     Returns
     -------
-    _dataframe : Pandas dataframe
+    _dataframe : xarray dataframe
         Returned when calling the instance.
     _dataframe[idx] : NumPy ndarray
         Returns the index value or slice values: [start:stop:stride]. Warning: when using column names stop values are included, e.g. inst[
@@ -497,7 +497,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
 
     @property
     def ndata(self):
-        """Return Pandas dataframe as NumPy ndarray.
+        """Return as NumPy ndarray.
         """
         return self._dataframe.values
 
