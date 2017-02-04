@@ -5,6 +5,7 @@
 from __future__ import print_function
 # Use Python 3.x "/" for division in Pyhton 2.x
 from __future__ import division
+from __builtin__ import staticmethod, property
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : general.py
@@ -66,6 +67,22 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 # Project
 from bead_analysis.data import *
+
+class Filter(object):
+    """Filter bead data sets.
+    """
+
+    
+    @property
+    def list(self):
+        filter_all = (mask_size & mask_bkg & mask_ref)
+        return filter_all
+
+    @staticmethod
+    def add(data_set, low, high):
+        mask =  ( (data_set > (data_set.mean() - low * data_set.std()  )) & 
+                  (data_set < (data_set.mean() + high * data_set.std() )) )
+    
 
 # TO-DO: UPDATE
 def filterObjects(data, back, reference, objects_radius, back_std_factor=3, reference_std_factor=2, radius_min=3, radius_max=6):
@@ -306,8 +323,10 @@ class SpectralUnmixing(FrozenClass):
     ----------
     ref_data : list, ndarray, bead_analysis.data.Spectra
         Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels.
+
     image_data : list, ndarray
         Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
+
     names : list
         List of channel names. When using Spectra object, names are imlied.
     """
@@ -375,6 +394,7 @@ class SpectralUnmixing(FrozenClass):
         """
         images = images_flat.reshape(self._ref_size, self._y_size, self._x_size)
         return images
+
 
 class ICP(object):
     """Iterative Closest Point (ICP) algorithm to minimize the difference between two clouds of points.

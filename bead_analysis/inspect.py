@@ -53,6 +53,10 @@ class GenerateCodes(object):
 
     Examples
     --------
+    >>> code_set_gen = GenerateCodes(['Dy', 'Sm', 'Tm'], [0.0039, 0.0055, 0.0029], [0.022, 0.016, 0.049], 6.4)
+    >>> code_set_gen.result
+               Dy        Sm        Tm
+    0    0.000000  0.000000  0.000000
     >>> code_set_gen = GenerateCodes(['Dy', 'Sm'], [0.0039, 0.0055], [0.022, 0.016], 8.4)
     >>> code_set_gen.generate()
     Number of codes:  24
@@ -136,9 +140,6 @@ class GenerateCodes(object):
                 else:
                     yield v
 
-    def depends(self):
-        pass
-
     @property
     def result(self):
         if self._result is not None:
@@ -159,8 +160,8 @@ class GenerateCodes(object):
         no = 0
         for code in xrange(self.result.count()[0]):
             for r in xrange(repeats):
-                #data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], self.result.loc[code, 'Tm'], code+1]
-                data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], 0, code+1]
+                data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], self.result.loc[code, 'Tm'], code+1]
+                #data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], 0, code+1]
                 no += 1
         data.to_csv(filename, sep=',', encoding='utf-8')
 
@@ -187,11 +188,12 @@ class GenerateCodes(object):
             if sum(value) <= 1:
                 codes.append(value)
 
-        # Experimental for Tm (3rd in array) depence on Dy (1st in array)
+        # Experimental for Tm (must be 3rd in array) depence on Dy (must be 1st in array)
         if depends is not None:
             codes_dep = []
             for code in codes:
-                levels = self.get_levels(self._s0s[2]+0.045*code[0], self._slopes[2], nsigma)
+                # depends = 0.045
+                levels = self.get_levels(self._s0s[2]+depends*code[0], self._slopes[2], nsigma)
                 print(levels)
                 for level in levels:
                     if (code[0]+code[1]+level) <= 1:

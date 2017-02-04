@@ -29,6 +29,8 @@ import fnmatch
 # Data Structures
 import numpy as np
 import pandas as pd
+import xarray as xr
+# File import
 from skimage.external import tifffile as tff
 # Graphs
 import matplotlib.pyplot as plt
@@ -72,22 +74,55 @@ class FrozenClass(object):
 
 
 class OutputMethod():
+    """Data output methods.
+    """
     def _data_out(self, func, output=None):
-            """Checks data output method.
-            """
-            if output is None:
-                output = self.output
-            if output is "pd":
-                return func
-            elif output is "nd":
-                return func.values
-            else:
-                raise ValueError("Unspecified output method: '%s'." % output)
+        """Checks data output method setting for Numpy or Pandas.
+        """
+        if output is None:
+            output = self.output
+        if output is "pd":
+            return func
+        elif output is "nd":
+            return func.values
+        else:
+            raise ValueError("Unspecified output method: '%s'." % output)
 
 
 class Spectra(PropEdit, FrozenClass, OutputMethod):
-    """Spectra
-    Data structure for reference spectra
+    """Data structure for reference spectra
+
+    Class can be instantiated without data. See functions.
+
+    Parameters
+    ----------
+    data : ndarray
+        Spectra data points per channel. Array must have same shape as spectra and channels.
+        E.g. 9 channels and 4 spectra, must have (9L, 4L) shape.
+        Defaults to None.
+
+    spectra : list of strings
+        Spectra names. E.g. ['Dy', 'Tm'].
+        Defaults to None.
+
+    channels : list of strings
+        Channel names. E.g. ['Ex292-Em435', 'Ex292-Em465', 'Ex292-Em580'].
+        Defaults to None.
+
+    output : str, optional
+        Sets default output method. Options: 'nd' for NumPy ndarray or 'pd' for Pandas Dataframe/Panel4D.
+        Defaults to 'ndarray'.
+
+    Functions
+    ---------
+    spec_add : function
+        Add spectrum to object.    
+
+    spec_get : function
+        Get spectrum by name or number from object.
+    
+    spec_del : function
+        Delete spectrum from object.
     """
 
     def __init__(self, data=None, spectra=None, channels=None, output='nd'):
@@ -124,12 +159,12 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         return len(self.spec_names)
     
     def spec_index(self, name):
-        """Return spectra index.
+        """Return spectrum by index.
         """
         return self._dataframe.columns.get_loc(name)
 
     def spec_get(self, index, output=None):
-        """Return channel data by name or number.
+        """Return spectrum data by name or number.
 
         Parameters
         ----------
@@ -181,7 +216,7 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
             self._dataframe[index] = None
             for ch in channels:
                 self.c_add(ch)
-        if self.c_names != channels:
+        if self.c_names not in channels:
             warnings.warn("Channel names not the same!")
         # Set data to index
         if type(index) is int:
@@ -366,7 +401,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
     def c_names(self):
         """"Return channel names.
         """
-        return self._dataframe.items.tolist()
+        return self._dataframe.c.values
+        #return self._dataframe.items.tolist()
 
     def c_index(self, name):
         """Return channel number.
@@ -407,7 +443,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Major_axis axis: 0 to 500
         Minor_axis axis: 0 to 501
         """
-        data = self._dataframe.ix[index]
+        #data = self._dataframe.ix[index]
+        data = self._dataframe.loc[index]
         return self._data_out(data, output)
 
     # Position properties and methods
@@ -465,8 +502,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         return self._dataframe.values
 
     @property
-    def pdata(self):
-        """Return Pandas dataframe.
+    def xdata(self):
+        """Return xarray dataframe.
         """
         return self._dataframe
 
@@ -517,11 +554,13 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """Convert data and metadata to Pandas Panel/Panel4D, depending on size of data.
         """
         if data.ndim == 4:
-            panel_data = pd.Panel4D(data, 
-                                    items=metadata['summary']['ChNames'])
+            #panel_data = pd.Panel4D(data, 
+            #                        items=metadata['summary']['ChNames'])
+            panel_data = xr.DataArray(data, dims=['f','c','y','x'], coords={'c':metadata['summary']['ChNames']})
         elif data.ndim == 3:
-            panel_data = pd.Panel(data, 
-                                  items=metadata['summary']['ChNames'])
+            #panel_data = pd.Panel(data, 
+            #                      items=metadata['summary']['ChNames'])
+            panel_data = xr.DataArray(data, dims=['c','y','x'], coords={'c':metadata['summary']['ChNames']})
         else:
             ValueError("Not the right shape: '%s' '%s'" % (data.ndim, sys.exc_info()[1]))
         return panel_data
