@@ -79,11 +79,9 @@ class OutputMethod():
     def _data_out(self, func, output=None):
         """Checks data output method setting for Numpy or Pandas.
         """
-        if output is None:
-            output = self.output
-        if output is "pd" or "xr":
+        if (output == "pd") or (output == "xr"):
             return func
-        elif output is "nd":
+        elif output == "nd":
             return func.values
         else:
             raise ValueError("Unspecified output method: '%s'." % output)
@@ -126,6 +124,7 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
     """
 
     def __init__(self, data=None, spectra=None, channels=None, output='nd'):
+        super(Spectra, self).__init__()
         self._dataframe = pd.DataFrame(data, columns=spectra, index=channels)
         self.output = output
         self._freeze()
@@ -203,6 +202,8 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         if type(index) is int:
             index = self.spec_names[index]
         data = self._dataframe[index]
+        if output is None:
+            output = self.output
         return self._data_out(data, output)
 
     def spec_add(self, index, data=None, channels=None):
@@ -216,8 +217,8 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
             self._dataframe[index] = None
             for ch in channels:
                 self.c_add(ch)
-        if self.c_names not in channels:
-            warnings.warn("Channel names not the same!")
+        if not np.array_equal(np.array(self.c_names), np.array(channels)):
+            warnings.warn("Channel names not the same or channels unchecked!")
         # Set data to index
         if type(index) is int:
             index = self.spec_names[index]
@@ -269,6 +270,8 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         if type(index) is int:
             index = self.c_names[index]
         data = self._dataframe.ix[index]
+        if output is None:
+            output = self.output
         return self._data_out(data, output)
 
     def c_add(self, name, data=None):
@@ -349,20 +352,21 @@ class ImageSetRead(FrozenClass, OutputMethod):
     (301L, 301L)
     """
     def __init__(self, file_path, series=0, output='nd'):
+        super(ImageSetRead, self).__init__()
         self._dataframe, self._metadata, self._files = \
             self.load(file_path, series)
         self.output = output
         self._freeze()
 
     def __repr__(self):
-        """Returns Pandas dataframe representation.
+        """Returns xarray dataframe representation.
         """
         return repr([self._dataframe])
 
     def __getitem__(self, index):
         """Get method, see method 'spec_get'.
         """
-        return self.c_get(index) 
+        return self.c_get(index)
 
     # File properties and methods
     @property
@@ -424,28 +428,12 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Returns
         -------
         data : NumPy array/Pandas dataframe
-            Returns the data as NumPy array or Pandas dataframe, depending on output method set by parameter 'output' or default method, if output not set.
-
-        Examples
-        --------
-        >>> image_data_object.c_get('BF')
-        [[ 522,  583,  584, ...,  614,  613,  385],
-        [ 551,  599,  615, ...,  633,  637,  397],
-        [ 573,  613,  611, ...,  619,  625,  398],
-        ..., 
-        [1006, 1170, 1152, ..., 1201, 1145,  611],
-        [ 986, 1178, 1173, ..., 1185, 1148,  609],
-        [1003, 1192, 1201, ..., 1156, 1172,  605]]], dtype=uint16)
-        >>> image_data_object.c_get('BF', output='pd')
-        <class 'pandas.core.panel.Panel'>
-        Dimensions: 161 (items) x 501 (major_axis) x 502 (minor_axis)
-        Items axis: 0 to 160
-        Major_axis axis: 0 to 500
-        Minor_axis axis: 0 to 501
+            Returns the data as NumPy array or xarray DataArray, depending on output method set by parameter 'output' or default method, if output not set.
         """
-        #data = self._dataframe.ix[index]
-        data = self._dataframe.loc[index]
-        return self._data_out(data, output)
+        if output is None:
+            output = self.output
+        data = self._data_out(self._dataframe.loc[index], output)
+        return data
 
     # Position properties and methods
     @property

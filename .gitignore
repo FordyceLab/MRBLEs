@@ -221,3 +221,5 @@ ModelManifest.xml
 /Final  Peptide List with CN Binding data 20160604.xlsx
 /20160810 CN - PxIxIT Data.xlsx
 *.xlsx
+/.ipynb_checkpoints
+*.ipynb
