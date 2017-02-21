@@ -8,8 +8,8 @@ from __future__ import division
 from __builtin__ import staticmethod, property
 
 # [File header]     | Copy and edit for each file in this project!
-# title             : general.py
-# description       : Bead Kinetics module
+# title             : core.py
+# description       : Bead Kinetics module - Core functions
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
@@ -35,7 +35,7 @@ __maintainer__  = "Bjorn Harink"
 __email__       = "bjorn@harink.info" 
 # Software information
 __license__     = "MIT" 
-__version__     = "v0.3"
+__version__     = "v0.4"
 __status__      = "Prototype"
 
 # [TO-DO]
@@ -60,11 +60,8 @@ from sklearn.metrics.pairwise import pairwise_distances
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 from skimage.external import tifffile as tff
-# Statistics
-#import statsmodels.api as sm # Weighted ICP
-# Graphs
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
+# Classification
+from sklearn.mixture import GaussianMixture
 # Project
 from bead_analysis.data import *
 
@@ -436,12 +433,15 @@ class ICP(object):
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
-    def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct = 0):
+    def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct = 0, train=False):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
         self.outlierpct = outlier_pct
         self.offset = offset
+        self._train = train
+
+        self.pdata = None
 
     def _set_matrix_method(self, matrix_method):
         """Set matrix method
@@ -510,23 +510,37 @@ class ICP(object):
             raise ValueError("Lengths of input1 = %s and input2 = %s do not match", naxes1, naxes2)
         return matrix
 
-    def transform(self, data):
+    def transform(self, data=None):
         """Apply transformation matrix to data.
         """
-        result = np.dot(data, self.matrix) + self.offset
+        if (self._pdata is not None) and data is None:
+            tdata = np.dot(self._pdata.values, self.matrix) + self.offset
+            result = pd.DataFrame()
+            for num, val in enumerate(self._pdata.index):
+                for n, v in enumerate(self._pdata.columns):
+                    result.loc[val, ('%s_icp' % v)] = tdata[num,n]
+        else:
+            result = np.dot(data, self.matrix) + self.offset
         return result
 
     def fit(self, data, target):
         """ICP
         Iterative Closest Point
         """
-        if self.offset is None:
-            self.offset = self._set_offset(data, target)
+        if type(data) is pd.DataFrame:
+            self._pdata = data
+            data = data.values
 
-        if self.matrix is None:
+        if (self.offset is None) or (self._train is False):
+            self.offset = self._set_offset(data, target)
+        else:
+            warnings.warn("Training mode: ON")
+
+        if (self.matrix is None) or (self._train is False):
             self.matrix = self._set_matrix(data, target)
-        
-        weights = list(range(1, len(data[:,0])+1))
+        else:
+            warnings.warn("Training mode: ON")
+
         delta = 1
         for i in xrange(self.max_iter):
             if delta < self.tol:
@@ -543,23 +557,16 @@ class ICP(object):
             # Compare distances between tranformed data and target
             distances = pairwise_distances(data_transform, target)
             min_dist = np.min(distances, axis=1)
+            # Filter percentile of furthest away points
             min_dist_pct = np.percentile(min_dist, [0, (1-self.outlierpct)*100])[1]
             min_dist_filt = np.argwhere(min_dist < min_dist_pct)[:, 0]
+            # Match codes and levels
             matched_code = np.argmin(distances, axis=1)
             matched_levels = target[matched_code[min_dist_filt], :]
+            # Least squaress
             d = np.c_[data[min_dist_filt], np.ones(len(data[min_dist_filt, 0]))]
             m = np.linalg.lstsq(d, matched_levels)[0]
             
-            ### TEST Weighted ICP ###
-            #factor = 1
-            #dist_med = np.median(distances)
-            #weights = np.ceil((dist_med/np.mean(distances, axis=1)) * factor)
-            #mod_wls = sm.WLS(matched_levels, d, weights=weights)
-            #res = mod_wls.fit()
-            ##print(res.params)
-            #m = res.params
-            ### TEST Weighted ICP ###
-
             # Store new tranformation matrix and offset vector
             self.matrix = m[0:-1, :]
             self.offset = m[-1, :]
@@ -571,3 +578,135 @@ class ICP(object):
             delta = sqrt(d_compare / n_compare)
             print("Delta: ", delta)
 
+class Classify(object):
+    """Classification of beads by Gaussian Mixture Model.
+
+    Parameters
+    ----------
+    target : list of ratios
+        Bla.
+    """
+    def __init__(self, target, tol=1e-5, min_covar=1e-7, sigma=1e-5, train=False):
+        self._target = target
+        self._tol = tol
+        self._min_covar = min_covar
+        self._sigma = sigma
+        self._train = train
+
+        self._nclusters = len(self._target[:, 0])
+        self._naxes = len(self._target[0, :])
+        
+        self._confs = None
+        self._log_prob = None
+
+        self._init = True
+        self._setup_gmix()
+
+    def __repr__(self):
+        """Returns GaussianMixture object.
+        """
+        return repr([self._gmix])
+
+    def _setup_gmix(self):
+        if (self._train is False) or (self._init is True):
+            self._gmix = GaussianMixture(covariance_type='full', 
+                                         tol=self._tol, 
+                                         reg_covar=self._min_covar, 
+                                         n_components = self._nclusters, 
+                                         means_init = self._target, 
+                                         weights_init = self.init_weights, 
+                                         precisions_init = self.init_covars)
+            self._init = False
+        else:
+            warnings.warn("Training mode: ON")
+        
+    @property
+    def init_covars(self):
+        sigmas = np.eye(self._naxes) * self._sigma
+        covars = np.tile(sigmas, (self._nclusters, 1, 1))
+        return np.linalg.inv(covars)
+
+    @property
+    def init_weights(self):
+        weights = np.tile(1 / self._nclusters, (self._nclusters))
+        return weights
+
+    @property
+    def stds(self):
+        return np.linalg.cholesky(self._gmix.covariances_)
+
+    @property
+    def means(self):
+        return self._gmix.means_
+
+    @property
+    def confs(self):
+        return self._confs
+    def _set_confs(self, data):
+        self._confs = 1-np.exp(-self._gmix.score_samples(data))
+
+    @property
+    def log_prob(self):
+        return self._log_proba
+    def _set_log_prob(self, data):
+        self._log_proba = self._gmix.score_samples(data)
+
+    def ellipsoids(self, nsigma, resolution=100):
+        elps = []
+        unit_sphere = self.unit_sphere(resolution)
+        for n in xrange(self._nclusters):
+            C = (nsigma * np.dot(self.stds, np.reshape(unit_sphere, (unit_sphere.shape[0], unit_sphere[1].size)))) + \
+                np.matlib.repmat(np.reshape(self.means[n], (3,1)), 1, unit_sphere[0].size)
+            elps.append(np.reshape(C, unit_sphere.shape))
+        return elps
+
+    @property
+    def output(self):
+        data =  pd.DataFrame(columns=['code','confidence','log_prob'])
+        if type(self._data) is pd.DataFrame:
+            for num, val in enumerate(self._data.index):
+                data.loc[val, ('code')] = self._predict[num]
+                data.loc[val, ('confidence')] = self.confs[num]
+                data.loc[val, ('log_prob')] = self.log_prob[num]
+        else:
+            data[('code')] = self._predict
+            data[('confidence')] = self.confs
+            data[('log_prob')] = self.log_prob
+        return data
+
+    @property
+    def found(self):
+        return len(np.unique(self._predict))
+
+    @property
+    def missing(self):
+        if len(np.unique(self._predict)) != self._nclusters:
+            missing = np.setxor1d(np.unique(self._predict), np.arange(0,self._nclusters))
+        else: 
+            missing = None
+        return missing
+
+    #TO-DO    
+    def code_metrics(self, nsigma=3, resolution=100):
+        data =  pd.DataFrame()
+        data['means'] = self.means.tolist()
+        data['stds'] = self.stds.tolist()
+        data['ellipsoids'] = self.ellipsoids(nsigma, resolution)
+        return data
+
+    def decode(self, data):
+        self._setup_gmix()
+        self._data = data
+        self._gmix.fit(data, self._target)
+        self._predict = self._gmix.predict(data)
+        self._set_confs(data)
+        self._set_log_prob(data)
+
+    @staticmethod
+    def unit_sphere(resolution=100):
+        theta = np.linspace(0,2*np.pi,resolution)
+        phi = np.linspace(0,np.pi,resolution)
+        x = np.outer(np.cos(theta),np.sin(phi))
+        y = np.outer(np.sin(theta),np.sin(phi))
+        z = np.outer(np.ones(resolution),np.cos(phi))
+        return np.array((x,y,z))

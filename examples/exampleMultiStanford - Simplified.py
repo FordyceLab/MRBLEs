@@ -127,12 +127,7 @@ for name, file in REF_FILES.iteritems():
     ref_data_tmp -= dark_noise              # Dark noise subtract
     ref_data_tmp /= ref_data_tmp.sum()      # Normalize
     ref_data_object.spec_add(name, data=ref_data_tmp, channels = ref_img_obj.c_names[1:])
-    # Show ref images
-    fig = plt.figure()
-    fig.suptitle("Overlay Image ref %s:" % name)
-    plt.imshow(ref_objects.overlay_image(ref_img_obj['Brightfield',CROPy_ref,CROPx_ref], dim = ref_objects.circles_dim), cmap='Greys_r')
-    plt.draw()
-
+ 
 # Trp
 name = "Tp"
 print("Spectrum: %s" % name)
@@ -145,11 +140,6 @@ ref_data_tmp = np.array([ndi.median(ch, ref_objects_tp.labeled_mask) for ch in r
 ref_data_tmp -= dark_noise              # Dark noise subtract
 ref_data_tmp /= ref_data_tmp.sum()      # Normalize
 ref_data_object.spec_add(name, data=ref_data_tmp)
-# Show ref images
-fig = plt.figure()
-fig.suptitle("Overlay Image ref %s:" % name)
-plt.imshow(ref_objects_tp.overlay_image(ref_img_obj['Brightfield',CROPy_ref_tp,CROPx_ref_tp], dim = ref_objects_tp.circles_dim), cmap='Greys_r')
-plt.draw()
     
 # Get background spectrum
 # slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
@@ -161,14 +151,6 @@ bkg_img_obj = ba.ImageSetRead(BACK_FILE)
 ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['l-435':'l-780',BACK_CROPy,BACK_CROPx]])
 ref_data_tmp /= ref_data_tmp.sum()   # Normalize
 ref_data_object.spec_add('Bkg', ref_data_tmp)
-# Show Bkg image region
-fig = plt.figure()
-fig.suptitle("Bkg Image region")
-plt.imshow(bkg_img_obj['Brightfield',BACK_CROPy,BACK_CROPx], cmap='Greys_r')
-plt.draw()
-
-# Plot reference spectrum
-ref_data_object.plot()
 
 
 #########################
@@ -191,9 +173,7 @@ reference_std_factor_high = 2
 back_std_factor = 3
 
 bead_set = pd.DataFrame(columns=['img','lbl', 'dim_x', 'dim_y', 'dim_r','bkg','ref',
-                                 'rat_dy','rat_sm','rat_tm',
-                                 'rat_dy_icp','rat_sm_icp','rat_tm_icp',
-                                 'code'])
+                                 'rat_dy','rat_sm','rat_tm'])
 
 labels = []
 labels_annulus = []
@@ -209,15 +189,6 @@ for idx in xrange(bead_image_obj.f_size):
         bead_set.loc[bead_no,('img', 'lbl', 'dim_x', 'dim_y', 'dim_r')] = \
             [idx, lbl, circles_dim[lbl-1, 0], circles_dim[lbl-1, 1], circles_dim[lbl-1, 2]]
         bead_no += 1
-
-for x in xrange(3):
-    idx = random.choice(np.unique(bead_set.img))
-    fig = plt.figure()
-    fig.suptitle("Overlay Image Pre-filter image #: %s" % idx)
-    plt.imshow(bead_objects.overlay_image(bead_image_set_bf[idx], 
-                                          dim=bead_set.loc[(bead_set['img'] == idx), ('dim_x','dim_y','dim_r')].values,
-                                          annulus=True), cmap='Greys_r')
-    plt.draw()
 
 
 #########################
@@ -264,21 +235,11 @@ mask_size   = ( (bead_set.dim_r >= radius_min) & (bead_set.dim_r <= radius_max) 
 mask_bkg    = ( (bead_set.bkg > (bead_set.bkg.mean() - back_std_factor * bead_set.bkg.std())) &\
                 (bead_set.bkg < (bead_set.bkg.mean() + back_std_factor * bead_set.bkg.std())) )
 mask_ref    = ( (bead_set.ref > (bead_set.ref.mean() - reference_std_factor_low * bead_set.ref.std())) &\
-                (bead_set.ref < (bead_set.ref.mean() + reference_std_factor_low * bead_set.ref.std())) )
+                (bead_set.ref < (bead_set.ref.mean() + reference_std_factor_high * bead_set.ref.std())) )
 filter_all = (mask_size & mask_bkg & mask_ref)
 
 print("Pre filter: %s" % bead_set.index.size)
 print("Post filter: %s" % bead_set[filter_all].index.size)
-
-# Post-filter images
-for x in xrange(3):
-    idx = random.choice(np.unique(bead_set.img))
-    fig = plt.figure()
-    fig.suptitle("Overlay Image Post-filter image #: %s" % idx)
-    plt.imshow(bead_objects.overlay_image(bead_image_set_bf[idx], 
-                                          dim=bead_set.loc[filter_all & (bead_set['img'] == idx), ('dim_x','dim_y','dim_r')].values,
-                                          annulus=True), cmap='Greys_r')
-    plt.draw()
 
 
 #########################
@@ -287,10 +248,9 @@ for x in xrange(3):
 """
 print("[Iterative Closest Point]")
 
-icp=ba.ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.01)
-icp.fit(bead_set.loc[filter_all, ('rat_dy', 'rat_sm', 'rat_tm')].values, target)
-bead_set.loc[filter_all,('rat_dy_icp', 'rat_sm_icp','rat_tm_icp')] = \
-    icp.transform(bead_set.loc[filter_all,('rat_dy', 'rat_sm', 'rat_tm')].values)
+icp=ba.ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.01, train=False)
+icp.fit(bead_set.loc[filter_all, ('rat_dy', 'rat_sm', 'rat_tm')], target)
+bead_set = bead_set.join(icp.transform())
 print("Tranformation matrix: ", icp.matrix)
 print("Offset vector: ", icp.offset)
 
@@ -301,32 +261,11 @@ print("Offset vector: ", icp.offset)
 """
 print("[Gaussian Mixture Modeling]")
 
-# GMM Setup
-nclusters = len(target[:, 0])
-naxes = len(target[0, :])
-sigma = np.eye(naxes) * 1e-5
-weights = np.tile(1 / nclusters, (nclusters))
-covars = np.tile(sigma, (nclusters, 1, 1))
-covars_inv = np.linalg.inv(covars)
-
-# GMM
-gmix = GaussianMixture(covariance_type='full', tol=1e-5, reg_covar=1e-7, 
-                       n_components=nclusters,
-                       means_init=target, 
-                       weights_init = weights, 
-                       precisions_init=covars_inv)
-gmix.fit(bead_set.loc[filter_all, ('rat_dy_icp', 'rat_sm_icp', 'rat_tm_icp')].values, target)
-predict = gmix.predict(bead_set.loc[filter_all, ('rat_dy_icp', 'rat_sm_icp', 'rat_tm_icp')].values)
-bead_set.loc[filter_all, ('code')] = predict
-bead_set.loc[filter_all, ('confidence')] = 1-np.exp(-gmix.score_samples(bead_set.loc[filter_all, ('rat_dy_icp', 'rat_sm_icp', 'rat_tm_icp')].values))
-
-predict_pb = gmix.predict_proba(bead_set.loc[filter_all, ('rat_dy_icp', 'rat_sm_icp', 'rat_tm_icp')].values)
-
-
-print("Number of unique codes found:", len(np.unique(predict)))
-if len(np.unique(predict)) != nclusters:
-    missing = np.setxor1d(np.unique(predict), np.arange(0,nclusters))
-    print("Missing codes:", missing)
+gmix = ba.Classify(target, tol=1e-5, min_covar=1e-7, sigma=1e-5, train=False)
+gmix.decode(bead_set.loc[filter_all, ('rat_dy_icp', 'rat_sm_icp', 'rat_tm_icp')])
+bead_set = bead_set.join(gmix.output)
+print("Number of unique codes found:", gmix.found)
+print("Missing codes:", gmix.missing)
 
 
 #########################
