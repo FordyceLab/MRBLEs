@@ -203,7 +203,7 @@ for lbls_idx, lbls in enumerate(labels):
 
     background_data = ndi.labeled_comprehension(background, lbls, idx, np.median, float, -1)
     reference_data = ndi.labeled_comprehension(reference, lbls, idx, np.median, float, -1)
-    cy5_data = ndi.labeled_comprehension(cy5, lbls, idx, np.median, float, -1)
+    cy5_data = ndi.labeled_comprehension(cy5, labels_annulus[lbls_idx], idx, np.median, float, -1)
 
     for lbl in np.arange(1, len(np.unique(lbls))):
         bead_set[bead_no][['ratios', 'bkg', 'ref', 'cy5']] = [ratio_data[lbl-1], background_data[lbl-1], reference_data[lbl-1], cy5_data[lbl-1]]

@@ -433,7 +433,7 @@ class ICP(object):
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
-    def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct = 0, train=False):
+    def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct=0, train=False):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
@@ -441,7 +441,7 @@ class ICP(object):
         self.offset = offset
         self._train = train
 
-        self.pdata = None
+        self._pdata = None
 
     def _set_matrix_method(self, matrix_method):
         """Set matrix method
