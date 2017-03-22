@@ -470,3 +470,45 @@ class RefSpec(object):
             ref_data[ch - 1] = np.median(img_tmp)
         sum = ref_data.sum()
         return np.divide(ref_data, sum)
+
+def filterObjects(data, back, reference, objects_radius, back_std_factor=3, reference_std_factor=2, radius_min=3, radius_max=6):
+    """Filter Objects
+    Filter objects using x times SD from mean
+    back = background data
+    reference = reference data
+    back_std_factor = x times SD from mean
+    reference_std_factor = x times SD from mean
+    """
+    # Pre-filtered number
+    pre_filter_no = data[:, 0].size
+
+    # Mean and standard deviation of the background and the reference channel
+    mean_reference = np.mean(reference)
+    std_reference = np.std(reference)
+    mean_back = np.mean(back)
+    std_back = np.std(back)
+    print(mean_reference, std_reference, mean_back, std_back)
+
+    # Find indices of objects within search parameters
+    # Check which objects are within set radius
+    size_filter = np.logical_and(
+        objects_radius >= radius_min, objects_radius <= radius_max)
+    # Check which objects are within x SD from mean background signal
+    back_filter = np.logical_and(back < (mean_back + back_std_factor * std_back),
+                                 back > (mean_back - back_std_factor * std_back))
+    # Check which objects are within x SD from mean reference signal
+    refr_filter = np.logical_and(reference > (mean_reference - reference_std_factor * std_reference),
+                                 reference < (mean_reference + reference_std_factor * std_reference))
+    # Create list of indices of filtered-in objects
+    filter_list = np.argwhere(np.logical_and(
+        size_filter, np.logical_and(back_filter, refr_filter)))[:, 0]
+
+    # Compare pre and post filtering object numbers
+    post_filter_no = filter_list.size
+    post_filter_per = int(
+        ((pre_filter_no - post_filter_no) / post_filter_no) * 100)
+    print("Pre-filter no:", pre_filter_no, ", Post-filter no:",
+          post_filter_no, ", Filtered:", post_filter_per, "%")
+
+    # Return list of indices of filtered-in objects
+    return filter_list

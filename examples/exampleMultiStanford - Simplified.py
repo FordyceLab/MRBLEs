@@ -112,22 +112,19 @@ Get reference spectra of solo lanthanide beads
 """
 print("[Creating reference spectra]")
 
-# Find beads objects with search parameters
-ref_objects = ba.FindBeads(min_r=14, max_r=16, param_1=10, param_2=6)
-# Reference spectra data object
-ref_data_object = ba.data.Spectra()
+BACK_CROPx = slice(339, 445)
+BACK_CROPy = slice(420, 508)
+dark_noise = 99
+spec_object = ba.simp.ReferenceSpectra(files = REF_FILES, 
+                                       object_channel = 'Brightfield', 
+                                       channels = ['435','780'], 
+                                       find_param = [14, 16, 10, 6], 
+                                       dark_noise = dark_noise, 
+                                       crop_x = CROPx_ref, 
+                                       crop_y = CROPy_ref)
+spec_object.set_back(BACK_FILE, BACK_CROPx, BACK_CROPy)
+ref_data_object = spec_object.output
 
-# Dark noise is subtracted from the lanthanide spectra and then normalized with the sum of the data.
-dark_noise = 99   # Dark noise value of camera
-for name, file in REF_FILES.iteritems():
-    print("Spectrum: %s" % name)
-    ref_img_obj = ba.ImageSetRead(file)
-    ref_objects.find(ref_img_obj['Brightfield',CROPy_ref,CROPx_ref])
-    ref_data_tmp = np.array([ndi.median(ch, ref_objects.labeled_mask) for ch in ref_img_obj['435':'780',CROPy_ref,CROPx_ref]])
-    ref_data_tmp -= dark_noise              # Dark noise subtract
-    ref_data_tmp /= ref_data_tmp.sum()      # Normalize
-    ref_data_object.spec_add(name, data=ref_data_tmp, channels = ref_img_obj.c_names[1:])
- 
 # Trp
 name = "Tp"
 print("Spectrum: %s" % name)
@@ -136,21 +133,11 @@ CROPy_ref_tp = slice(250, 750)
 ref_objects_tp = ba.FindBeads(min_r=7, max_r=9, param_1=10, param_2=6)
 ref_img_obj = ba.ImageSetRead(TRP_FILE)
 ref_objects_tp.find(ref_img_obj['Brightfield',CROPy_ref_tp,CROPx_ref_tp])
-ref_data_tmp = np.array([ndi.median(ch, ref_objects_tp.labeled_mask) for ch in ref_img_obj['l-435':'l-780',CROPy_ref_tp,CROPx_ref_tp]])
-ref_data_tmp -= dark_noise              # Dark noise subtract
-ref_data_tmp /= ref_data_tmp.sum()      # Normalize
+channels = ref_img_obj['l-435':'l-780',CROPy_ref_tp,CROPx_ref_tp]
+ref_data_tmp = spec_object.get_spectrum(dark_noise, channels, ref_objects_tp.labeled_mask)
 ref_data_object.spec_add(name, data=ref_data_tmp)
     
-# Get background spectrum
-# slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X). Pandas includes stop element!
-BACK_CROPx = slice(339, 445)
-BACK_CROPy = slice(420, 508)
-
-print("Spectrum Bkg: %s, %s" % (BACK_CROPy, BACK_CROPy))
-bkg_img_obj = ba.ImageSetRead(BACK_FILE)
-ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['l-435':'l-780',BACK_CROPy,BACK_CROPx]])
-ref_data_tmp /= ref_data_tmp.sum()   # Normalize
-ref_data_object.spec_add('Bkg', ref_data_tmp)
+ref_data_object.plot()
 
 
 #########################
@@ -166,8 +153,6 @@ bead_image_set_ln = bead_image_obj[:,'l-435':'l-780',CROPy,CROPx]
 
 # Bead search and filter parameters
 bead_objects = ba.FindBeads(min_r=5, max_r=8, min_dist=9, param_1=10, param_2=7, annulus_width=3, enlarge = 1)
-radius_min = 4.9
-radius_max = 8.1
 reference_std_factor_low = 1.5
 reference_std_factor_high = 2
 back_std_factor = 3
@@ -231,12 +216,11 @@ for lbls_idx, lbls in enumerate(labels):
 """
 print("[Filtering]")
 
-mask_size   = ( (bead_set.dim_r >= radius_min) & (bead_set.dim_r <= radius_max) )
 mask_bkg    = ( (bead_set.bkg > (bead_set.bkg.mean() - back_std_factor * bead_set.bkg.std())) &\
                 (bead_set.bkg < (bead_set.bkg.mean() + back_std_factor * bead_set.bkg.std())) )
 mask_ref    = ( (bead_set.ref > (bead_set.ref.mean() - reference_std_factor_low * bead_set.ref.std())) &\
                 (bead_set.ref < (bead_set.ref.mean() + reference_std_factor_high * bead_set.ref.std())) )
-filter_all = (mask_size & mask_bkg & mask_ref)
+filter_all = (mask_bkg & mask_ref)
 
 print("Pre filter: %s" % bead_set.index.size)
 print("Post filter: %s" % bead_set[filter_all].index.size)
@@ -304,7 +288,7 @@ code_data = np.vstack(bead_set.loc[(bead_set.code == code_no), ('rat_dy_icp', 'r
 ba.inspect.Cluster.scatter(code_data, target, title="Clustering post-ICP", axes_names=['Dy', 'Sm', 'Tm'])
 
 # Beads per code distribution
-bead_set.loc[(bead_set.confidence > 0), ('code')].hist(bins=24)
+bead_set.loc[(bead_set.confidence > 0), ('code')].hist(bins=48)
 
 # Show all images at once
 plt.show()

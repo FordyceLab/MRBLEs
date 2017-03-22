@@ -65,11 +65,10 @@ from sklearn.mixture import GaussianMixture
 # Project
 from bead_analysis.data import *
 
+# TO-DO
 class Filter(object):
     """Filter bead data sets.
-    """
-
-    
+    """    
     @property
     def list(self):
         filter_all = (mask_size & mask_bkg & mask_ref)
@@ -79,50 +78,6 @@ class Filter(object):
     def add(data_set, low, high):
         mask =  ( (data_set > (data_set.mean() - low * data_set.std()  )) & 
                   (data_set < (data_set.mean() + high * data_set.std() )) )
-    
-
-# TO-DO: UPDATE
-def filterObjects(data, back, reference, objects_radius, back_std_factor=3, reference_std_factor=2, radius_min=3, radius_max=6):
-    """Filter Objects
-    Filter objects using x times SD from mean
-    back = background data
-    reference = reference data
-    back_std_factor = x times SD from mean
-    reference_std_factor = x times SD from mean
-    """
-    # Pre-filtered number
-    pre_filter_no = data[:, 0].size
-
-    # Mean and standard deviation of the background and the reference channel
-    mean_reference = np.mean(reference)
-    std_reference = np.std(reference)
-    mean_back = np.mean(back)
-    std_back = np.std(back)
-    print(mean_reference, std_reference, mean_back, std_back)
-
-    # Find indices of objects within search parameters
-    # Check which objects are within set radius
-    size_filter = np.logical_and(
-        objects_radius >= radius_min, objects_radius <= radius_max)
-    # Check which objects are within x SD from mean background signal
-    back_filter = np.logical_and(back < (mean_back + back_std_factor * std_back),
-                                 back > (mean_back - back_std_factor * std_back))
-    # Check which objects are within x SD from mean reference signal
-    refr_filter = np.logical_and(reference > (mean_reference - reference_std_factor * std_reference),
-                                 reference < (mean_reference + reference_std_factor * std_reference))
-    # Create list of indices of filtered-in objects
-    filter_list = np.argwhere(np.logical_and(
-        size_filter, np.logical_and(back_filter, refr_filter)))[:, 0]
-
-    # Compare pre and post filtering object numbers
-    post_filter_no = filter_list.size
-    post_filter_per = int(
-        ((pre_filter_no - post_filter_no) / post_filter_no) * 100)
-    print("Pre-filter no:", pre_filter_no, ", Post-filter no:",
-          post_filter_no, ", Filtered:", post_filter_per, "%")
-
-    # Return list of indices of filtered-in objects
-    return filter_list
 
 
 class FindBeads(object):
@@ -157,13 +112,14 @@ class FindBeads(object):
         1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
         Defaults to 1, no enlarging/shrinking.
     """
-    def __init__(self, min_r, max_r, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1):
+    def __init__(self, min_r, max_r, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1, auto_filt=True):
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width
         self.param_1 = param_1
         self.param_2 = param_2
         self.enlarge = enlarge
+        self.auto_filt = auto_filt
         # TO-DO proper method
         if min_dist is not None:
             self.min_dist = min_dist
@@ -205,9 +161,8 @@ class FindBeads(object):
 
     @staticmethod
     def circle_mask(image, min_dist, min_r, max_r, param_1, param_2, enlarge):
-        """Make circle mask using Hough transform.
+        """Find initial circles using Hough transform and return mask.
         """
-        # Find initial circles using Hough transform
         circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
                                    minDist=min_dist, 
                                    param1=param_1, 
@@ -215,11 +170,10 @@ class FindBeads(object):
                                    minRadius=min_r, 
                                    maxRadius=max_r)[0]
         if circles is None: return None
-        # Make mask
-        mask = np.zeros(image.shape, np.uint8)
+        mask = np.zeros(image.shape, np.uint8)  # Make mask
         for c in circles:
             x, y, r = c[0], c[1], int(np.ceil(c[2]*enlarge))
-            # Draw circle (line width -1 fills circle)
+            # Draw circle on mask (line width -1 fills circle)
             cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
         return mask, circles
 
@@ -253,16 +207,15 @@ class FindBeads(object):
             c = max(cnts, key=cv2.contourArea)
             # Get circle dimensions
             ((x, y), r) = cv2.minEnclosingCircle(c)
-            circles_dim[label - 1, 0] = x
-            circles_dim[label - 1, 1] = y
-            circles_dim[label - 1, 2] = r
+            circles_dim[label - 1, 0] = int(x)
+            circles_dim[label - 1, 1] = int(y)
+            circles_dim[label - 1, 2] = int(r)
         return circles_dim
 
     def find(self, image):
         """Find objects in image and return data.
         """
         img = self.convert(image)
-        # Find initial circles using Hough transform and make mask
         mask, circles = self.circle_mask(img, self.min_dist, 
                                      self.min_r, 
                                      self.max_r, 
@@ -270,12 +223,11 @@ class FindBeads(object):
                                      self.param_2,
                                      self.enlarge)
         if mask is None: return None
-        # Find and separate circles using watershed on initial mask
         self._labeled_mask = self.circle_separate(mask, circles)
-        # Find center of circle and return dimensions
         self._circles_dim = self._get_dimensions(self._labeled_mask)
-        # Create annulus mask
         self._labeled_annulus_mask = self.create_annulus_mask(self._labeled_mask)
+        if self.auto_filt is True:
+            self._filter()
 
     def create_annulus_mask(self, labeled_mask):
         """Create annulus mask from regular mask.
@@ -309,6 +261,14 @@ class FindBeads(object):
                 cv2.circle(img, (int(dim[0]), int(dim[1])), r_dim, (0, 255, 0), 1)
             cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), (0, 255, 0), 1)
         return img
+
+    def _filter(self):
+        remove_list = np.where( (self._circles_dim[:,2] < self.min_r) & (self._circles_dim[:,2] > self.max_r) )[0]
+        if remove_list.size > 0:
+            self._circles_dim = np.delete(self._circles_dim, remove_list, axis=0)
+            for remove in remove_list:
+                self._labeled_mask[self._labeled_mask == remove + 1] = 0
+                self._labeled_annulus_mask[self._labeled_mask == remove + 1] = 0
 
 
 class SpectralUnmixing(FrozenClass):

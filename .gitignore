@@ -222,4 +222,14 @@ ModelManifest.xml
 /20160810 CN - PxIxIT Data.xlsx
 *.xlsx
 /.ipynb_checkpoints
-*.ipynb
+/examples/.ipynb_checkpoints
+/Untitled.ipynb
+/Stanford - 96 codes - Simplified Example1.ipynb
+/Stanford - 96 codes - Simplified Example.ipynb
+/Stanford - 96 codes - Jupyer example.ipynb
+/Stanford - 96 codes - Alt #2.ipynb
+/20170321 - Adam Cy5 extract - Mitomi MUCH.ipynb
+/20170319 - Adam DNA 12 - 12 codes.ipynb
+/20170317 - Adam Oligo - 12codes.ipynb
+/examples/Stanford - 96 codes - Alt #2.ipynb
+/examples/Stanford - 96 codes - Jupyer example.ipynb

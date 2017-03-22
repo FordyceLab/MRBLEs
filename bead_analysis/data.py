@@ -299,7 +299,30 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         self._dataframe.plot(title="Spectra", rot=90)
         if show is True:
             plt.show()
+            
+    def to_csv(self, filepath):
+        if self._dataframe is not None:
+            self._dataframe.to_csv(filepath)
+        else:
+            print("No spectra to export!")
 
+    def to_excel(self, filepath):
+        if self._dataframe is not None:
+            self._dataframe.to_excel(filepath)
+        else:
+            print("No spectra to export!")
+
+    def read_csv(self, filepath):
+        if self._dataframe is not None:
+            self._dataframe.read_csv(filepath)
+        else:
+            print("No spectra to export!")
+
+    def read_excel(self, filepath):
+        if self._dataframe is not None:
+            self._dataframe.read_excel(filepath)
+        else:
+            print("No spectra to export!")
 
 class ChannelDescriptor(object):
     def __init__(self, name):
@@ -399,7 +422,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
     def c_size(self):
         """Return channel count.
         """
-        return self._dataframe.items.size
+        return self._dataframe.c.size
 
     @property
     def c_names(self):
@@ -518,7 +541,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """
         if type(file_path) is str: 
             file_path = [file_path]
-        with tff.TiffSequence(file_path) as ts, tff.TiffFile(file_path[0]) as tf:
+        with tff.TiffSequence(file_path, pattern='XYCZT') as ts, tff.TiffFile(file_path[0]) as tf:
             files = ts.files
             image_metadata = cls._get_metadata(tf)
             if tf.series > 1 and series == 'all':
@@ -542,12 +565,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """Convert data and metadata to Pandas Panel/Panel4D, depending on size of data.
         """
         if data.ndim == 4:
-            #panel_data = pd.Panel4D(data, 
-            #                        items=metadata['summary']['ChNames'])
             panel_data = xr.DataArray(data, dims=['f','c','y','x'], coords={'c':metadata['summary']['ChNames']})
         elif data.ndim == 3:
-            #panel_data = pd.Panel(data, 
-            #                      items=metadata['summary']['ChNames'])
             panel_data = xr.DataArray(data, dims=['c','y','x'], coords={'c':metadata['summary']['ChNames']})
         else:
             ValueError("Not the right shape: '%s' '%s'" % (data.ndim, sys.exc_info()[1]))
