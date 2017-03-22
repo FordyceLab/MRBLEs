@@ -98,11 +98,13 @@ class ReferenceSpectra(object):
             self.ref_data.spec_add(name, data = data, channels = channel_names)
 
     def set_back(self, file, channels, crop_x, crop_y):
+        if (type(channels) is list) and (len(channels) == 2):
+            channels = self.set_slice(channels)
         BACK_CROPx = self.set_slice(crop_x)
         BACK_CROPy = self.set_slice(crop_y)
         print("Spectrum Bkg: %s, %s" % (BACK_CROPx, BACK_CROPy))
         bkg_img_obj = ImageSetRead(file)
-        ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj['l-435':'l-780',BACK_CROPy,BACK_CROPx]])
+        ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj[channels,BACK_CROPy,BACK_CROPx]])
         ref_data_tmp /= ref_data_tmp.sum()  # Normalize, no dark noise subtraction
         self.ref_data.spec_add('Bkg', ref_data_tmp)
     
