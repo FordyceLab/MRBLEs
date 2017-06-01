@@ -47,6 +47,8 @@ class kfit(object):
         """Fit solution and save to results. Access result with object.result
         """
         self.MPfinal = np.zeros((self.n_complex, self.n_substrate))
+        MPapproxM = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
+        MPapproxP = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
         MPnew = np.zeros((self.n_substrate))
         for m in xrange(len(Mmat)):
             Mt = Mmat[m]  # total protein concentration
