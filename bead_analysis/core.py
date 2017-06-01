@@ -5,7 +5,7 @@
 from __future__ import print_function
 # Use Python 3.x "/" for division in Pyhton 2.x
 from __future__ import division
-from __builtin__ import staticmethod, property
+from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : core.py
@@ -13,30 +13,11 @@ from __builtin__ import staticmethod, property
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
-# version update    : 20160808
-# version           : v0.4
+# version update    : 20170601
+# version           : v0.5
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
 # python_version    : 2.7
-
-# [Main header with project metadata] | Only in the main file!
-# Copyright and credits
-__copyright__   = ("Copyright 2016 - "
-                   "The Encoded Beads Project - "
-                   "ThornLab@UCSF and "
-                   "FordyceLab@Stanford")
-# Original author(s) of this Python project, like: ("...", 
-__author__      = ("Bjorn Harink")  #               "name")
-# People who contributed to this Python project, like: ["...",
-__credits__     = ["Kurt Thorn",  #                     "name"] 
-                   "Huy Nguyen"]
-# Maintainer contact information
-__maintainer__  = "Bjorn Harink" 
-__email__       = "bjorn@harink.info" 
-# Software information
-__license__     = "MIT" 
-__version__     = "v0.4"
-__status__      = "Prototype"
 
 # [TO-DO]
 # Check error exceptions
@@ -53,32 +34,350 @@ from math import sqrt
 # Data Structure
 import numpy as np
 import pandas as pd
+import xarray as xd
 # Image Processing
 import cv2
 from scipy import ndimage as ndi
+from photutils import source_properties, properties_table
+#from scipy.misc import bytescale
 from sklearn.metrics.pairwise import pairwise_distances
 from skimage.feature import peak_local_max
-from skimage.morphology import watershed
+from skimage.morphology import watershed, dilation, erosion
+from skimage.draw import circle
 from skimage.external import tifffile as tff
 # Classification
 from sklearn.mixture import GaussianMixture
 # Project
 from bead_analysis.data import *
 
-# TO-DO
-class Filter(object):
-    """Filter bead data sets.
-    """    
+
+### Decorators
+
+def accepts(*types):
+    """Checks input parameters for data types.
+    """
+    def check_accepts(f):
+        assert len(types) == f.func_code.co_argcount
+        def new_f(*args, **kwds):
+            for (a, t) in zip(args, types):
+                assert isinstance(a, t), \
+                        "arg %r does not match %s" % (a,t)
+            return f(*args, **kwds)
+        new_f.func_name = f.func_name
+        return new_f
+    return check_accepts
+
+
+### Classes
+
+class FindBeads2(object):
+    """
+
+    Attributes
+    ----------
+    param1 : int
+        First parameters of Hough circle find algorithm.
+        Defaults to PARAM1 (100).
+    param2 : int
+        First parameters of Hough circle find algorithm.
+        Defaults to PARAM2 (5)
+    """
+    ## Default values
+    # Default values OpenCV Hough
+    global PARAM1
+    PARAM1 = 200
+    global PARAM2
+    PARAM2 = 10
+    # Default values OpenCV Thershold and Filter
+    global THR_BLOCK
+    THR_BLOCK = 11
+    global THR_C
+    THR_C = 15
+    global KERNEL
+    KERNEL = cv2.getStructuringElement(shape = cv2.MORPH_ELLIPSE, ksize = (3,3))
+    global FILT_ITER
+    FILT_ITER = 1
+
+    def __init__(self, bead_size, *args, **kwargs):
+        self.bead_size = bead_size
+        self.circles = None
+        self._lbl_mask = None
+        self._lbl_mask_ann = None
+        self._lbl_mask_bkg = None
+        self.mask_bkg_size = 15
+        self.mask_bkg_buffer = 3
+        self.mask_ann_size = 2
+        # Default values OpenCV Hough
+        self.param1 = PARAM1
+        self.param2 = PARAM2
+        # Default values OpenCV Thershold
+        self.thr_block = THR_BLOCK
+        self.thr_c = THR_C
+        self.kernel = KERNEL
+        self.filt_iter = FILT_ITER
+
     @property
-    def list(self):
-        filter_all = (mask_size & mask_bkg & mask_ref)
-        return filter_all
+    def bead_size(self):
+        return self._bead_size
+    @bead_size.setter
+    def bead_size(self, value):
+        self._bead_size = value
+        self.c_min, self.c_max, self.c_min_dist = self.get_bead_dims(value)
+
+    @property
+    def bead_num(self):
+        if self._lbl_mask is not None:
+            return self.get_bead_num(self._lbl_mask)
+        else:
+            return None
+
+    @property
+    def bead_labels(self):
+        return self.get_bead_labels(self._lbl_mask)
 
     @staticmethod
-    def add(data_set, low, high):
-        mask =  ( (data_set > (data_set.mean() - low * data_set.std()  )) & 
-                  (data_set < (data_set.mean() + high * data_set.std() )) )
+    def get_bead_labels(mask):
+        idx = np.unique(mask[mask>0])
+        #idx = np.delete(idx, idx == 0)
+        return idx
 
+    @staticmethod
+    def get_bead_num(mask):
+        return len(np.unique(mask[mask>0])) - 1
+
+    @property
+    def mask_org(self):
+        return self._lbl_mask
+
+    @property
+    def mask_ann(self):
+        return self._lbl_mask_ann
+
+    @property
+    def mask_bkg(self):
+        return self._lbl_mask_bkg
+
+    @property
+    def bead_dims(self):
+        props = source_properties(self._lbl_mask, self._lbl_mask)
+        tbl = properties_table(props)
+        x = tbl['xcentroid']
+        y = tbl['ycentroid']
+        r = tbl['equivalent_radius']
+        area = tbl['area']
+        #lbl = tbl['max_value']
+        #dims = pd.DataFrame([x, y, r, area, lbl], columns=['x', 'y', 'r', 'area', lbl])
+        dims = np.array([x,y,r]).T
+        return dims
+
+    def find(self, image):
+        #bin_img_mask, circles = self.img2bin(image, 
+        #                            [self.c_min, self.c_max, self.c_min_dist], 
+        #                            self.param1,
+        #                            self.param2,
+        #                            self.thr_block, 
+        #                            self.thr_c, 
+        #                            self.filt_iter, 
+        #                            self.kernel)
+        img = self.img2ubyte(image)
+        img_thr = self.img2thr(img, self.thr_block, self.thr_c)
+
+        labels = ndi.label(img_thr, structure=self.kernel)[0]        
+        self._lbl_mask, self._lbl_mask_incl_neg = self.lbl_mask_flt( labels )
+
+        img_thr_invert = np.invert(img_thr.copy())-254
+        labels_all_bin = self._lbl_mask.copy() + img_thr_invert
+        labels_all_bin[labels_all_bin > 0] = 1
+        D = ndi.distance_transform_edt(labels_all_bin, sampling=3)
+        labels_full = watershed(-D, markers=self._lbl_mask, mask=labels_all_bin)
+        self._lbl_mask_ann, self._lbl_mask_ann_incl_neg = self.lbl_mask_flt( labels_full ) - self._lbl_mask
+        self._lbl_mask_ann[self._lbl_mask_ann < 0] = 0
+        self._lbl_mask[self._lbl_mask_ann < 0] = 0
+
+        #self._lbl_mask = self.lbl_mask_flt( self.create_labeled_mask(bin_img_mask, circles) )
+        #self._lbl_mask_ann = self.lbl_mask_ann(self._lbl_mask, self.mask_ann_size)
+        self._lbl_mask_bkg_incl_neg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_incl_neg, 
+                                               self.mask_bkg_size, 
+                                               self.mask_bkg_buffer) / 2
+        self._lbl_mask_bkg = self._lbl_mask_bkg_incl_neg.copy()
+        self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
+
+    @classmethod
+    def lbl_mask_flt(cls, labels):
+        idx = np.unique(labels)
+        props = source_properties(labels, labels)
+        tbl = properties_table(props)
+
+        area_high = np.median(tbl['area'])*1.25
+        area_low = np.median(tbl['area'])*0.75
+        eccentricity = 0.55
+
+        indices_ec = np.argwhere(tbl['eccentricity'] > eccentricity)
+        indices_ar_max = np.argwhere(tbl['area'] > area_high)
+        indices_ar_min = np.argwhere(tbl['area'] < area_low)
+        indices_all = np.unique(np.concatenate((indices_ec,indices_ar_max,indices_ar_min)))
+        lbl_filter = labels.copy()
+        lbl_filter_incl_neg = labels.copy()
+        if len(indices_all) > 0:
+            for x in indices_all:
+                lbl_filter[labels == idx[x+1]] = 0
+                lbl_filter_incl_neg[labels == idx[x+1]] = -idx[x+1]
+        return lbl_filter, lbl_filter_incl_neg
+
+    def morph_filter(self):
+        idx = cls.get_bead_labels(labels)
+        props = source_properties(labels, labels)
+        tbl = properties_table(props)
+
+
+    #@classmethod
+    #def lbl_mask_ann(cls, mask, size):
+    #    mask_min = mask.copy()
+    #    mask_max = cls.mask_morph_step(-size, mask)
+    #    mask_min[mask_max > 0] = 0
+    #    return mask_min
+
+    @classmethod
+    def lbl_mask_ann(cls, mask, size):
+        mask_max = cls.mask_morph_step(size, mask)
+        mask_max[mask > 0] = 0
+        return mask_max
+
+    @classmethod
+    def lbl_mask_bkg(cls, mask, size, buffer=0):
+        if buffer > 0:
+            mask_min = cls.mask_morph_kernel(buffer, mask)
+        else:
+            mask_min = mask
+        mask_max = cls.mask_morph_kernel(size, mask)
+        mask_max[mask_min > 0] = 0
+        return mask_max
+
+    @classmethod
+    def mask_morph_kernel(cls, size, mask):
+        morph_mask = None
+        kernel = cls.circle_kernel(abs(size))
+        if size < 0:
+            morph_mask = erosion(mask, kernel)
+        elif size > 0:
+            morph_mask = dilation(mask, kernel)
+        return morph_mask
+
+    @classmethod
+    def mask_morph_step(cls, size, mask):
+        morph_mask = mask.copy()
+        if size < 0:
+            for n in xrange(abs(size)):
+                morph_mask = erosion(morph_mask)
+        elif size > 0:
+            for n in xrange(size):
+                morph_mask = dilation(morph_mask)
+        return morph_mask
+
+    @staticmethod
+    def circle_kernel(size):
+        kernel = np.zeros((size, size), dtype=np.uint8)
+        rr, cc = circle(np.floor(size/2), np.floor(size/2), np.ceil(size/2))
+        kernel[rr, cc] = 1
+        return kernel
+
+    @staticmethod
+    def create_labeled_mask(image, circles, kernel=KERNEL):
+        img = image.copy()
+        D = ndi.distance_transform_edt(img, sampling=3)
+        markers_circles = np.zeros_like(img)
+        for idx, c in enumerate(circles):
+            markers_circles[int(c[1]),int(c[0])] = 1
+        markers = ndi.label(markers_circles, structure=kernel)[0]
+        labels = watershed(-D, markers, mask=img)
+        return labels
+
+    @staticmethod
+    @accepts((np.ndarray, xd.DataArray))
+    def img2ubyte(image):
+        if type(image) is (xd.DataArray):
+            image = image.values
+        img_dtype = image.dtype
+        if img_dtype is np.dtype('uint8'):
+            return image
+        img_min = image - image.min()
+        img_max = img_min.max()
+        img_conv = np.array( (img_min/img_max) * 255, dtype=np.uint8 )
+        return img_conv
+
+    @classmethod
+    def img2thr(cls, image, thr_block=THR_BLOCK, thr_c=THR_C):
+        img = cls.img2ubyte(image)
+        img_thr = cv2.adaptiveThreshold(src = img,
+                            maxValue = 1, 
+                            adaptiveMethod = cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                            thresholdType = cv2.THRESH_BINARY,
+                            blockSize = thr_block,
+                            C = thr_c)
+        return img_thr
+
+    @staticmethod
+    def thr2fill(image, circles, kernel=KERNEL):
+        img_fill = image.copy()
+        flood_mask = np.zeros((image.shape[0]+2, image.shape[1]+2), dtype='uint8')
+        for idx, c in enumerate(circles):
+            cv2.floodFill(image=img_fill, mask=flood_mask,
+                          seedPoint = (c[1],c[0]), 
+                          newVal = 2, 
+                          loDiff = 0, 
+                          upDiff = 1)
+        img_fill[image == 0] = 0     # Add previous threshold image to filled image
+        img_fill[img_fill == 0] = 1  # Set lines to 1
+        img_fill[img_fill == 2] = 0  # Set background to 0
+        img_fill_final = ndi.binary_fill_holes(img_fill, structure=kernel).astype(np.uint8)
+        return img_fill_final
+
+    @staticmethod
+    def fill2filter(image, iter=FILT_ITER, kernel=KERNEL):
+        img_filter = cv2.morphologyEx(image, 
+                                      cv2.MORPH_OPEN, 
+                                      kernel, 
+                                      iterations = iter)
+        return img_filter
+
+    @staticmethod
+    def get_bead_dims(bead_size):
+        """Set default bead dimensions, min/max range, and min distance.
+        """
+        c_radius = bead_size / 2
+        c_min = int(c_radius * 0.75)
+        c_max = int(c_radius * 1.25)
+        c_min_dist = (c_min * 2) - 1
+        return c_min, c_max, c_min_dist
+
+    #@classmethod
+    #def img2bin(cls, image, 
+    #            bead_size_param, param1=PARAM1, param2=PARAM2, 
+    #            thr_block=THR_BLOCK, thr_c=THR_C, 
+    #            iter=FILT_ITER, kernel=KERNEL):
+    #    img = cls.img2ubyte(image)
+    #    img_thr = cls.img2thr(img, thr_block, thr_c)
+    #    circles = cls.circle_find(img, bead_size_param, param1, param2)
+    #    img_fill = cls.thr2fill(img_thr, circles, kernel)
+    #    img_final = cls.fill2filter(img_fill, iter=iter, kernel=kernel)
+    #    return img_final, circles
+
+    @classmethod
+    def circle_find(cls, image, bead_size_parem, param1=PARAM1, param2=PARAM2):
+        """Find circles using OpenCV Hough transform.
+        """
+        img = cls.img2ubyte(image)
+        if type(bead_size_parem) is int:
+            c_min, c_max, c_min_dist = cls.get_bead_dims(bead_size_parem)
+        else:
+            c_min, c_max, c_min_dist = bead_size_parem
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1,
+                                   minDist=c_min_dist,
+                                   minRadius=c_min, 
+                                   maxRadius=c_max,
+                                   param1=param1,
+                                   param2=param2)
+        return circles[0]
 
 class FindBeads(object):
     """Find and identify bead objects from image.
@@ -163,13 +462,15 @@ class FindBeads(object):
     def circle_mask(image, min_dist, min_r, max_r, param_1, param_2, enlarge):
         """Find initial circles using Hough transform and return mask.
         """
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
-                                   minDist=min_dist, 
-                                   param1=param_1, 
-                                   param2=param_2, 
-                                   minRadius=min_r, 
-                                   maxRadius=max_r)[0]
-        if circles is None: return None
+        try:  # TO-DO: HACK - Fix later
+            circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
+                                       minDist=min_dist, 
+                                       param1=param_1, 
+                                       param2=param_2, 
+                                       minRadius=min_r, 
+                                       maxRadius=max_r)[0]
+        except:
+            return None
         mask = np.zeros(image.shape, np.uint8)  # Make mask
         for c in circles:
             x, y, r = c[0], c[1], int(np.ceil(c[2]*enlarge))
@@ -243,7 +544,7 @@ class FindBeads(object):
                        (0, 0, 0), -1)
         return labeled_annulus_mask
 
-    def overlay_image(self, image, annulus=None, dim=False):
+    def overlay_image(self, image, annulus=None, dim=None):
         """Overlay Image
         Overlay image with circles of labeled mask
         """
@@ -338,6 +639,7 @@ class SpectralUnmixing(FrozenClass):
     def ndata(self):
         return self._dataframe.values
 
+    # Private functions
     def _flatten(self, images):
         """Flatten
         Flatten X and Y of images in NumPy array

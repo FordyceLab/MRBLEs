@@ -39,7 +39,7 @@ from bead_analysis.data import *
 
 
 class ReferenceSpectra(object):
-    def __init__(self, files, object_channel, channels, find_param, dark_noise=0, crop_x=None, crop_y=None):
+    def __init__(self, files, object_channel, channels, find_param, dark_noise=0):
         super(ReferenceSpectra, self).__init__()
         self.files = files
         self.object_channel = object_channel
@@ -49,15 +49,14 @@ class ReferenceSpectra(object):
             self._channels = channels
         self.find_param = find_param
         self.darknoise = dark_noise
-        self.crop_x = crop_x
-        self.crop_y = crop_y
+        self.crop_x = None
+        self.crop_y = None
 
         self.ref_data = Spectra()
         self.ref_objects = FindBeads(min_r=find_param[0], max_r=find_param[1], param_1=find_param[2], param_2=find_param[3])
 
     @property
     def output(self):
-        self.get_spectra()
         return self.ref_data
 
     @property
@@ -97,11 +96,11 @@ class ReferenceSpectra(object):
             data = self.get_spectrum(self.darknoise, channels, self.ref_objects.labeled_mask)
             self.ref_data.spec_add(name, data = data, channels = channel_names)
 
-    def set_back(self, file, channels, crop_x, crop_y):
+    def set_back(self, file, channels, roi_x, roi_y):
         if (type(channels) is list) and (len(channels) == 2):
             channels = self.set_slice(channels)
-        BACK_CROPx = self.set_slice(crop_x)
-        BACK_CROPy = self.set_slice(crop_y)
+        BACK_CROPx = self.set_slice(roi_x)
+        BACK_CROPy = self.set_slice(roi_y)
         print("Spectrum Bkg: %s, %s" % (BACK_CROPx, BACK_CROPy))
         bkg_img_obj = ImageSetRead(file)
         ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj[channels,BACK_CROPy,BACK_CROPx]])

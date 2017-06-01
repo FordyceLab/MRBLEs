@@ -12,8 +12,8 @@ from __future__ import division
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160623
-# version update    : 20160808
-# version           : v0.2
+# version update    : 20170601
+# version           : v0.5
 # usage             : As part of Bead Analysis module
 # notes             : Do not quick fix functions for specific needs, keep them general!
 # python_version    : 2.7
@@ -39,7 +39,12 @@ import matplotlib.pyplot as plt
 # Check error exceptions
 # Create error checking functions for clustering
 
-# Main functions and classes
+### Main functions and classes
+
+## Functions
+
+
+## Classes
 class PropEdit(object):
     """Dynamically add attributes as properties.
 
@@ -85,6 +90,20 @@ class OutputMethod():
             return func.values
         else:
             raise ValueError("Unspecified output method: '%s'." % output)
+
+    # TO-DO!
+    def _crop_data(self):
+        pass
+
+class ChannelDescriptor(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, obj, objtype):
+        return obj.spec_get(self.name)
+
+    def __set__(self, obj, val):
+        obj._dataframe[self.name] = val
 
 
 class Spectra(PropEdit, FrozenClass, OutputMethod):
@@ -269,7 +288,7 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         """
         if type(index) is int:
             index = self.c_names[index]
-        data = self._dataframe.ix[index]
+        data = self._dataframe.loc[index]
         if output is None:
             output = self.output
         return self._data_out(data, output)
@@ -294,12 +313,8 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
     @property
     def pdata(self):
         return self._dataframe
-
-    def plot(self, show=False):
-        self._dataframe.plot(title="Spectra", rot=90)
-        if show is True:
-            plt.show()
-            
+    
+    # Data file output/input functions
     def to_csv(self, filepath):
         if self._dataframe is not None:
             self._dataframe.to_csv(filepath)
@@ -314,28 +329,23 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
 
     def read_csv(self, filepath):
         if self._dataframe is not None:
-            self._dataframe.read_csv(filepath)
+            self._dataframe = pd.read_csv(filepath,'rb')
         else:
             print("No spectra to export!")
 
-    def read_excel(self, filepath):
+    def read_excel(self, filepath, sheetname=0):
         if self._dataframe is not None:
-            self._dataframe.read_excel(filepath)
+            self._dataframe = pd.read_excel(open(filepath,'rb'), sheetname=sheetname)
         else:
             print("No spectra to export!")
 
-class ChannelDescriptor(object):
-    def __init__(self, name):
-        self.name = name
+    # Plot functions
+    def plot(self, show=False):
+        self._dataframe.plot(title="Spectra", rot=90)
+        if show is True:
+            plt.show()
 
-    def __get__(self, obj, objtype):
-        return obj.spec_get(self.name)
 
-    def __set__(self, obj, val):
-        obj._dataframe[self.name] = val
-
-# TO-DO
-# - Add mask for CROP
 class ImageSetRead(FrozenClass, OutputMethod):
     """Image set data object that loads image set from file(s).
 
@@ -362,16 +372,16 @@ class ImageSetRead(FrozenClass, OutputMethod):
     _dataframe : xarray dataframe
         Returned when calling the instance.
     _dataframe[idx] : NumPy ndarray
-        Returns the index value or slice values: [start:stop:stride]. Warning: when using column names stop values are included, e.g. inst[
+        Returns the index value or slice values: [start:stop:stride]. Warning: when using column names stop values are included.
 
     Examples
     --------
     >>> image_data_object = ImageSetRead('C:/folder/file.tif')
     >>> image_files = ['C:/folder/file.tif', 'C:/folder/file.tif']
     >>> image_data_object = ImageSetRead(image_files, output='pd')
-    >>> image_data['BF', 100:400, 100:400]
+    >>> image_data_object['BF', 100:400, 100:400]
     (301L, 301L)
-    >>> image_data['BF', 100:400, 100:400]
+    >>> image_data_object['BF', 100:400, 100:400]
     (301L, 301L)
     """
     def __init__(self, file_path, series=0, output='nd'):
@@ -379,6 +389,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         self._dataframe, self._metadata, self._files = \
             self.load(file_path, series)
         self.output = output
+        self.crop_x = None
+        self.crop_y = None
         self._freeze()
 
     def __repr__(self):
@@ -387,9 +399,89 @@ class ImageSetRead(FrozenClass, OutputMethod):
         return repr([self._dataframe])
 
     def __getitem__(self, index):
-        """Get method, see method 'spec_get'.
+        """Get method, see method 'c_get'.
         """
         return self.c_get(index)
+
+    # Main image load function
+    @classmethod
+    def load(cls, file_path, series=0):
+        """Load image files into data structures.
+
+        Class method. Can be used without instantiating.
+
+        Parameters
+        ----------
+        file_path : string/list [string, string, ...]
+            File path as string, e.g. 'C:/folder/file.tif', or as list of file paths, e.g. ['C:/folder/file.tif', 'C:/folder/file.tif'].
+
+        series : int, optional
+            Sets the series number if file has multiple series. Use series='all' for loading all series.
+            Defaults to 0.
+
+        Examples
+        --------
+        >>> ImageSetRead.load('C:/folder/file.tif')
+        >>> image_files = ['C:/folder/file.tif', 'C:/folder/file.tif']
+        >>> ImageSetRead.load(image_files)
+        """
+        if type(file_path) is str: 
+            file_path = [file_path]
+        with tff.TiffSequence(file_path, pattern='XYCZT') as ts, tff.TiffFile(file_path[0]) as tf:
+            files = ts.files
+            image_metadata = cls._get_metadata(tf)
+            if len(tf.series) > 1 and series == 'all':
+                data = []
+                for idx, serie in enumerate(tf.series):
+                    data.append(ts.asarray(series=idx))
+                panel_data = np.array(data)
+            else:
+                panel_data = ts.asarray(series=series)
+        if len(file_path) == 1 and series != 'all':
+            panel_data = np.vstack(panel_data)
+        image_data = cls.convert_to_xd(panel_data, image_metadata, file_path, series)
+        return image_data, image_metadata, files
+
+    # Channel properties and methods
+    @property
+    def c_size(self):
+        """Return channel count.
+        """
+        return self._dataframe.c.size
+
+    @property
+    def c_names(self):
+        """"Return channel names.
+        """
+        return self._dataframe.c.values
+
+    def c_index(self, name):
+        """Return channel number.
+        """
+        return self.c_names.get_loc(name)
+
+    def c_get(self, index, output=None):
+        """Return data by chanel name and/or number.
+
+        Parameters
+        ----------
+        index : str/int
+           Number or string of channel name.
+
+        output : string, optional
+            Sets output method. Options: 'ndarray', NumPy array, or 'pandas', Pandas dataframe.
+            Defaults to setting in instantiation, see class description.
+
+        Returns
+        -------
+        data : NumPy array/xarray DataArray
+            Returns the data as NumPy array or xarray DataArray, depending on output method set by parameter 'output' or default method, if output not set.
+        """
+        if output is None:
+            output = self.output
+        data_crop = self.check_crop()
+        data = self._data_out(data_crop.loc[index], output)
+        return data
 
     # File properties and methods
     @property
@@ -417,47 +509,6 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """
         return len(self._metadata['series'])
 
-    # Channel properties and methods
-    @property
-    def c_size(self):
-        """Return channel count.
-        """
-        return self._dataframe.c.size
-
-    @property
-    def c_names(self):
-        """"Return channel names.
-        """
-        return self._dataframe.c.values
-        #return self._dataframe.items.tolist()
-
-    def c_index(self, name):
-        """Return channel number.
-        """
-        return self.c_names.get_loc(name)
-
-    def c_get(self, index, output=None):
-        """Return data by chanel name and/or number.
-
-        Parameters
-        ----------
-        index : str/int
-           Number or string of channel name.
-
-        output : string, optional
-            Sets output method. Options: 'ndarray', NumPy array, or 'pandas', Pandas dataframe.
-            Defaults to setting in instantiation, see class description.
-
-        Returns
-        -------
-        data : NumPy array/Pandas dataframe
-            Returns the data as NumPy array or xarray DataArray, depending on output method set by parameter 'output' or default method, if output not set.
-        """
-        if output is None:
-            output = self.output
-        data = self._data_out(self._dataframe.loc[index], output)
-        return data
-
     # Position properties and methods
     @property
     def p_size(self):
@@ -480,6 +531,13 @@ class ImageSetRead(FrozenClass, OutputMethod):
         return self._dataframe.shape[0]
 
     @property
+    def t_interval(self):
+        """Return time interval.
+        """
+        return self._metadata['summary']['Interval_ms']
+
+    # Axes properties and methods
+    @property
     def axes(self):
         """Return data order.
 
@@ -494,15 +552,12 @@ class ImageSetRead(FrozenClass, OutputMethod):
         >>> image_data_object.axes
         'TCYX'
         """
-        if self.is_multi_file:
-            return ('F' + self._metadata['series'][0]['axes'])
-        else:
-            return self._metadata['series'][0]['axes']
+        return ''.join(self._dataframe.dims).upper()
     
     # Data properties and methods
     @property
     def data(self):
-        """Return data as Pandas dataframe or NumPy ndarray, as set by default output argument.
+        """Return data as xarray DataArray or NumPy ndarray, as set by default output argument.
         """
         return self._data_out(self._dataframe, self.output)
 
@@ -514,62 +569,62 @@ class ImageSetRead(FrozenClass, OutputMethod):
 
     @property
     def xdata(self):
-        """Return xarray dataframe.
+        """Return xarray DataArray.
         """
         return self._dataframe
 
-    @classmethod
-    def load(cls, file_path, series=0):
-        """Load image files into data structures.
+    # Crop properties and methods
+    @property
+    def crop_x(self):
+        return self._crop_x
+    @crop_x.setter
+    def crop_x(self, value):
+        self._crop_x = self.set_slice(value)
 
-        Class method. Can be used without instantiating.
+    @property
+    def crop_y(self):
+        return self._crop_y
+    @crop_x.setter
+    def crop_y(self, value):
+        self._crop_y = self.set_slice(value)
 
-        Parameters
-        ----------
-        file_path : string/list [string, string, ...]
-            File path as string, e.g. 'C:/folder/file.tif', or as list of file paths, e.g. ['C:/folder/file.tif', 'C:/folder/file.tif'].
+    def set_crop(self, crop_x, crop_y):
+        self.crop_x = crop_x
+        self.crop_y = crop_y
 
-        series : int, optional
-            Sets the series number if file has multiple series. Use series='all' for loading all series.
-            Defaults to 0.
-
-        Examples
-        --------
-        >>> ImageSetRead.load('C:/folder/file.tif')
-        >>> image_files = ['C:/folder/file.tif', 'C:/folder/file.tif']
-        >>> ImageSetRead.load(image_files)
-        """
-        if type(file_path) is str: 
-            file_path = [file_path]
-        with tff.TiffSequence(file_path, pattern='XYCZT') as ts, tff.TiffFile(file_path[0]) as tf:
-            files = ts.files
-            image_metadata = cls._get_metadata(tf)
-            if tf.series > 1 and series == 'all':
-                data = []
-                for idx, serie in enumerate(tf.series):
-                    data.append(ts.asarray(series=idx))
-                panel_data = np.vstack(data)
-            else:
-                panel_data = ts.asarray(series=series)
-        if panel_data.ndim > 4:
-            panel_data = np.vstack(panel_data)
-            warnings.warn("More than 4 axes: %s. First 2 axes stacked: %s." 
-                            % (panel_data.shape, panel_data.shape))
-        elif len(file_path) == 1 and series != 'all':
-            panel_data = np.vstack(panel_data)
-        image_data = cls.convert_to_pd(panel_data, image_metadata)
-        return image_data, image_metadata, files
+    def check_crop(self):
+        if self.crop_x is not None and self.crop_y is not None:
+            data_crop = self._dataframe.loc[dict(x=self.crop_x, y=self.crop_y)]
+        elif self.crop_x is not None:
+            data_crop = self._dataframe.loc[dict(x=self.crop_x)]
+        elif self.crop_y is not None:
+            data_crop = self._dataframe.loc[dict(y=self.crop_y)]
+        else:
+            data_crop = self._dataframe
+        return data_crop
 
     @staticmethod
-    def convert_to_pd(data, metadata):
-        """Convert data and metadata to Pandas Panel/Panel4D, depending on size of data.
-        """
-        if data.ndim == 4:
-            panel_data = xr.DataArray(data, dims=['f','c','y','x'], coords={'c':metadata['summary']['ChNames']})
-        elif data.ndim == 3:
-            panel_data = xr.DataArray(data, dims=['c','y','x'], coords={'c':metadata['summary']['ChNames']})
+    def set_slice(values):
+        if type(values) is slice or values is None:
+            return values
+        elif type(values) is list:
+            return slice(values[0], values[1])
         else:
-            ValueError("Not the right shape: '%s' '%s'" % (data.ndim, sys.exc_info()[1]))
+            raise ValueError("Use slice(value, value) or [value, value] for range! Input: %s" % values)
+
+    @staticmethod
+    def convert_to_xd(data, metadata, file_path, series):
+        """Convert data and metadata to xarray DataArray.
+        """
+        if data.ndim == 2:
+            panel_data = xr.DataArray(data, dims=['y','x'])
+        else:
+            dims = [letter.lower() for letter in metadata['series'][0]['axes']]
+            if len(metadata['series']) > 1 and (series is 'all'):
+                dims.insert(0, 'p')
+            if len(file_path) > 1:
+                dims.insert(0, 'f')
+            panel_data = xr.DataArray(data, dims=dims, coords={'c':metadata['summary']['ChNames']})
         return panel_data
 
 
@@ -580,7 +635,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Parameters
         ----------
         path : string
-            Folder path as string, e.g. 'C:/folder/file.tif'.
+            Folder path as string, e.g. 'C:/folder/file.tif' or r'C:\folder\file.tif'.
 
         pattern : string
             File extenstion of general file pattern as search string, e.g. '20160728_MOL_*'
@@ -624,6 +679,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
             warnings.warn("Not a Micro Manager TIFF file.")
             return None
 
+
+## Experimental Data Types
 class BeadImage(object):
     def __init__(self, data):
         dedault_columns = ('code',
@@ -640,6 +697,7 @@ class BeadImage(object):
 
     def __getitem__(self, index):
         return self._dataframe.ix[index]
+
 
 class BeadSet(object):
     """Bead Set
@@ -702,21 +760,39 @@ class BeadSet(object):
         self._dataframe['R'] = value[:,1]
         self._dataframe['R'] = value[:,2]
 
-    def get_median(labels, images):
+    def get_median(mask, images, label=None):
         """Get Median Intensities of each object location from the given image.
-        labels = Labeled mask of objects
+        mask = labeled mask of objects
         images = image set of spectral images
         """
-        idx = np.arange(1, len(np.unique(labels)))
-        data_size = len(np.unique(labels)) - 1
+        if label is None:
+            idx = np.arange(1, len(np.unique(mask)))
+        else:
+            idx = label
+        data_size = len(np.unique(mask)) - 1
         channel_no = images[:, 0, 0].size
         channels = xrange(channel_no)
         medians_data = np.empty((data_size, channel_no))
         for ch in channels:
             # Get median value of each object
             medians_data[:, ch] = ndi.labeled_comprehension(
-                images[ch, :, :], labels, idx, np.median, float, -1)
+                images[ch, :, :], mask, idx, np.median, float, -1)
         return medians_data
+
+    def get_data(mask, images, function, label=None):
+        """Get data of each object location from the given image with provided function.
+        mask = labeled mask of objects
+        images = image set of spectral images
+        function = e.g. np.median
+        """
+        if label is None:
+            idx = np.arange(1, len(np.unique(mask)))
+        else: 
+            idx = label
+        channel_no = images[:, 0, 0].size
+        channels = xrange(channel_no)
+        data = [ndi.labeled_comprehension(images[ch, :, :], mask, idx, function, float, -1) for ch in channels]
+        return np.array(data)
 
     def get_per(labels, data):
         idx = np.arange(1, len(np.unique(labels)))

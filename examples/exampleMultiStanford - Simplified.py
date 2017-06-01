@@ -18,6 +18,8 @@ from __future__ import division
 # notes             : Multiple file code set.
 # python_version    : 2.7
 
+from photutils import source_properties, properties_table
+
 # [TO-DO]
 
 # [Modules]
@@ -119,10 +121,10 @@ spec_object = ba.simp.ReferenceSpectra(files = REF_FILES,
                                        object_channel = 'Brightfield', 
                                        channels = ['435','780'], 
                                        find_param = [14, 16, 10, 6], 
-                                       dark_noise = dark_noise, 
-                                       crop_x = CROPx_ref, 
-                                       crop_y = CROPy_ref)
-spec_object.set_back(BACK_FILE, BACK_CROPx, BACK_CROPy)
+                                       dark_noise = dark_noise)
+spec_object.crop_x = CROPx_ref
+spec_object.crop_y = CROPy_ref
+spec_object.set_back(BACK_FILE, ['l-435','l-780'], BACK_CROPx, BACK_CROPy)
 ref_data_object = spec_object.output
 
 # Trp
@@ -148,8 +150,10 @@ print("[Load bead images and find objects]")
 
 bead_image_files = ba.ImageSetRead.scan_path(BEAD_IMAGE_FOLDER, BEAD_IMAGE_PATTERN)
 bead_image_obj = ba.ImageSetRead(bead_image_files)
-bead_image_set_bf = bead_image_obj[:,'Brightfield',CROPy,CROPx]
-bead_image_set_ln = bead_image_obj[:,'l-435':'l-780',CROPy,CROPx]
+bead_image_obj.crop_x = CROPx
+bead_image_obj.crop_y = CROPy
+bead_image_set_bf = bead_image_obj[:,'Brightfield']
+bead_image_set_ln = bead_image_obj[:,'l-435':'l-780']
 
 # Bead search and filter parameters
 bead_objects = ba.FindBeads(min_r=5, max_r=8, min_dist=9, param_1=10, param_2=7, annulus_width=3, enlarge = 1)

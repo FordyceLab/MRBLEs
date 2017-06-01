@@ -4,8 +4,32 @@ from __future__ import print_function
 
 # [Module Imports]
 from bead_analysis.core import *
-from bead_analysis.core import __copyright__
-print(__copyright__)
 from bead_analysis.data import *
 import bead_analysis.inspect as inspect
 import bead_analysis.simp as simp
+
+# [Main header with project metadata] | Only in the main file!
+# Copyright and credits
+__copyright__   = ("Copyright 2017 - "
+                   "The Encoded Beads Project - "
+                   "ThornLab@UCSF and "
+                   "FordyceLab@Stanford")
+# Original author(s) of this Python project, like: ("...", 
+__author__      = ("Bjorn Harink")  #               "name")
+# People who contributed to this Python project, like: ["...",
+__credits__     = ["Kurt Thorn",  #                     "name"]
+                   "Huy Nguyen"]
+# Maintainer contact information
+__maintainer__  = "Bjorn Harink" 
+__email__       = "bjorn@harink.info" 
+# Software information
+__license__     = "MIT" 
+__version__     = "v0.5"
+__status__      = "Prototype"
+
+print(__copyright__)
+
+"""Bead Analysis Package
+
+This package contains the necessary classes, methods and data structures to perform the Bead Analysis for MRBLs.
+"""

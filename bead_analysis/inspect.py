@@ -34,6 +34,27 @@ from matplotlib import pyplot as plt
 import matplotlib.animation as manimation
 from mpl_toolkits.mplot3d import axes3d
 
+
+## Fucntions
+def circle_image(image, dims, factor=0.5):
+    """Circle Image
+    Overlay image with circles of labeled mask
+    """
+    img = np.zeros_like(image)
+    for dim in dims:
+        cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), 5000, 1)
+    dst = cv2.addWeighted(image, fatcor, img, 1-factor, 0)
+    return dst
+
+def overlay_image(image1, image2, factor=0.5):
+    """Overlay Image
+    Overlay images
+    """
+    dst = cv2.addWeighted(image1, factor, image2, 1-factor, 0)
+    return dst
+
+
+## Classes
 class GenerateCodes(object):
     """Generate bead code set.
 
