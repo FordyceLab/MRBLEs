@@ -7,6 +7,7 @@ from bead_analysis.core import *
 from bead_analysis.data import *
 import bead_analysis.inspect as inspect
 import bead_analysis.simp as simp
+import bead_analysis.kinetics as kin
 
 # [Main header with project metadata] | Only in the main file!
 # Copyright and credits

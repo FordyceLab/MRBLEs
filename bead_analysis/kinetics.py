@@ -27,22 +27,23 @@ from math import sqrt
 # Project
 import bead_analysis as ba
 
-class kfit(object):
-    """Kurt's white paper fit algorithm
+class kshow(object):
+    """Kurt's white paper for competive binding. Assuming substrate or complex in excess.
     """
-    def __init__(self, c_substrate, c_complex, kd_init):
+    def __init__(self, c_substrate, c_complex, kd_init, tol=1E-4):
         self.n_substrate = len(c_substrate)
         self.n_complex = len(c_complex)
         self.c_substrate = c_substrate
         self.c_complex = c_complex
         self.kds = self.kd_init(kd_init, self.n_substrate)
+        self.tol = tol
         
     @property
     def result(self):
         """Return result from fit.
         """
         return self.MPfinal
-        
+
     def fit(self):
         """Fit solution and save to results. Access result with object.result
         """
@@ -50,20 +51,20 @@ class kfit(object):
         MPapproxM = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
         MPapproxP = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
         MPnew = np.zeros((self.n_substrate))
-        for m in xrange(len(Mmat)):
-            Mt = Mmat[m]  # total protein concentration
+        for m in xrange(self.n_complex):
+            Mt = self.c_complex[m]  # total protein concentration
             # initial guess
-            if Mt > sum(Pt):
+            if Mt > sum(self.c_substrate):
                 MP = MPapproxM[m,:]
             else:
                 MP = MPapproxP[m,:]
             err = 1
-            while err > 0.0001:
+            while err > self.tol:
                 MPsum = sum(MP)
                 for p in xrange(self.n_substrate):
                     MPsump = MPsum - MP[p]
-                    b = MPsump - Mt - Pt[p] - Kd[p]
-                    c = Pt[p] * (Mt - MPsump)
+                    b = MPsump - Mt - self.c_substrate[p] - self.kds[p]
+                    c = self.c_substrate[p] * (Mt - MPsump)
                     MPnew[p] = (-b - sqrt(b**2 - 4*c)) / 2
                 err = abs(sum((MP - MPnew)/MPnew))
                 MP = (0.1*MPnew + MP) / 1.1
@@ -77,7 +78,7 @@ class kfit(object):
         return Kd
     
     @staticmethod
-    def sub_excess(Mt, Pt, Kd):
+    def sub_excess(Mmat, Pt, Kd):
         """Substrate (e.g. peptides on bead) in excess
         """
         MPapproxP = np.zeros((len(Mmat), len(Pt)))
@@ -88,7 +89,7 @@ class kfit(object):
         return MPapproxP
     
     @staticmethod
-    def comp_excess(Mt, Pt, Kd):
+    def comp_excess(Mmat, Pt, Kd):
         """Complex (e.g. added protein concentration) in excess
         """
         MPapproxM = np.zeros((len(Mmat), len(Pt)))
