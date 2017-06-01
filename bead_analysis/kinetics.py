@@ -12,8 +12,8 @@ from __future__ import division
 # author            : Bjorn Harink
 # credits           : 
 # date              : 20160511
-# version update    : 20160511
-# version           : v0.1
+# version update    : 20170601
+# version           : v0.2
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
 # python_version    : 2.7
@@ -28,7 +28,43 @@ from math import sqrt
 import bead_analysis as ba
 
 class kshow(object):
-    """Kurt's white paper for competive binding. Assuming substrate or complex in excess.
+    """Kurt's white paper for competive binding.
+    
+    Assuming substrate (peptide on bead) or complex (protein) concentration in excess.
+    
+    Parameters
+    ----------
+    c_substrate : array
+        NumPy array of substrate (peptide) concentrations.
+
+    c_complex : array
+        NumPy array of complex (protein) concentrations.
+
+    kd_init : int
+        Set range max for Kd's starting from 0.
+
+    tol : float
+        Set tolerance error.
+        Defaults to 1E-4.
+
+    Attributes
+    ----------
+    result : array
+        Returns NumPy array of fit.
+
+    Functions
+    ---------
+    fit : function
+        Function to fit parameters.
+
+    Examples
+        --------
+        >>> Mmat = np.logspace(0, 3, 20)  # Matrix of protein concentrations, e.g. 20x between 0 to 3 uM.
+        >>> Pt = np.array(([10]*10))      # Concentrations of each peptide, e.g. 10x 10 uM.
+        >>> test_kshow = ba.kin.kshow(Pt, Mmat, 2, 1E-4)
+        >>> test_kshow.fit()
+        >>> plt.plot(test_kshow.result)
+        ...
     """
     def __init__(self, c_substrate, c_complex, kd_init, tol=1E-4):
         self.n_substrate = len(c_substrate)
