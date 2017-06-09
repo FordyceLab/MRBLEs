@@ -619,7 +619,12 @@ class ImageSetRead(FrozenClass, OutputMethod):
         if data.ndim == 2:
             panel_data = xr.DataArray(data, dims=['y','x'])
         else:
-            dims = [letter.lower() for letter in metadata['series'][0]['axes']]
+            # Added check if using newer version of Scikit-Image
+            if type(metadata['series'][0]) is tff.tifffile.TiffPageSeries:
+                dims = [letter.lower() for letter in metadata['series'][0].axes]
+            # For Scikit-Image versions 0.12.1 and below
+            else:
+                dims = [letter.lower() for letter in metadata['series'][0]['axes']]
             if len(metadata['series']) > 1 and (series is 'all'):
                 dims.insert(0, 'p')
                 data = np.squeeze(data)
