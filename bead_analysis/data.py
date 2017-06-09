@@ -627,8 +627,6 @@ class ImageSetRead(FrozenClass, OutputMethod):
                 dims.insert(0, 'f')
             if 'i' in dims:
                 dims[dims.index('i')] = 'c'
-            print(dims)
-            print(data.shape)
             panel_data = xr.DataArray(data, dims=dims, coords={'c':metadata['summary']['ChNames']})
         return panel_data
 
