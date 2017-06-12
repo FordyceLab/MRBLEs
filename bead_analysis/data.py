@@ -620,18 +620,18 @@ class ImageSetRead(FrozenClass, OutputMethod):
             panel_data = xr.DataArray(data, dims=['y','x'])
         else:
             # Added check if using newer version of Scikit-Image
-            if type(metadata['series'][0]) is tff.tifffile.TiffPageSeries:
-                dims = [letter.lower() for letter in metadata['series'][0].axes]
-            # For Scikit-Image versions 0.12.1 and below
-            else:
+            try:
+                if type(metadata['series'][0]) is tff.tifffile.TiffPageSeries:
+                    dims = [letter.lower() for letter in metadata['series'][0].axes]
+            except:
+                # For backwards compatibility of Scikit-Image versions 0.12.3 and below. 
                 dims = [letter.lower() for letter in metadata['series'][0]['axes']]
+                warnings.warn("Scikit-Image latest update has changed method to retrieve metadata. Please upgrade to the latest Scikit-Image package.")
             if len(metadata['series']) > 1 and (series is 'all'):
                 dims.insert(0, 'p')
                 data = np.squeeze(data)
             if len(file_path) > 1:
                 dims.insert(0, 'f')
-            if 'i' in dims:
-                dims[dims.index('i')] = 'c'
             panel_data = xr.DataArray(data, dims=dims, coords={'c':metadata['summary']['ChNames']})
         return panel_data
 
