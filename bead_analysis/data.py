@@ -416,7 +416,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
             File path as string, e.g. 'C:/folder/file.tif', or as list of file paths, e.g. ['C:/folder/file.tif', 'C:/folder/file.tif'].
 
         series : int, optional
-            Sets the series number if file has multiple series. Use series='all' for loading all series.
+            Sets the series number if file has multiple series (or positions). Use series='all' for loading all series.
             Defaults to 0.
 
         Examples
@@ -528,11 +528,11 @@ class ImageSetRead(FrozenClass, OutputMethod):
     def t_size(self):
         """Return time count.
         """
-        return self._dataframe.shape[0]
+        return len(np.unique(self._metadata['index_map']['frame']))
 
     @property
     def t_interval(self):
-        """Return time interval.
+        """Return time interval in milliseconds (ms).
         """
         return self._metadata['summary']['Interval_ms']
 
@@ -544,7 +544,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Returns
         -------
         data_order : string
-            Returns order as string with: F for file; T for timepoint, C for channel; Y for Y-axis; X for X-axis.
+            Returns order as string with: P for position; F for file; T for timepoint, C for channel; Y for Y-axis; X for X-axis.
 
         Examples
         --------
