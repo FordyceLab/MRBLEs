@@ -30,6 +30,7 @@ import fnmatch
 import numpy as np
 import pandas as pd
 import xarray as xr
+from xml.dom import minidom
 # File import
 from skimage.external import tifffile as tff
 # Graphs
@@ -247,7 +248,7 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         self._dataframe = self._dataframe.drop(index, axis=1)
         self._removeprop(index)
 
-    # Channel methods and properties    
+    # Channel methods and properties
     @property
     def c_names(self):
         """Return label names.
@@ -526,15 +527,36 @@ class ImageSetRead(FrozenClass, OutputMethod):
     # Time properties and methods
     @property
     def t_size(self):
-        """Return time count.
+        """Return time-point count.
         """
         return len(np.unique(self._metadata['index_map']['frame']))
 
     @property
     def t_interval(self):
-        """Return time interval in milliseconds (ms).
+        """Return set time interval. 
+        Default in milliseconds (ms), check object.t_unit for time unit.
         """
         return self._metadata['summary']['Interval_ms']
+    
+    @property
+    def t_deltas(self):
+        """Return time deltas between each image acquisition (each channel, position etc.). 
+        Default in milliseconds (ms), check object.t_unit for time unit.
+        """
+        xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value
+        xml_tree = minidom.parseString(xml_string)
+        t_deltas = [float(xm.attributes['DeltaT'].value) for xm in xml_tree.getElementsByTagName('Plane')]
+        return t_deltas
+
+    @property
+    def t_unit(self):
+        """Return time unit.
+        """
+        xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value
+        xml_tree = minidom.parseString(xml_string)
+        xm = xml_tree.getElementsByTagName('Plane')
+        t_unit = str(xm[0].attributes['DeltaTUnit'].value)
+        return t_unit
 
     # Axes properties and methods
     @property
@@ -624,7 +646,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
                 if type(metadata['series'][0]) is tff.tifffile.TiffPageSeries:
                     dims = [letter.lower() for letter in metadata['series'][0].axes]
             except:
-                # For backwards compatibility of Scikit-Image versions 0.12.3 and below. 
+                # For backwards compatibility of Scikit-Image versions 0.12.3
+                # and below.
                 dims = [letter.lower() for letter in metadata['series'][0]['axes']]
                 warnings.warn("Scikit-Image latest update has changed method to retrieve metadata. Please upgrade to the latest Scikit-Image package.")
             if len(metadata['series']) > 1 and (series is 'all'):
@@ -689,7 +712,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
 
 
 ## Experimental Data Types
-class BeadImage(object):
+class BeadImageSet(object):
     def __init__(self, data):
         dedault_columns = ('code',
                            'dim')
@@ -736,7 +759,7 @@ class BeadSet(object):
     @property
     def code(self, value=None):
         if key is not None:
-            return self._dataframe[self._dataframe['code']==value].values
+            return self._dataframe[self._dataframe['code'] == value].values
         else:
             return self._dataframe['code'].values
     @code.setter
@@ -783,8 +806,7 @@ class BeadSet(object):
         medians_data = np.empty((data_size, channel_no))
         for ch in channels:
             # Get median value of each object
-            medians_data[:, ch] = ndi.labeled_comprehension(
-                images[ch, :, :], mask, idx, np.median, float, -1)
+            medians_data[:, ch] = ndi.labeled_comprehension(images[ch, :, :], mask, idx, np.median, float, -1)
         return medians_data
 
     def get_data(mask, images, function, label=None):
