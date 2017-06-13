@@ -138,7 +138,6 @@ class FindBeads2(object):
     @staticmethod
     def get_bead_labels(mask):
         idx = np.unique(mask[mask>0])
-        #idx = np.delete(idx, idx == 0)
         return idx
 
     @staticmethod
@@ -146,11 +145,24 @@ class FindBeads2(object):
         return len(np.unique(mask[mask>0])) - 1
 
     @property
-    def mask_org(self):
+    def mask_bead(self):
+        return self._lbl_mask+self._lbl_mask_ann
+
+    @property
+    def mask_inside(self):
         return self._lbl_mask
 
     @property
-    def mask_ann(self):
+    def mask_outside(self):
+        self._lbl_mask_bkg_incl_neg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg, 
+                                                        self.mask_bkg_size, 
+                                                        0)
+        self._lbl_mask_bkg = self._lbl_mask_bkg_incl_neg.copy()
+        self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
+        return self._lbl_mask_bkg
+
+    @property
+    def mask_ring(self):
         return self._lbl_mask_ann
 
     @property
@@ -165,41 +177,29 @@ class FindBeads2(object):
         y = tbl['ycentroid']
         r = tbl['equivalent_radius']
         area = tbl['area']
-        #lbl = tbl['max_value']
-        #dims = pd.DataFrame([x, y, r, area, lbl], columns=['x', 'y', 'r', 'area', lbl])
         dims = np.array([x,y,r]).T
         return dims
 
     def find(self, image):
-        #bin_img_mask, circles = self.img2bin(image, 
-        #                            [self.c_min, self.c_max, self.c_min_dist], 
-        #                            self.param1,
-        #                            self.param2,
-        #                            self.thr_block, 
-        #                            self.thr_c, 
-        #                            self.filt_iter, 
-        #                            self.kernel)
         img = self.img2ubyte(image)
         img_thr = self.img2thr(img, self.thr_block, self.thr_c)
 
         labels = ndi.label(img_thr, structure=self.kernel)[0]        
-        self._lbl_mask, self._lbl_mask_incl_neg = self.lbl_mask_flt( labels )
+        self._lbl_mask, self._lbl_mask_incl_neg = self.lbl_mask_flt(labels)
 
         img_thr_invert = np.invert(img_thr.copy())-254
         labels_all_bin = self._lbl_mask.copy() + img_thr_invert
         labels_all_bin[labels_all_bin > 0] = 1
         D = ndi.distance_transform_edt(labels_all_bin, sampling=3)
         labels_full = watershed(-D, markers=self._lbl_mask, mask=labels_all_bin)
+
         self._lbl_mask_ann, self._lbl_mask_ann_incl_neg = self.lbl_mask_flt( labels_full ) - self._lbl_mask
         self._lbl_mask_ann[self._lbl_mask_ann < 0] = 0
-        self._lbl_mask[self._lbl_mask_ann < 0] = 0
+        self._lbl_mask[self._lbl_mask_ann_incl_neg < 0] = 0
 
-        #self._lbl_mask = self.lbl_mask_flt( self.create_labeled_mask(bin_img_mask, circles) )
-        #self._lbl_mask_ann = self.lbl_mask_ann(self._lbl_mask, self.mask_ann_size)
-        self._lbl_mask_bkg_incl_neg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_incl_neg, 
+        self._lbl_mask_bkg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg, 
                                                self.mask_bkg_size, 
-                                               self.mask_bkg_buffer) / 2
-        self._lbl_mask_bkg = self._lbl_mask_bkg_incl_neg.copy()
+                                               self.mask_bkg_buffer)
         self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
 
     @classmethod
@@ -228,14 +228,6 @@ class FindBeads2(object):
         idx = cls.get_bead_labels(labels)
         props = source_properties(labels, labels)
         tbl = properties_table(props)
-
-
-    #@classmethod
-    #def lbl_mask_ann(cls, mask, size):
-    #    mask_min = mask.copy()
-    #    mask_max = cls.mask_morph_step(-size, mask)
-    #    mask_min[mask_max > 0] = 0
-    #    return mask_min
 
     @classmethod
     def lbl_mask_ann(cls, mask, size):
