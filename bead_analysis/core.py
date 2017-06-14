@@ -71,7 +71,7 @@ def accepts(*types):
 ### Classes
 
 class FindBeads2(object):
-    """
+    """Find beads based on pure imaging.
 
     Attributes
     ----------
@@ -129,7 +129,7 @@ class FindBeads2(object):
         if self._lbl_mask is not None:
             return self.get_bead_num(self._lbl_mask)
         else:
-            return None
+            return 0
 
     @property
     def bead_labels(self):
@@ -142,7 +142,7 @@ class FindBeads2(object):
 
     @staticmethod
     def get_bead_num(mask):
-        return len(np.unique(mask[mask>0])) - 1
+        return len(np.unique(mask[mask>0]))
 
     @property
     def mask_bead(self):
@@ -172,6 +172,8 @@ class FindBeads2(object):
     @property
     def bead_dims(self):
         props = source_properties(self._lbl_mask, self._lbl_mask)
+        if not props:
+            return  np.array([None, None, None]).T
         tbl = properties_table(props)
         x = tbl['xcentroid']
         y = tbl['ycentroid']
@@ -186,6 +188,9 @@ class FindBeads2(object):
 
         labels = ndi.label(img_thr, structure=self.kernel)[0]        
         self._lbl_mask, self._lbl_mask_incl_neg = self.lbl_mask_flt(labels)
+
+        if len(np.unique(self._lbl_mask)) <= 1:
+            return
 
         img_thr_invert = np.invert(img_thr.copy())-254
         labels_all_bin = self._lbl_mask.copy() + img_thr_invert

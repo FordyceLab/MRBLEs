@@ -653,6 +653,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
             if len(metadata['series']) > 1 and (series is 'all'):
                 dims.insert(0, 'p')
                 data = np.squeeze(data)
+            if 'i' in dims:
+                dims[dims.index('i')] = 'c'
             if len(file_path) > 1:
                 dims.insert(0, 'f')
             panel_data = xr.DataArray(data, dims=dims, coords={'c':metadata['summary']['ChNames']})
