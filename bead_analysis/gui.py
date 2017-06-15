@@ -1,10 +1,12 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
-# Use Python 3.x "/" for division in Pyhton 2.x
-from __future__ import division
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : gui.py
@@ -22,7 +24,6 @@ from __future__ import division
 
 # [Modules]
 # General Python
-import sys
 import os
 import warnings
 # GUI

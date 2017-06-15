@@ -1,10 +1,12 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
-# Use Python 3.x "/" for division in Pyhton 2.x
-from __future__ import division
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : kinetics.py
@@ -87,7 +89,7 @@ class kshow(object):
         MPapproxM = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
         MPapproxP = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
         MPnew = np.zeros((self.n_substrate))
-        for m in xrange(self.n_complex):
+        for m in range(self.n_complex):
             Mt = self.c_complex[m]  # total protein concentration
             # initial guess
             if Mt > sum(self.c_substrate):
@@ -97,7 +99,7 @@ class kshow(object):
             err = 1
             while err > self.tol:
                 MPsum = sum(MP)
-                for p in xrange(self.n_substrate):
+                for p in range(self.n_substrate):
                     MPsump = MPsum - MP[p]
                     b = MPsump - Mt - self.c_substrate[p] - self.kds[p]
                     c = self.c_substrate[p] * (Mt - MPsump)
@@ -118,9 +120,9 @@ class kshow(object):
         """Substrate (e.g. peptides on bead) in excess
         """
         MPapproxP = np.zeros((len(Mmat), len(Pt)))
-        for m in xrange(len(Mmat)):
+        for m in range(len(Mmat)):
             Mt = Mmat[m]  # total protein concentration
-            for p in xrange(len(Pt)):
+            for p in range(len(Pt)):
                 MPapproxP[m,p] = (Pt[p]/Kd[p]) * (Mt / (1 + sum(Pt/Kd)))
         return MPapproxP
     
@@ -129,8 +131,8 @@ class kshow(object):
         """Complex (e.g. added protein concentration) in excess
         """
         MPapproxM = np.zeros((len(Mmat), len(Pt)))
-        for m in xrange(len(Mmat)):
+        for m in range(len(Mmat)):
             Mt = Mmat[m]  # total protein concentration
-            for p in xrange(len(Pt)):
+            for p in range(len(Pt)):
                 MPapproxM[m,p] = Mt * Pt[p] / (Kd[p] + Mt)
         return MPapproxM

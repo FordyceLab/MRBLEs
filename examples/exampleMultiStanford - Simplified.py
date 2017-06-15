@@ -167,7 +167,7 @@ bead_set = pd.DataFrame(columns=['img','lbl', 'dim_x', 'dim_y', 'dim_r','bkg','r
 labels = []
 labels_annulus = []
 bead_no = 0
-for idx in xrange(bead_image_obj.f_size):
+for idx in range(bead_image_obj.f_size):
     bead_objects.find(bead_image_set_bf[idx])
     if bead_objects.labeled_mask is None:
         continue

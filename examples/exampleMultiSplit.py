@@ -157,7 +157,7 @@ bead_set = pd.DataFrame(index=['no','img','lbl', 'dim','ratios','bkg','ref','cod
 labels = []
 labels_annulus = []
 bead_no = 0
-for idx in xrange(bead_image_obj.f_size):
+for idx in range(bead_image_obj.f_size):
     bead_objects.find(bead_image_set_bf[idx])
     labels.append(bead_objects.labeled_mask)
     labels_annulus.append(bead_objects.labeled_annulus_mask)

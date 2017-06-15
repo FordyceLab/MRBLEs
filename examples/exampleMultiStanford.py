@@ -198,7 +198,7 @@ bead_set = pd.DataFrame(columns=['img','lbl', 'dim_x', 'dim_y', 'dim_r','bkg','r
 labels = []
 labels_annulus = []
 bead_no = 0
-for idx in xrange(bead_image_obj.f_size):
+for idx in range(bead_image_obj.f_size):
     bead_objects.find(bead_image_set_bf[idx])
     if bead_objects.labeled_mask is None:
         continue
@@ -210,7 +210,7 @@ for idx in xrange(bead_image_obj.f_size):
             [idx, lbl, circles_dim[lbl-1, 0], circles_dim[lbl-1, 1], circles_dim[lbl-1, 2]]
         bead_no += 1
 
-for x in xrange(3):
+for x in range(3):
     idx = random.choice(np.unique(bead_set.img))
     fig = plt.figure()
     fig.suptitle("Overlay Image Pre-filter image #: %s" % idx)
@@ -271,7 +271,7 @@ print("Pre filter: %s" % bead_set.index.size)
 print("Post filter: %s" % bead_set[filter_all].index.size)
 
 # Post-filter images
-for x in xrange(3):
+for x in range(3):
     idx = random.choice(np.unique(bead_set.img))
     fig = plt.figure()
     fig.suptitle("Overlay Image Post-filter image #: %s" % idx)

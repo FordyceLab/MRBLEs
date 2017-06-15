@@ -166,7 +166,7 @@ labels = []
 labels_annulus = []
 img_set = []
 bead_no = 0
-for idx in xrange(len(bead_image_set_bf)):
+for idx in range(len(bead_image_set_bf)):
     bead_objects.find(bead_image_set_bf[idx])
     if bead_objects.labeled_mask is None:
         continue
@@ -178,7 +178,7 @@ for idx in xrange(len(bead_image_set_bf)):
         bead_set.loc[bead_no] = [bead_no, idx, lbl, circles_dim[lbl-1], None, None, None, None]
         bead_no += 1
 
-for x in xrange(3):
+for x in range(3):
     idx = random.choice(img_set)
     fig = plt.figure()
     fig.suptitle("Overlay Image Pre-filter image #: %s" % idx)
@@ -245,7 +245,7 @@ circles_dim_filt = circles_dim[data_filter_list]
 print("Pre filter: %s" % len(ratio_data))
 print("Post filter: %s" % len(data_filtered))
 
-imgs = xrange(3)
+imgs = range(3)
 for idx in imgs:
     fig = plt.figure()
     fig.suptitle("Overlay Image Post-filter")

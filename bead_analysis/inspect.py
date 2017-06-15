@@ -1,10 +1,12 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
-# Use Python 3.x "/" for division in Pyhton 2.x
-from __future__ import division
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : inpect.py
@@ -20,7 +22,6 @@ from __future__ import division
 
 # [Modules]
 # General Python
-import sys
 import os
 import types
 import warnings
@@ -179,8 +180,8 @@ class GenerateCodes(object):
         data = pd.DataFrame(columns = labels)
         position = 1
         no = 0
-        for code in xrange(self.result.count()[0]):
-            for r in xrange(repeats):
+        for code in range(self.result.count()[0]):
+            for r in range(repeats):
                 data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], self.result.loc[code, 'Tm'], code+1]
                 #data.loc[no] = [0, self.result.loc[code, 'Dy'], self.result.loc[code, 'Sm'], 0, code+1]
                 no += 1
@@ -324,7 +325,7 @@ class Cluster(object):
             ax.scatter(target[:, 0], target[:, 1], alpha=0.5, s=100)
             ax.set_xlabel(axes_names[0])
             ax.set_ylabel(axes_names[1])
-            for i in xrange(nclusters):
+            for i in range(nclusters):
                 ax.annotate(i+1, (target[i, 0],target[i, 1]))
             plt.draw()
         if naxes == 3:
@@ -339,7 +340,7 @@ class Cluster(object):
             ax.set_xlabel(axes_names[0])
             ax.set_ylabel(axes_names[1])
             ax.set_zlabel(axes_names[2])
-            for i in xrange(nclusters):
+            for i in range(nclusters):
                 ax.text(target[i, 0],target[i, 1],target[i, 2], i+1)
             plt.draw()
 

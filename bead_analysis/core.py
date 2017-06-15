@@ -1,11 +1,12 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
-# Use Python 3.x "/" for division in Pyhton 2.x
-from __future__ import division
-from __builtin__ import *
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : core.py
@@ -26,11 +27,10 @@ from __builtin__ import *
 
 # [Modules]
 # General Python
-import sys
 import os
 import types
 import warnings
-from math import sqrt
+from math import ceil, pi, sqrt
 # Data Structure
 import numpy as np
 import pandas as pd
@@ -57,18 +57,240 @@ def accepts(*types):
     """Checks input parameters for data types.
     """
     def check_accepts(f):
-        assert len(types) == f.func_code.co_argcount
+        #assert len(types) == f.func_code.co_argcount
+        assert len(types) == f.__code__.co_argcount
         def new_f(*args, **kwds):
             for (a, t) in zip(args, types):
                 assert isinstance(a, t), \
                         "arg %r does not match %s" % (a,t)
             return f(*args, **kwds)
-        new_f.func_name = f.func_name
+        #new_f.func_name = f.func_name
+        new_f.func_name = f.__name__
         return new_f
     return check_accepts
 
 
 ### Classes
+
+class FindBeadsImaging(object):
+    """Find beads based on pure imaging.
+
+    Parameters
+    ----------
+    bead_size : int
+        Approximate width of beads (circles) in pixels.
+        Defaults to 18.
+
+    eccen_param : int, list of int
+        Sets the maximum of eccentricity [0-1] of the beads (circles).
+        Values close to 0 mean very circular, values closer to 1 mean very elliptical.
+        Defaults to 0.55.
+
+    area_param : int, list of int
+        Sets the default min and max fraction for bead (circle) area. 
+        Set as single int (1+/-: 0.XX) value or of 2 values [0.XX, 1.XX].
+        E.g. area_param=0.25 or area_param=[0.75, 1.25] filters all below 75% and above 125% of area calculated by approximate bead_size.
+        Defaults to 0.25, which equals to [0.75, 1.25].
+
+    Attributes
+    ----------
+
+    """
+    def __init__(self, bead_size, eccen_param=0.55, area_param=0.25):
+        self.eccen_param = eccen_param
+        self._area_param = area_param
+        self.bead_size = bead_size
+        # Default values OpenCV Thershold
+        self.thr_block = 11
+        self.thr_c = 15
+        self.kernel = KERNEL
+        self.filt_iter = cv2.getStructuringElement(shape = cv2.MORPH_ELLIPSE, ksize = (3,3))
+        # Default
+        self.mask_bkg_size = 15
+        self.mask_bkg_buffer = 3
+
+
+    # Parameter methods
+    def set_bead_limits(self, bead_size):
+        """"Sets bead limits depndent on given bead width (pixels).
+        Sets: maximum and minimum area.
+        """
+        # Set limits
+        radius = ceil(self._bead_size/2)
+        area_avg = pi * radius**2
+        self.area_min, self.area_max = self.min_max(area_avg, self._area_param)
+
+
+    # Main method
+    def find(self):
+        pass
+
+
+    # Properties - Settings
+    @property
+    def bead_size(self):
+        """Get or set approximate width of beads (circles) in pixels.
+        """
+        return self._bead_size
+    @bead_size.setter
+    def bead_size(self, bead_size):
+        self._bead_size = bead_size
+        self.set_bead_limits(bead_size)
+
+    @property
+    def area_param(self):
+        """Get or set approximate width of beads (circles) in pixels.
+        """
+        return self._area_param
+    @area_param.setter
+    def area_param(self, area_param):
+        self._area_param = area_param
+        self.set_bead_limits(self.bead_size)
+
+    # Properties - Output masks
+    @property
+    def mask_full(self):
+        return self._mask_full
+    
+    @property
+    def mask_inside(self):
+        return self._mask_inside
+
+    @property
+    def mask_outside(self):
+        return self._mask_outside
+
+    @property
+    def mask_bkg(self):
+        return self._mask_bkg
+
+    # Properties - Output values
+    @property
+    def bead_num(self):
+        self.get_unique_count(self._mask_full)
+
+    @property
+    def bead_lbls(self):
+        self.get_unique_values(self._mask_full)
+
+    @property
+    def bead_dims(self):
+        return self._bead_dims
+
+    
+    # Class methods
+    @classmethod
+    def mask_filter(cls, mask, filter_props, filter_params, slice_types):
+        # Get dimensions from the mask
+        props = cls.get_dimensions(mask)
+        # Get labels to be removed
+        lbls_out = filters(props, filter_props, filter_params, slice_types)
+        # Create new masks
+        mask_pos = mask.copy()
+        mask_neg = mask.copy()
+        # Set mask to 0 or negative label for labels outside limits.
+        if lbls_out.size > 0:
+            for lbl in lbls_out:
+                mask_pos[mask == lbl] = 0
+                mask_neg[mask == lbl] = -lbl
+        return mask_pos, mask_neg
+
+    @classmethod
+    def filters(cls, props, filter_params, filter_props, slice_types):
+        # Get labels of areas outside of limits.
+        lbls_out_tmp = [cls.filter(props, param, prop, stype) for param, prop, stype in zip(filter_params, filter_props, slice_types)]
+        lbls_out = np.unique(np.hstack(lbls_out_tmp))
+        return lbls_out
+
+    @classmethod
+    def img2thr(cls, image, thr_block, thr_c):
+        img = cls.img2ubyte(image)
+        img_thr = cv2.adaptiveThreshold(src = img,
+                                        maxValue = 1, 
+                                        adaptiveMethod = cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                        thresholdType = cv2.THRESH_BINARY,
+                                        blockSize = thr_block,
+                                        C = thr_c)
+        return img_thr
+
+
+    # Static methods
+    @staticmethod
+    def filter(props, filter_param, filter_prop, slice_type):
+        # Get labels of areas outside of limits.
+        lbls_out_tmp = []
+        if type(filter_param) is list:
+            if slice_type == 'outside':
+                lbls_out.append( props[(props[filter_prop] < filter_param[0]) | (props[filter_prop] > filter_param[1])].label.values )
+            elif slice_type == 'inside':
+                lbls_out.append( props[(props[filter_prop] >= filter_param[0]) & (props[filter_prop] <= filter_param[1])].label.values )
+        else:
+            if slice_type == 'up':
+                lbls_out.append( props[props[filter_prop] > filter_param[1]].label.values )
+            elif slice_type == 'down':
+                lbls_out.append( props[props[filter_prop] < filter_param[1]].label.values )
+        return lbls_out
+
+    @staticmethod
+    def min_max(value, min_max):
+        if min_max is list:
+            r_min = value * min_max[0]
+            r_max = value * min_max[1]
+        else:
+            r_min = value * (1 - min_max)
+            r_max = value * (1 + min_max)
+        return r_min, r_max
+
+    @staticmethod
+    def eccentricity(a, b):
+        major = max([a, b])
+        minor = min([a, b])
+        return sqrt(1 - (minor**2 / major**2))
+
+    @staticmethod
+    def get_unique_values(mask):
+        """Get all unique positive values from an array.
+        """
+        values = np.unique(mask[mask>0])
+        if values.size == 0:
+            values = None
+        return values
+
+    @staticmethod
+    def get_unique_count(mask):
+        """Get count of unique positive values from an array.
+        """
+        return np.unique(mask[mask>0]).size
+
+    @staticmethod
+    def get_dimensions(mask):
+        properties = source_properties(mask, mask)
+        if not properties:
+            return  None
+        tbl = properties_table(props)  # Convert to table
+        lbl = tbl['min_value']
+        x = tbl['xcentroid']
+        y = tbl['ycentroid']
+        r = tbl['equivalent_radius']
+        area = tbl['area']
+        perimeter = tbl['perimeter']
+        dims = pd.DataFrame(data=[lbl,x,y,r,area,perimeter], columns=['label','x_centroid','y_centroid','radius','area','perimeter'])
+        return dims
+
+    @staticmethod
+    @accepts((np.ndarray, xd.DataArray))
+    def img2ubyte(image):
+        """Convert image to ubuyte (uint8) and rescale to min/max.
+        """
+        if type(image) is (xd.DataArray):
+            image = image.values
+        img_dtype = image.dtype
+        if img_dtype is np.dtype('uint8'):
+            return image
+        img_min = image - image.min()
+        img_max = img_min.max()
+        img_conv = np.array( (img_min/img_max) * 255, dtype=np.uint8 )
+        return img_conv
 
 class FindBeads2(object):
     """Find beads based on pure imaging.
@@ -264,10 +486,10 @@ class FindBeads2(object):
     def mask_morph_step(cls, size, mask):
         morph_mask = mask.copy()
         if size < 0:
-            for n in xrange(abs(size)):
+            for n in range(abs(size)):
                 morph_mask = erosion(morph_mask)
         elif size > 0:
-            for n in xrange(size):
+            for n in range(size):
                 morph_mask = dilation(morph_mask)
         return morph_mask
 
@@ -376,7 +598,8 @@ class FindBeads2(object):
                                    param2=param2)
         return circles[0]
 
-class FindBeads(object):
+
+class FindBeadsCircle(object):
     """Find and identify bead objects from image.
 
     Parameters changes for each setup/magnification/bead-set.
@@ -567,6 +790,14 @@ class FindBeads(object):
             for remove in remove_list:
                 self._labeled_mask[self._labeled_mask == remove + 1] = 0
                 self._labeled_annulus_mask[self._labeled_mask == remove + 1] = 0
+# Backwards compatibility with previous name.
+def FindBeads(*args, **kwargs):
+    """Depracation warning: class renamed to FindBeads.
+    Name changed to distinguish between FindBeadsImaging (imaging based) and FindBeadsCircle (hough-circle based).
+    See docstring of FindBeadsCircle for information.
+    """
+    warnings.warn("Depracation warning: class renamed to FindBeads.")
+    return FindBeadsCircle(*args, **kwargs)
 
 
 class SpectralUnmixing(FrozenClass):
@@ -718,7 +949,7 @@ class ICP(object):
             matrix_func = matrix_method
             naxes = len(matrix_method)
             matrix = np.eye(naxes)
-            for n in xrange(naxes):
+            for n in range(naxes):
                 matrix[n, n] = matrix_method[n]
         else:
             raise ValueError("Matrix method invalid: %s" % matrix_method)
@@ -735,7 +966,7 @@ class ICP(object):
         """
         naxes = len(data[0, :])
         offset = np.ones(naxes)
-        for n in xrange(naxes):
+        for n in range(naxes):
             offset[n] = np.min(target[:, n]) - np.min(data[:, n])
         return offset
 
@@ -763,7 +994,7 @@ class ICP(object):
         naxes2 = len(input2[0, :])
         if naxes1 == naxes2:
             matrix = np.eye(naxes1)
-            for n in xrange(naxes1):
+            for n in range(naxes1):
                 matrix[n, n] = func(input1[:,n]) / func(input2[:,n])
         else:
             raise ValueError("Lengths of input1 = %s and input2 = %s do not match", naxes1, naxes2)
@@ -801,7 +1032,7 @@ class ICP(object):
             warnings.warn("Training mode: ON")
 
         delta = 1
-        for i in xrange(self.max_iter):
+        for i in range(self.max_iter):
             if delta < self.tol:
                 print("Converged after:", i)
                 break
@@ -913,7 +1144,7 @@ class Classify(object):
     def ellipsoids(self, nsigma, resolution=100):
         elps = []
         unit_sphere = self.unit_sphere(resolution)
-        for n in xrange(self._nclusters):
+        for n in range(self._nclusters):
             C = (nsigma * np.dot(self.stds, np.reshape(unit_sphere, (unit_sphere.shape[0], unit_sphere[1].size)))) + \
                 np.matlib.repmat(np.reshape(self.means[n], (3,1)), 1, unit_sphere[0].size)
             elps.append(np.reshape(C, unit_sphere.shape))

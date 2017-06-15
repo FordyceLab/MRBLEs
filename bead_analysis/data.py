@@ -1,10 +1,12 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
-# Use Python 3.x "/" for division in Pyhton 2.x
-from __future__ import division
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : data.py
@@ -22,7 +24,6 @@ from __future__ import division
 
 # [Modules]
 # General Python
-import sys
 import os
 import warnings
 import fnmatch
@@ -804,7 +805,7 @@ class BeadSet(object):
             idx = label
         data_size = len(np.unique(mask)) - 1
         channel_no = images[:, 0, 0].size
-        channels = xrange(channel_no)
+        channels = range(channel_no)
         medians_data = np.empty((data_size, channel_no))
         for ch in channels:
             # Get median value of each object
@@ -822,7 +823,7 @@ class BeadSet(object):
         else: 
             idx = label
         channel_no = images[:, 0, 0].size
-        channels = xrange(channel_no)
+        channels = range(channel_no)
         data = [ndi.labeled_comprehension(images[ch, :, :], mask, idx, function, float, -1) for ch in channels]
         return np.array(data)
 

@@ -140,8 +140,8 @@ class ImageSetBF(object):
         Read defined image set and return data array
         """
         # Set length timepoints and channels
-        timepoints = xrange(self.sizeT)
-        channels = xrange(self.sizeC) 
+        timepoints = range(self.sizeT)
+        channels = range(self.sizeC) 
         # Iterate over timepoints and channels
         if self.arrayOrder == "[t,c,y,x]":
             image_set = np.array( [np.array( [self.readImage(c=ch, t=tp, rescale=rescale) for ch in channels] ) for tp in timepoints] )
@@ -158,8 +158,8 @@ class ImageSetBF(object):
         Read defined image set and return data array
         """
         # Set length timepoints and channels
-        timepoints = xrange(self.sizeT)
-        channels = xrange(self.sizeC) 
+        timepoints = range(self.sizeT)
+        channels = range(self.sizeC) 
         # Iterate over timepoints and channels
         if self.arrayOrder == "[t,c,y,x]":
             image_set = np.array( [np.array( [self.readImage(c=ch, t=tp, rescale=rescale) for ch in channels], dtype=[(ch, 'float64')] ) for tp in timepoints], dtype=[(tp, 'float64')] )
@@ -324,7 +324,7 @@ class Objects(object):
         square = coordinates of region of interest [Y1, Y2, X1, X2]
         """
         c_size = image_data[:, 0, 0].size - 1
-        channels = xrange(1, c_size + 1)
+        channels = range(1, c_size + 1)
         ref_data = np.empty((c_size), dtype="float64")
         for ch in channels:
             img_tmp = image_data[ch, square[0]:square[1], square[2]:square[3]]
@@ -365,7 +365,7 @@ def getSpectralMedianIntensities(labels, images):
     idx = np.arange(1, len(np.unique(labels)))
     data_size = len(np.unique(labels)) - 1
     channel_no = images[:, 0, 0].size
-    channels = xrange(channel_no)
+    channels = range(channel_no)
     medians_data = np.empty((data_size, channel_no))
     for ch in channels:
         # Get median value of each object
@@ -381,7 +381,7 @@ def getRatios(labels, images, reference):
     idx = np.arange(1, len(np.unique(labels)))
     data_size = len(np.unique(labels)) - 1
     channel_no = images[:, 0, 0].size
-    channels = xrange(channel_no)
+    channels = range(channel_no)
     ratio_data = np.empty((data_size, channel_no))
     for ch in channels:
         # Get pixel-by-pixel ratios
@@ -463,7 +463,7 @@ class RefSpec(object):
         square = coordinates of region of interest [Y1, Y2, X1, X2]
         """
         c_size = image_data[:, 0, 0].size - 1
-        channels = xrange(1, c_size + 1)
+        channels = range(1, c_size + 1)
         ref_data = np.empty((c_size), dtype="float64")
         for ch in channels:
             img_tmp = image_data[ch, square[0]:square[1], square[2]:square[3]]

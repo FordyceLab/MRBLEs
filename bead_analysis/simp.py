@@ -1,11 +1,12 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
-# Use Python 3.x "/" for division in Pyhton 2.x
-from __future__ import division
-from __builtin__ import *
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : simp.py
@@ -21,7 +22,6 @@ from __builtin__ import *
 
 # [Modules]
 # General Python
-import sys
 import os
 import types
 import warnings
@@ -83,7 +83,8 @@ class ReferenceSpectra(object):
             raise ValueError("Use slice(value, value) or [value, value] for range! Input: %s" % values)
 
     def get_spectra(self):
-        for name, file in self.files.iteritems():
+        #for name, file in self.files.iteritems():
+        for name, file in self.files.items():
             print("Spectrum: %s" % name)
             img_obj = ImageSetRead(file)
             self.ref_objects.find(img_obj[self.object_channel, self._crop_y, self._crop_x])

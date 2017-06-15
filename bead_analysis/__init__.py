@@ -1,6 +1,12 @@
+# !/usr/bin/env python
+
 # [Future imports]
-# "print" function compatibility between Python 2.x and 3.x
-from __future__ import print_function
+# Function compatibility between Python 2.x and 3.x
+from __future__ import print_function, division
+from future.standard_library import install_aliases
+install_aliases()
+import sys
+if sys.version_info < (3,0): from __builtin__ import *
 
 # [Module Imports]
 from bead_analysis.core import *
