@@ -89,14 +89,14 @@ class FindBeadsImaging(object):
     area_param : int, list of int
         Sets the default min and max fraction for bead (circle) area. 
         Set as single int (1+/-: 0.XX) value or of 2 values [0.XX, 1.XX].
-        E.g. area_param=0.25 or area_param=[0.75, 1.25] filters all below 75% and above 125% of area calculated by approximate bead_size.
-        Defaults to 0.25, which equals to [0.75, 1.25].
+        E.g. area_param=0.5 or area_param=[0.5, 1.5] filters all below 75% and above 125% of area calculated by approximate bead_size.
+        Defaults to 0.5, which equals to [0.5, 1.5].
 
     Attributes
     ----------
 
     """
-    def __init__(self, bead_size, eccen_param=0.55, area_param=0.25):
+    def __init__(self, bead_size, eccen_param=0.55, area_param=0.5):
         # Default values for filtering
         self._bead_size = bead_size
         self._eccen_param = eccen_param
@@ -212,7 +212,7 @@ class FindBeadsImaging(object):
     # Properties - Output values
     @property
     def bead_num(self):
-        self.get_unique_count(self._mask_bead)
+        return self.get_unique_count(self._mask_bead)
 
     @property
     def bead_labels(self):
