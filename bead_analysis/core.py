@@ -45,6 +45,7 @@ from skimage.feature import peak_local_max
 from skimage.morphology import watershed, dilation, erosion
 from skimage.draw import circle
 from skimage.external import tifffile as tff
+from skimage.segmentation import clear_border
 # Classification
 from sklearn.mixture import GaussianMixture
 # Project
@@ -96,7 +97,7 @@ class FindBeadsImaging(object):
     ----------
 
     """
-    def __init__(self, bead_size, eccen_param=0.55, area_param=0.5):
+    def __init__(self, bead_size, eccen_param=0.55, area_param=0.5, border_clear=False):
         # Default values for filtering
         self._bead_size = bead_size
         self._eccen_param = eccen_param
@@ -105,6 +106,7 @@ class FindBeadsImaging(object):
         self.filter_params = [self._eccen_param, [self.area_min, self.area_max]]
         self.filter_names = ['eccentricity', 'area']
         self.slice_types = ['up', 'outside']
+        self.border_clear = border_clear
         # Default values OpenCV Thershold
         self.thr_block = 11
         self.thr_c = 15
@@ -135,7 +137,11 @@ class FindBeadsImaging(object):
         img_thr = self.img2thr(img, self.thr_block, self.thr_c)
         # Label all separate parts
         mask_inside = ndi.label(img_thr, structure=self.kernel)[0]
-        self._mask_inside, self._mask_inside_neg = self.mask_filter(mask_inside, self.filter_params, self.filter_names, self.slice_types)
+        self._mask_inside, self._mask_inside_neg = self.mask_filter(mask_inside, 
+                                                                    self.filter_params, 
+                                                                    self.filter_names, 
+                                                                    self.slice_types, 
+                                                                    border_clear=False)
         # Check if image not empty
         if np.unique(self._mask_inside).size <= 1:
             blank_img = np.zeros_like(img)
@@ -150,7 +156,11 @@ class FindBeadsImaging(object):
         mask_all_bin[mask_all_bin > 0] = 1
         D = ndi.distance_transform_edt(mask_all_bin, sampling=3)
         mask_full = watershed(-D, markers=self._mask_inside, mask=mask_all_bin)
-        self._mask_bead, self._mask_bead_neg = self.mask_filter(mask_full, self.filter_params, self.filter_names, self.slice_types)
+        self._mask_bead, self._mask_bead_neg = self.mask_filter(mask_full, 
+                                                                self.filter_params, 
+                                                                self.filter_names, 
+                                                                self.slice_types, 
+                                                                self.border_clear)
         # Create and update final masks
         self._mask_ring = self._mask_bead - self._mask_inside
         self._mask_ring[self._mask_ring < 0] = 0
@@ -244,7 +254,7 @@ class FindBeadsImaging(object):
         return mask_outside
 
     @classmethod
-    def mask_filter(cls, mask, filter_params, filter_names, slice_types):
+    def mask_filter(cls, mask, filter_params, filter_names, slice_types, border_clear=False):
         # Get dimensions from the mask
         props = cls.get_dimensions(mask)
         # Get labels to be removed
@@ -257,6 +267,9 @@ class FindBeadsImaging(object):
             for lbl in lbls_out:
                 mask_pos[mask == lbl] = 0
                 mask_neg[mask == lbl] = -lbl
+        if border_clear is True:
+            clear_border(mask_pos, in_place=True)
+            clear_border(mask_neg, bgval=-1, in_place=True)
         return mask_pos, mask_neg
 
     @classmethod
