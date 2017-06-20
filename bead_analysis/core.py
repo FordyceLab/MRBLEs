@@ -89,7 +89,7 @@ class FindBeadsImaging(object):
     area_param : int, list of int
         Sets the default min and max fraction for bead (circle) area. 
         Set as single int (1+/-: 0.XX) value or of 2 values [0.XX, 1.XX].
-        E.g. area_param=0.5 or area_param=[0.5, 1.5] filters all below 75% and above 125% of area calculated by approximate bead_size.
+        E.g. area_param=0.5 or area_param=[0.5, 1.5] filters all below 50% and above 150% of area calculated by approximate bead_size.
         Defaults to 0.5, which equals to [0.5, 1.5].
 
     Attributes
@@ -127,7 +127,7 @@ class FindBeadsImaging(object):
 
 
     # Main method
-    # TODO: Split inside filter and whole bead filter.
+    # TODO: Split inside filter and whole bead filter, or change method.
     def find(self, image):
         # Convert image to uint8
         img = self.img2ubyte(image)
@@ -138,6 +138,11 @@ class FindBeadsImaging(object):
         self._mask_inside, self._mask_inside_neg = self.mask_filter(mask_inside, self.filter_params, self.filter_names, self.slice_types)
         # Check if image not empty
         if np.unique(self._mask_inside).size <= 1:
+            blank_img = np.zeros_like(img)
+            self._mask_bead = blank_img
+            self._mask_ring = blank_img
+            self._mask_outside = blank_img
+            self._mask_bkg = blank_img
             return False
         # Find full bead
         img_thr_invert = (~img_thr.astype(bool)).astype(int)
