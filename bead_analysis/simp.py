@@ -53,7 +53,7 @@ class ReferenceSpectra(object):
         self.crop_y = None
 
         self.ref_data = Spectra()
-        self.ref_objects = FindBeads(min_r=find_param[0], max_r=find_param[1], param_1=find_param[2], param_2=find_param[3])
+        self.ref_objects = FindBeadsCircle(min_r=find_param[0], max_r=find_param[1], param_1=find_param[2], param_2=find_param[3])
 
     @property
     def output(self):
