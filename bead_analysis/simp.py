@@ -3,8 +3,8 @@
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-from future.standard_library import install_aliases
-install_aliases()
+from future import standard_library
+standard_library.install_aliases()
 import sys
 if sys.version_info < (3,0): from __builtin__ import *
 

@@ -3,14 +3,14 @@
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-from future.standard_library import install_aliases
-install_aliases()
+from future import standard_library
+standard_library.install_aliases()
 import sys
 if sys.version_info < (3,0): from __builtin__ import *
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : core.py
-# description       : Bead Kinetics module - Core functions
+# description       : Bead Analysis - Core Functions
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
@@ -18,7 +18,7 @@ if sys.version_info < (3,0): from __builtin__ import *
 # version           : v0.5
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : 2.7
+# python_version    : >2.7 and >3.6
 
 # [TO-DO]
 # Check error exceptions
@@ -95,7 +95,11 @@ class FindBeadsImaging(object):
 
     Attributes
     ----------
+    area_min : int or float
+        Sets the minimum area in pixels.
 
+    area_max : int or float
+        Sets the maximum area in pixels.
     """
     def __init__(self, bead_size, eccen_param=0.55, area_param=0.5, border_clear=False):
         # Default values for filtering
@@ -380,6 +384,28 @@ class FindBeadsImaging(object):
         img_max = img_min.max()
         img_conv = np.array( (img_min/img_max) * 255, dtype=np.uint8 )
         return img_conv
+
+    @classmethod
+    def overlay_image(cls, image, dims=None, ring=None):
+        """Overlay Image
+        Overlay image with circles of labeled mask
+        """
+        img = image.copy()
+        if dims is not None:
+            for dim_idx, dim in enumerate(dims):
+                if ring is not None:
+                    cv2.circle(img, (int(ring[dim_idx][0]), int(ring[dim_idx][1])), int(ceil(ring[dim_idx][2])), (0, 255, 0), 1)
+                    #img = cls.draw_circle(img, ring[dim_idx])
+                cv2.circle(img, (int(dim[0]), int(dim[1])), int(ceil(dim[2])), (0, 255, 0), 1)
+                #cls.draw_circle(img, dim)
+        return img
+
+    @staticmethod
+    def draw_circle(image, dim):
+        img = image.copy()
+        cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), (0, 255, 0), 1)
+        return img
+
 # Backwards compatibility with previous name.
 def FindBeads2(*args, **kwargs):
     """Depracation warning: class renamed to FindBeadsImaging.
@@ -619,6 +645,7 @@ class SpectralUnmixing(FrozenClass):
         else:
             raise TypeError("Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")
         self._dataframe = pd.Panel(items=self._names)
+        #self._dataframe = xd.DataArray(dims=['c','y','x'], coords={'c':self._names})
         #self._freeze()
 
     def __repr__(self):
