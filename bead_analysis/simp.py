@@ -39,7 +39,7 @@ from bead_analysis.data import *
 
 
 class ReferenceSpectra(object):
-    def __init__(self, files, object_channel, channels, find_param, dark_noise=0):
+    def __init__(self, files, object_channel, channels, bead_size=16, dark_noise=0):
         super(ReferenceSpectra, self).__init__()
         self.files = files
         self.object_channel = object_channel
@@ -47,13 +47,15 @@ class ReferenceSpectra(object):
             self._channels = self.set_slice(channels)
         else:
             self._channels = channels
-        self.find_param = find_param
+        #self.find_param = find_param
+        self.bead_size = bead_size
         self.darknoise = dark_noise
         self.crop_x = None
         self.crop_y = None
 
         self.ref_data = Spectra()
-        self.ref_objects = FindBeadsCircle(min_r=find_param[0], max_r=find_param[1], param_1=find_param[2], param_2=find_param[3])
+        #self.ref_objects = FindBeadsCircle(min_r=find_param[0], max_r=find_param[1], param_1=find_param[2], param_2=find_param[3])
+        self.ref_objects = FindBeadsImaging(bead_size, border_clear=True)
 
     @property
     def output(self):
@@ -88,13 +90,15 @@ class ReferenceSpectra(object):
             print("Spectrum: %s" % name)
             img_obj = ImageSetRead(file)
             self.ref_objects.find(img_obj[self.object_channel, self._crop_y, self._crop_x])
+            print("No beads:",self.ref_objects.bead_num)
             channels = img_obj[self._channels, self._crop_y, self._crop_x]
             if type(self._channels) is slice:
                 channel_names = img_obj.c_names[np.where(img_obj.c_names == self._channels.start)[0][0] :
                                                 np.where(img_obj.c_names == self._channels.stop)[0][0]+1]
             elif type(self._channels) is list and len(self._channels) > 2:
                 channel_names = self._channels
-            data = self.get_spectrum(self.darknoise, channels, self.ref_objects.labeled_mask)
+            #data = self.get_spectrum(self.darknoise, channels, self.ref_objects.labeled_mask)
+            data = self.get_spectrum(self.darknoise, channels, self.ref_objects.mask_inside)
             self.ref_data.spec_add(name, data = data, channels = channel_names)
 
     def set_back(self, file, channels, roi_x, roi_y):
@@ -106,6 +110,8 @@ class ReferenceSpectra(object):
         bkg_img_obj = ImageSetRead(file)
         ref_data_tmp = np.array([np.median(ch) for ch in bkg_img_obj[channels,BACK_CROPy,BACK_CROPx]])
         ref_data_tmp /= ref_data_tmp.sum()  # Normalize, no dark noise subtraction
+        plt.figure()
+        plt.imshow(bkg_img_obj[self.object_channel,BACK_CROPy,BACK_CROPx], cmap='Greys_r')
         self.ref_data.spec_add('Bkg', ref_data_tmp)
     
     @staticmethod
@@ -138,6 +144,42 @@ class ReferenceSpectra(object):
     def plot(self):
         self.ref_data_object.plot()
 
+class FindBeads(object):
+    def __init__(self, bead_size, border_clear=True, inplace=True):
+        self._bead_objects = FindBeadsImaging(bead_size, border_clear=border_clear)
+        self.masks = None
+        self.bead_data = None
+
+    def find(self, object_images):
+        if type(object_images) is xd.DataArray:
+            self.masks, self.bead_data = self.get_masks(object_images.values, self._bead_objects)
+        else:
+            self.masks, self.bead_data = self.get_masks(object_images, self._bead_objects)
+
+    @staticmethod
+    def get_masks(object_images, bead_finder):
+        masks = []
+        circles_dim = []
+        for idx, image in enumerate(object_images):
+            bead_finder.find(image)
+            masks.append(xd.DataArray([bead_finder.mask_bead,
+                                       bead_finder.mask_inside,
+                                       bead_finder.mask_ring,
+                                       bead_finder.mask_outside,
+                                       bead_finder.mask_bkg], 
+                                      dims=['c','y','x'], 
+                                      coords={'c':['mask_full','mask_inside','mask_ring','mask_outside','mask_bkg']}))
+            dim = pd.DataFrame(bead_finder.bead_dims_bead)
+            dim.insert(0,'image',idx)
+            circles_dim.append(dim)
+        bead_data = pd.concat(circles_dim, ignore_index=True)[circles_dim[0].columns]
+        masks = xd.concat(masks, 'f')
+        return masks, bead_data
+
+    def combine(self, data):
+        return xr.concat([self.masks, data], 'c')
+
+
 class BeadDecode(object):
     def __init__(self, spectra, target, assay_channels=None):
         self._spectra = spectra
@@ -146,7 +188,7 @@ class BeadDecode(object):
         self._result = None
 
     def icp(self):
-        icp=ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.01, train=False)
+        icp = ICP(matrix_method='std', max_iter=100, tol=1e-4, outlier_pct=0.01, train=False)
         icp.fit(bead_set.loc[filter_all, ('rat_dy', 'rat_sm', 'rat_tm')], target)
         bead_set = bead_set.join(icp.transform())
         print("Tranformation matrix: ", icp.matrix)
@@ -181,3 +223,72 @@ class BeadDecode(object):
         for image in images:
             data.append(cls.assay(image, mask, method=np.median))
         return data
+
+
+def get_stats_per_channel_and_code(data, channels, codes=None):
+    bead_sets = []
+    for channel in channels:
+        bead_sets.append(get_stats_per_code(data, channel, codes))
+    final_bead_set = pd.concat(bead_sets, keys=channels)
+    return final_bead_set
+    
+def get_stats_per_code(data, channel, codes=None):
+    """Get statistical values for each code in you data set.
+
+    Parameters
+    ----------
+    data : Pandas DataFrame
+        This is the per bead data.
+
+    channel : string
+        This is the channel (or column) to extract statistical values from.
+
+    codes : int, list
+        This value can be set if only a select (list) or one code (int) needs to be processed.
+        If value is not set the unique codes from data, the Pandas DataFrame is used.
+        Defaults to None.
+
+    Returns
+    -------
+    bead_set : Pandas DataFrame
+        This dataframe contains: AVG, SD, N, CV, SEM, and RSEM for each code.
+        Codes start at 0. Code -1 represents weighted statistical values over all codes.
+    """
+    data_stats = []
+    n_codes = []
+    if type(codes) is list:
+        codes_set = codes
+    elif (type(data) is pd.DataFrame) and (codes is None):
+        codes_set = np.unique(data.code[data.code.notnull()])
+    else:
+        codes_set = range(codes)
+    for code in codes_set:
+        n_codes.append(code)
+        data_code = data.loc[data.code==code, (channel)]
+        stats = get_stats(data_code)
+        data_stats.append(stats)
+    n_codes.append(-1)
+    data_stats.append(get_weighted_stats(data_stats))
+    final_codes = pd.DataFrame(n_codes, columns=['code'])
+    final_stats = pd.DataFrame(data_stats, columns=['AVG','SD','N','CV','SEM','RSEM'])
+    bead_set = final_codes.join(final_stats)
+    return bead_set
+
+def get_stats(data):
+    mean = np.mean(data)
+    sd = np.std(data)
+    n = len(data)
+    cv = sd/mean
+    sem = sd/sqrt(n)
+    rsem = sem/mean
+    return np.array([mean, sd, n, cv, sem, rsem])
+
+def get_weighted_stats(data):
+    data_np = np.array(data)
+    mean = np.average(data_np[:,0], weights=data_np[:,2]) # Weighted mean
+    sd = sqrt(np.average((data_np[:,0]-mean)**2, weights=data_np[:,2])) # Weighted SD
+    n = np.sum(data_np[:,2])
+    cv = sd/mean
+    sem = sd/sqrt(n)
+    rsem = sem/mean
+    return np.array([mean, sd, n, cv, sem, rsem])

@@ -30,29 +30,39 @@ import random
 # Data
 import numpy as np
 import pandas as pd
+# Imaging
+import cv2
 # Image display
 from matplotlib import pyplot as plt
 import matplotlib.animation as manimation
 from mpl_toolkits.mplot3d import axes3d
+import plotly.graph_objs as go
 
 
 ## Fucntions
-def circle_image(image, dims, factor=0.5):
-    """Circle Image
-    Overlay image with circles of labeled mask
+def cirle_overlay(image, dims=None, ring=None):
+    """Cirle Overlay Image
+    Overlay image with circles of labeled mask.
     """
-    img = np.zeros_like(image)
-    for dim in dims:
-        cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), 5000, 1)
-    dst = cv2.addWeighted(image, fatcor, img, 1-factor, 0)
-    return dst
+    img = image.copy()
+    if dims is not None:
+        for dim_idx, dim in enumerate(dims):
+            if ring is not None:
+                if type(ring) is int:
+                    cv2.circle(img, (int(ring[dim_idx][0]), int(ring[dim_idx][1])), int(ceil(ring[dim_idx][2])), (0, 255, 0), 1)
+                else:
+                    for dim_r in ring:
+                        cv2.circle(img, (int(dim_r[0]), int(dim_r[1])), int(ceil(dim_r[2])), (0, 255, 0), 1)
+            cv2.circle(img, (int(dim[0]), int(dim[1])), int(ceil(dim[2])), (0, 255, 0), 1)
+    plt.imshow(img)
+    return img
 
-def overlay_image(image1, image2, factor=0.5):
-    """Overlay Image
-    Overlay images
+def image_overlay(image, image_blend, alpha=0.2, cmap_image='Greys_r', cmap_blend='jet'):
+    """Overlay 2 Images.
+    Overlay of 2 images using alpha blend.
     """
-    dst = cv2.addWeighted(image1, factor, image2, 1-factor, 0)
-    return dst
+    plt.imshow(image, cmap=cmap_image)
+    plt.imshow(image_blend, cmap=cmap_blend, interpolation='none', alpha=alpha)
 
 
 ## Classes
@@ -140,7 +150,7 @@ class GenerateCodes(object):
                                           nsigma))
         return levels
 
-    def recursiveLooper(iterators, pos=0):
+    def recursive_looper(iterators, pos=0):
         """ Implements the same functionality as nested for loops, but is 
             more dynamic. iterators can either be a list of methods which
             return iterables, a list of iterables, or a combination of both.
@@ -158,7 +168,7 @@ class GenerateCodes(object):
                 v = [gen.next(),]
                 
                 if pos < len(iterators) - 1:
-                    nextLoop = recursiveLooper(iterators, pos + 1)
+                    nextLoop = recursive_looper(iterators, pos + 1)
                 else:
                     yield v
 
@@ -366,3 +376,91 @@ class PeptideScramble(object):
         seq_list = list(seq)
         random.shuffle(seq_list)
         return ''.join(seq_list)
+
+def cluster3d_check(bead_set, target, gmix, set_prob=1, channels=['rat_dy_icp','rat_tm_icp','rat_sm_icp'] ):
+    clusters = len(target)
+    colors = np.multiply(bead_set.code.loc[((bead_set.code >= 0) & (bead_set.log_prob > set_prob))].values, np.ceil(255/clusters))
+
+    bead_ratios_all = go.Scatter3d(
+        name='Bead ratios - Marked',
+        x=bead_set.loc[((bead_set.code.isnull()) | (bead_set.log_prob <= set_prob)), ('rat_dy_icp')].values,
+        y=bead_set.loc[((bead_set.code.isnull()) | (bead_set.log_prob <= set_prob)), ('rat_sm_icp')].values,
+        z=bead_set.loc[((bead_set.code.isnull()) | (bead_set.log_prob <= set_prob)), ('rat_tm_icp')].values,
+        text=bead_set.loc[:, ('lbl')].values,
+        mode='markers',
+        marker=dict(
+            size=3, 
+            colorscale='grey',
+            opacity=0.7,
+            symbol='cross'
+        )
+    )
+
+    bead_ratios = go.Scatter3d(
+        name='Bead ratios - Filtered',
+        x=bead_set.loc[((bead_set.code >= 0) & (bead_set.log_prob > set_prob)), ('rat_dy_icp')].values,
+        y=bead_set.loc[((bead_set.code >= 0) & (bead_set.log_prob > set_prob)), ('rat_sm_icp')].values,
+        z=bead_set.loc[((bead_set.code >= 0) & (bead_set.log_prob > set_prob)), ('rat_tm_icp')].values,
+        text=bead_set.loc[(bead_set.code >= 0), ('lbl')].values,
+        mode='markers',
+        marker=dict(
+            size=3,
+            color=colors, 
+            colorscale='Rainbow',
+            opacity=0.6
+        )
+    )
+
+    target_ratios = go.Scatter3d(
+        name='Target ratios',
+        x=target[:,0],
+        y=target[:,1],
+        z=target[:,2],
+        text=list(range(1, clusters+1)),
+        mode='markers',
+        marker=dict(
+            size=4,
+            color='black',
+            opacity=0.5,
+            symbol="diamond"
+        )
+    )
+
+    mean_ratios = go.Scatter3d(
+        name='GMM mean ratios',
+        x=gmix.means[:,0],
+        y=gmix.means[:,1],
+        z=gmix.means[:,2],
+        text=list(range(1, clusters+1)),
+        mode='markers',
+        marker=dict(
+            size=4,
+            color='red',
+            opacity=0.5,
+            symbol="diamond"
+        )
+    )
+
+    data = [bead_ratios_all, bead_ratios, target_ratios, mean_ratios]
+    layout = go.Layout(
+        showlegend=True,
+        scene = dict(
+            xaxis=dict(
+                title='Dy/Eu'
+            ),
+            yaxis=dict(
+                title='Sm/Eu'
+            ),
+            zaxis=dict(
+                title='Tm/Eu'
+            )
+        ),
+        margin=dict(
+            l=0,
+            r=0,
+            b=0,
+            t=0
+        )
+    )
+    fig = go.Figure(data=data, layout=layout)
+    return fig

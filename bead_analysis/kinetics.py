@@ -87,7 +87,7 @@ class kshow(object):
         """
         self.MPfinal = np.zeros((self.n_complex, self.n_substrate))
         MPapproxM = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
-        MPapproxP = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
+        MPapproxP = self.sub_excess(self.c_complex, self.c_substrate, self.kds)
         MPnew = np.zeros((self.n_substrate))
         for m in range(self.n_complex):
             Mt = self.c_complex[m]  # total protein concentration

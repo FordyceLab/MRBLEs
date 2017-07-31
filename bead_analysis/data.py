@@ -393,7 +393,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         self.output = output
         self.crop_x = None
         self.crop_y = None
-        self._freeze()
+        #self._freeze()
 
     def __repr__(self):
         """Returns xarray dataframe representation.
