@@ -344,7 +344,9 @@ class FindBeadsImaging(object):
         #hough_res = hough_circle(edges, hough_radii)
         # Select the most prominent circle
         #accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii, total_num_peaks=1)
-        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=2, minDist=img.shape[0])
+        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=2, minDist=img.shape[0], param1=10, param2=7)
+        if len(dims) > 1 or len(dims) == 0:
+            return None
         cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
         mask = cls.sector_mask(img.shape, [cx,cy], circle_size)
         mask_img = img.copy()
