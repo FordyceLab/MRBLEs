@@ -29,6 +29,7 @@ from math import sqrt
 # Data Structure
 import numpy as np
 import pandas as pd
+import weightedstats as ws
 # Image Processing
 from scipy import ndimage as ndi
 # Graphs
@@ -56,6 +57,8 @@ class ReferenceSpectra(object):
         self.ref_data = Spectra()
         #self.ref_objects = FindBeadsCircle(min_r=find_param[0], max_r=find_param[1], param_1=find_param[2], param_2=find_param[3])
         self.ref_objects = FindBeadsImaging(bead_size, border_clear=True)
+        #self.ref_objects.thr_block = 33
+        #self.ref_objects.thr_c = 11
 
     @property
     def output(self):
@@ -89,7 +92,7 @@ class ReferenceSpectra(object):
         for name, file in self.files.items():
             print("Spectrum: %s" % name)
             img_obj = ImageSetRead(file)
-            self.ref_objects.find(img_obj[self.object_channel, self._crop_y, self._crop_x])
+            self.ref_objects.find(img_obj[self.object_channel, self._crop_y, self._crop_x], circle_size=None)
             print("No beads:",self.ref_objects.bead_num)
             channels = img_obj[self._channels, self._crop_y, self._crop_x]
             if type(self._channels) is slice:
@@ -232,7 +235,7 @@ def get_stats_per_channel_and_code(data, channels, codes=None):
     final_bead_set = pd.concat(bead_sets, keys=channels)
     return final_bead_set
     
-def get_stats_per_code(data, channel, codes=None):
+def get_stats_per_code(data, channel, norm=None, norm_channel=None, codes=None):
     """Get statistical values for each code in you data set.
 
     Parameters
@@ -255,6 +258,7 @@ def get_stats_per_code(data, channel, codes=None):
         Codes start at 0. Code -1 represents weighted statistical values over all codes.
     """
     data_stats = []
+    data_stats_norm = []
     n_codes = []
     if type(codes) is list:
         codes_set = codes
@@ -267,12 +271,41 @@ def get_stats_per_code(data, channel, codes=None):
         data_code = data.loc[data.code==code, (channel)]
         stats = get_stats(data_code)
         data_stats.append(stats)
-    n_codes.append(-1)
-    data_stats.append(get_weighted_stats(data_stats))
+        if norm is not None:
+            if norm_channel is  not None:
+                norm_code = norm.loc[norm.code==code, (norm_channel)]
+            else:
+                norm_code = norm.loc[norm.code==code, (channel)]
+            stats_norm = get_stats_norm(data_code, norm_code)
+            data_stats_norm.append(stats_norm)
+    #n_codes.append(-1)
+    #data_stats.append(get_weighted_stats(data_stats))
     final_codes = pd.DataFrame(n_codes, columns=['code'])
-    final_stats = pd.DataFrame(data_stats, columns=['AVG','SD','N','CV','SEM','RSEM'])
+    final_stats = pd.DataFrame(data_stats, columns=['AVG','SD','N','CV','SEM','RSEM', 'MED'])
+    if norm is not None:
+        #data_stats_norm.append(get_weighted_stats(data_stats_norm))
+        final_stats_norm = pd.DataFrame(data_stats_norm, columns=['AVG_NORM','SD_NORM','N_NORM','CV_NORM','SEM_NORM','RSEM_NORM','MED_NORM'])
     bead_set = final_codes.join(final_stats)
+    if norm is not None:
+        bead_set = bead_set.join(final_stats_norm)
     return bead_set
+
+def get_stats_norm(data, norm, scale_norm=True):
+    if scale_norm is True:
+        norm /= norm.max()
+    norm_mean = np.mean(norm)
+    norm_sd = np.std(norm)
+    data_mean = np.mean(data)
+    data_sd = np.std(data)
+
+    mean = data_mean / norm_mean
+    sd = np.abs(mean) * (np.sqrt((data_sd/data_mean)**2 + (norm_sd/norm_mean)**2))
+    n = len(data)
+    cv = sd/mean
+    sem = sd/sqrt(n)
+    rsem = sem/mean
+    median = np.median(data / norm_mean)
+    return np.array([mean, sd, n, cv, sem, rsem, median])
 
 def get_stats(data):
     mean = np.mean(data)
@@ -281,7 +314,8 @@ def get_stats(data):
     cv = sd/mean
     sem = sd/sqrt(n)
     rsem = sem/mean
-    return np.array([mean, sd, n, cv, sem, rsem])
+    median = np.median(data)
+    return np.array([mean, sd, n, cv, sem, rsem, median])
 
 def get_weighted_stats(data):
     data_np = np.array(data)
@@ -291,4 +325,6 @@ def get_weighted_stats(data):
     cv = sd/mean
     sem = sd/sqrt(n)
     rsem = sem/mean
-    return np.array([mean, sd, n, cv, sem, rsem])
+
+    median = ws.weighted_median(np.nan_to_num(data_np[:,0]), weights=np.nan_to_num(data_np[:,2]))  # Weighted median
+    return np.array([mean, sd, n, cv, sem, rsem, median])

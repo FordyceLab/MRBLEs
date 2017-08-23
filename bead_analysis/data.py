@@ -27,6 +27,7 @@ if sys.version_info < (3,0): from __builtin__ import *
 import os
 import warnings
 import fnmatch
+import re
 # Data Structures
 import numpy as np
 import pandas as pd
@@ -676,10 +677,16 @@ class ImageSetRead(FrozenClass, OutputMethod):
             Defaults to '*.tif'.
         """
         image_files = []
+        #for root, dirs, files in os.walk(path):
+        #    for file in fnmatch.filter(files, pattern):
+        #        image_files.append(os.path.join(root, file))
+        r = re.compile(pattern)
         for root, dirs, files in os.walk(path):
-            for file in fnmatch.filter(files, pattern):
-                image_files.append(os.path.join(root, file))
-        return image_files
+          l = [os.path.join(root,x) for x in files if r.match(x)]
+          if l:
+              image_files.append(l)
+        return np.hstack(image_files).tolist()
+
 
     @classmethod
     def scan_paths(cls, paths, pattern=".tif"):

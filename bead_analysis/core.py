@@ -41,11 +41,13 @@ from scipy import ndimage as ndi
 from photutils import source_properties, properties_table
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
-from skimage.feature import peak_local_max
+from skimage.feature import peak_local_max, canny
 from skimage.morphology import watershed, dilation, erosion
-from skimage.draw import circle
+from skimage.draw import circle, circle_perimeter
 from skimage.external import tifffile as tff
 from skimage.segmentation import clear_border
+from skimage.transform import hough_circle, hough_circle_peaks
+from skimage import data, color
 # Classification
 from sklearn.mixture import GaussianMixture
 # Graphs
@@ -103,7 +105,7 @@ class FindBeadsImaging(object):
     area_max : int or float
         Sets the maximum area in pixels.
     """
-    def __init__(self, bead_size, eccen_param=0.55, area_param=0.5, border_clear=True):
+    def __init__(self, bead_size, eccen_param=0.65, area_param=0.5, border_clear=True):
         # Default values for filtering
         self._bead_size = bead_size
         self._eccen_param = eccen_param
@@ -120,7 +122,7 @@ class FindBeadsImaging(object):
         self.filt_iter = 1
         # Default values for local background
         self.mask_bkg_size = 15
-        self.mask_bkg_buffer = 3
+        self.mask_bkg_buffer = 11
 
 
     # Parameter methods
@@ -136,17 +138,30 @@ class FindBeadsImaging(object):
 
     # Main method
     # TODO: Split inside filter and whole bead filter, or change method.
-    def find(self, image):
+    def find(self, image, circle_size=None):
+        """Find objects.
+        """
         # Convert image to uint8
-        img = self.img2ubyte(image)
+        if circle_size is None:
+            img = self.img2ubyte(image)
+            self._mask_radius = 0
+        else:
+            img, roi_mask, self._mask_radius = self.circle_roi(image, circle_size)
+        self._masked_img = img.copy()
         # Threshold to binary image
         img_thr = self.img2thr(img, self.thr_block, self.thr_c)
+        self._img_thr = img_thr
         # Label all separate parts
         mask_inside = ndi.label(img_thr, structure=self.kernel)[0]
+        
+        filter_params_inside = [[0.1*self._bead_size**2*np.pi, 2*self._bead_size**2*np.pi]]
+        filter_names_inside = ['area']
+        slice_types_inside = ['outside']
+
         self._mask_inside, self._mask_inside_neg = self.filter_mask(mask_inside, 
-                                                                    self.filter_params, 
-                                                                    self.filter_names, 
-                                                                    self.slice_types, 
+                                                                    filter_params_inside, 
+                                                                    filter_names_inside, 
+                                                                    slice_types_inside, 
                                                                     border_clear=False)
         # Check if image not empty
         if np.unique(self._mask_inside).size <= 1:
@@ -173,7 +188,9 @@ class FindBeadsImaging(object):
         self._mask_inside[self._mask_bead_neg < 0] = 0
         # Create outside and buffered background areas around bead
         self._mask_outside = self.make_mask_outside(self._mask_bead, self.mask_bkg_size, buffer=0)
-        self._mask_bkg = self.make_mask_outside(self._mask_bead, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
+        self._mask_bkg = self.make_mask_outside(self._mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
+        if circle_size is not None:
+            self._mask_bkg[~roi_mask] = 0
         return True
 
 
@@ -303,7 +320,50 @@ class FindBeadsImaging(object):
         img = cls.cirle_overlay(image, dims, ring)
         plt.imshow(img)
     
+    @classmethod
+    def show_cross_overlay(cls, image, dims):
+        img = color.gray2rgb(cls.img2ubyte(image))
+        #dims = np.array(np.round(dims), dtype=np.int)
+        for center_x, center_y, radius in zip(dims[:,0], dims[:,1], dims[:,2]):
+            line_y = slice(int(round(center_y) - round(radius)), int(round(center_y) + round(radius)))
+            line_x = slice(int(round(center_x) - round(radius)), int(round(center_x) + round(radius)))
+            img[int(round(center_y)), line_x] = (20, 20, 220)
+            img[line_y, int(round(center_x))] = (20, 20, 220)
+        plt.imshow(img)
+        return img
+
+    @classmethod
+    def circle_roi(cls, image, circle_size=340):
+        img = cls.img2ubyte(image)
+        #edges = canny(img, sigma=3, low_threshold=10, high_threshold=10)
+        # Detect two radii
+        #if len(range) > 1:
+        #    hough_radii = np.arange(range[0],range[1])
+        #else:
+        #    hough_radii = range
+        #hough_res = hough_circle(edges, hough_radii)
+        # Select the most prominent circle
+        #accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii, total_num_peaks=1)
+        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=2, minDist=img.shape[0])
+        cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
+        mask = cls.sector_mask(img.shape, [cx,cy], circle_size)
+        mask_img = img.copy()
+        mask_img[~mask] = 0
+        return mask_img, mask, [cx, cy, radius]
+    
     # Static methods
+    @staticmethod
+    def sector_mask(shape, centre, radius):
+        """Return a boolean mask for a circular sector. The start/stop angles in `angle_range` should be given in clockwise order.
+        """
+        x,y = np.ogrid[:shape[0],:shape[1]]
+        cx,cy = centre
+        # convert cartesian --> polar coordinates
+        r2 = (x-cx)*(x-cx) + (y-cy)*(y-cy)
+        # circular mask
+        circmask = r2 <= radius*radius
+        return circmask
+
     @staticmethod
     def get_unique_values(mask):
         """Get all unique positive values from an array.
@@ -969,7 +1029,7 @@ class ICP(object):
             data_transform = self.transform(data)
 
             # Compare distances between tranformed data and target
-            distances = pairwise_distances(data_transform, target, n_jobs=-1)
+            distances = pairwise_distances(data_transform, target)
             min_dist = np.min(distances, axis=1)
             # Filter percentile of furthest away points
             min_dist_pct = np.percentile(min_dist, [0, (1-self.outlierpct)*100])[1]

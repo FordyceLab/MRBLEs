@@ -136,3 +136,8 @@ class kshow(object):
             for p in range(len(Pt)):
                 MPapproxM[m,p] = Mt * Pt[p] / (Kd[p] + Mt)
         return MPapproxM
+
+class GlobalFit():
+
+    def __init__():
+        pass
