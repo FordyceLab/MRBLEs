@@ -116,12 +116,12 @@ class FindBeadsImaging(object):
         self.slice_types = ['up', 'outside']
         self.border_clear = border_clear
         # Default values OpenCV Thershold
-        self.thr_block = 11
-        self.thr_c = 15
+        self.thr_block = 15
+        self.thr_c = 11
         self.kernel = cv2.getStructuringElement(shape = cv2.MORPH_ELLIPSE, ksize = (3,3))
         self.filt_iter = 1
         # Default values for local background
-        self.mask_bkg_size = 15
+        self.mask_bkg_size = 2
         self.mask_bkg_buffer = 11
 
 
