@@ -22,8 +22,6 @@ if sys.version_info < (3,0): from __builtin__ import *
 
 # [TO-DO]
 # Check error exceptions
-# Create error checking functions for clustering
-# Update filterObjects
 
 # [Modules]
 # General Python
@@ -157,7 +155,6 @@ class FindBeadsImaging(object):
         filter_params_inside = [[0.1*self._bead_size**2*np.pi, 2*self._bead_size**2*np.pi]]
         filter_names_inside = ['area']
         slice_types_inside = ['outside']
-
         self._mask_inside, self._mask_inside_neg = self.filter_mask(mask_inside, 
                                                                     filter_params_inside, 
                                                                     filter_names_inside, 
@@ -335,15 +332,6 @@ class FindBeadsImaging(object):
     @classmethod
     def circle_roi(cls, image, circle_size=340):
         img = cls.img2ubyte(image)
-        #edges = canny(img, sigma=3, low_threshold=10, high_threshold=10)
-        # Detect two radii
-        #if len(range) > 1:
-        #    hough_radii = np.arange(range[0],range[1])
-        #else:
-        #    hough_radii = range
-        #hough_res = hough_circle(edges, hough_radii)
-        # Select the most prominent circle
-        #accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii, total_num_peaks=1)
         dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=2, minDist=img.shape[0], param1=10, param2=7)
         if len(dims) > 1 or len(dims) == 0:
             return None
@@ -356,7 +344,7 @@ class FindBeadsImaging(object):
     # Static methods
     @staticmethod
     def sector_mask(shape, centre, radius):
-        """Return a boolean mask for a circular sector. The start/stop angles in `angle_range` should be given in clockwise order.
+        """Return a boolean mask for a circular ROI. 
         """
         x,y = np.ogrid[:shape[0],:shape[1]]
         cx,cy = centre
@@ -383,6 +371,8 @@ class FindBeadsImaging(object):
 
     @staticmethod
     def get_dimensions(mask):
+        """Get dimensions of labeled regions in labeled mask.
+        """
         properties = source_properties(mask, mask)
         if not properties:
             return  None
