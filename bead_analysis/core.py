@@ -14,8 +14,8 @@ if sys.version_info < (3,0): from __builtin__ import *
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
-# version update    : 20170601
-# version           : v0.5
+# version update    : 20170823
+# version           : v0.6.0
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
 # python_version    : >2.7 and >3.6
