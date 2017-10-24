@@ -1,12 +1,20 @@
+"""
+Core Classes and Functions
+==========================
+
+This file stores the core classes and functions for the MRBLEs Analysis module.
+"""
+
 # !/usr/bin/env python
 
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-from future import standard_library
-standard_library.install_aliases()
 import sys
-if sys.version_info < (3,0): from __builtin__ import *
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *
+    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : core.py
@@ -16,12 +24,6 @@ if sys.version_info < (3,0): from __builtin__ import *
 # date              : 20160308
 # version update    : 20170823
 # version           : v0.6.0
-# usage             : As module
-# notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : >2.7 and >3.6
-
-# [TO-DO]
-# Check error exceptions
 
 # [Modules]
 # General Python
@@ -50,8 +52,8 @@ from skimage import data, color
 from sklearn.mixture import GaussianMixture
 # Graphs
 from matplotlib import pyplot as plt
-# Project
-from bead_analysis.data import *
+# Intra-Package dependencies
+from . data import *
 
 
 ### Decorators
@@ -62,10 +64,11 @@ def accepts(*types):
     def check_accepts(f):
         #assert len(types) == f.func_code.co_argcount
         assert len(types) == f.__code__.co_argcount
+
         def new_f(*args, **kwds):
             for (a, t) in zip(args, types):
                 assert isinstance(a, t), \
-                        "arg %r does not match %s" % (a,t)
+                    "arg %r does not match %s" % (a, t)
             return f(*args, **kwds)
         #new_f.func_name = f.func_name
         new_f.func_name = f.__name__
@@ -103,25 +106,28 @@ class FindBeadsImaging(object):
     area_max : int or float
         Sets the maximum area in pixels.
     """
+
     def __init__(self, bead_size, eccen_param=0.65, area_param=0.5, border_clear=True):
         # Default values for filtering
         self._bead_size = bead_size
         self._eccen_param = eccen_param
         self._area_param = area_param
         self.set_area_limits(bead_size)
-        self.filter_params = [self._eccen_param, [self.area_min, self.area_max]]
+        self.filter_params = [self._eccen_param,
+                              [self.area_min,
+                               self.area_max]]
         self.filter_names = ['eccentricity', 'area']
         self.slice_types = ['up', 'outside']
         self.border_clear = border_clear
         # Default values OpenCV Thershold
         self.thr_block = 15
         self.thr_c = 11
-        self.kernel = cv2.getStructuringElement(shape = cv2.MORPH_ELLIPSE, ksize = (3,3))
+        self.kernel = cv2.getStructuringElement(
+            shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
         self.filt_iter = 1
         # Default values for local background
         self.mask_bkg_size = 2
         self.mask_bkg_buffer = 11
-
 
     # Parameter methods
     def set_area_limits(self, bead_size):
@@ -129,10 +135,9 @@ class FindBeadsImaging(object):
         Sets: maximum and minimum area.
         """
         # Set limits
-        radius = ceil(self._bead_size/2)
+        radius = ceil(self._bead_size / 2)
         area_avg = pi * radius**2
         self.area_min, self.area_max = self.min_max(area_avg, self._area_param)
-
 
     # Main method
     # TODO: Split inside filter and whole bead filter, or change method.
@@ -144,21 +149,23 @@ class FindBeadsImaging(object):
             img = self.img2ubyte(image)
             self._mask_radius = 0
         else:
-            img, roi_mask, self._mask_radius = self.circle_roi(image, circle_size)
+            img, roi_mask, self._mask_radius = self.circle_roi(
+                image, circle_size)
         self._masked_img = img.copy()
         # Threshold to binary image
         img_thr = self.img2thr(img, self.thr_block, self.thr_c)
         self._img_thr = img_thr
         # Label all separate parts
         mask_inside = ndi.label(img_thr, structure=self.kernel)[0]
-        
-        filter_params_inside = [[0.1*self._bead_size**2*np.pi, 2*self._bead_size**2*np.pi]]
+
+        filter_params_inside = [[0.1 * self._bead_size **
+                                 2 * np.pi, 2 * self._bead_size**2 * np.pi]]
         filter_names_inside = ['area']
         slice_types_inside = ['outside']
-        self._mask_inside, self._mask_inside_neg = self.filter_mask(mask_inside, 
-                                                                    filter_params_inside, 
-                                                                    filter_names_inside, 
-                                                                    slice_types_inside, 
+        self._mask_inside, self._mask_inside_neg = self.filter_mask(mask_inside,
+                                                                    filter_params_inside,
+                                                                    filter_names_inside,
+                                                                    slice_types_inside,
                                                                     border_clear=False)
         # Check if image not empty
         if np.unique(self._mask_inside).size <= 1:
@@ -174,22 +181,28 @@ class FindBeadsImaging(object):
         mask_all_bin[mask_all_bin > 0] = 1
         D = ndi.distance_transform_edt(mask_all_bin, sampling=3)
         mask_full = watershed(-D, markers=self._mask_inside, mask=mask_all_bin)
-        self._mask_bead, self._mask_bead_neg = self.filter_mask(mask_full, 
-                                                                self.filter_params, 
-                                                                self.filter_names, 
-                                                                self.slice_types, 
+        self._mask_bead, self._mask_bead_neg = self.filter_mask(mask_full,
+                                                                self.filter_params,
+                                                                self.filter_names,
+                                                                self.slice_types,
                                                                 self.border_clear)
         # Create and update final masks
         self._mask_ring = self._mask_bead - self._mask_inside
         self._mask_ring[self._mask_ring < 0] = 0
         self._mask_inside[self._mask_bead_neg < 0] = 0
         # Create outside and buffered background areas around bead
-        self._mask_outside = self.make_mask_outside(self._mask_bead, self.mask_bkg_size, buffer=0)
-        self._mask_bkg = self.make_mask_outside(self._mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
+        self._mask_outside = self.make_mask_outside(
+            self._mask_bead, self.mask_bkg_size, buffer=0)
+        self._mask_bkg = self.make_mask_outside(
+            self._mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
         if circle_size is not None:
             self._mask_bkg[~roi_mask] = 0
         return True
 
+    @classmethod
+    def img_invert(img_thr):
+        img_inv = (~img_thr.astype(bool)).astype(int)
+        return img_inv
 
     # Properties - Settings
     @property
@@ -197,6 +210,7 @@ class FindBeadsImaging(object):
         """Get or set approximate width of beads (circles) in pixels.
         """
         return self._bead_size
+
     @bead_size.setter
     def bead_size(self, bead_size):
         self._bead_size = bead_size
@@ -207,21 +221,25 @@ class FindBeadsImaging(object):
         """Get or set approximate width of beads (circles) in pixels.
         """
         return self._area_param
+
     @area_param.setter
     def area_param(self, value):
         self._area_param = value
         self.set_area_limits(self.bead_size)
-        self.filter_params = [self._eccen_param, [self.area_min, self.area_max]]
+        self.filter_params = [self._eccen_param,
+                              [self.area_min, self.area_max]]
 
     @property
     def eccen_param(self):
         """Get or set approximate width of beads (circles) in pixels.
         """
         return self._eccen_param
+
     @area_param.setter
     def eccen_param(self, value):
         self._eccen_param = value
-        self.filter_params = [self._eccen_param, [self.area_min, self.area_max]]
+        self.filter_params = [self._eccen_param,
+                              [self.area_min, self.area_max]]
 
     # Properties - Output masks
     @property
@@ -231,7 +249,7 @@ class FindBeadsImaging(object):
     @property
     def mask_ring(self):
         return self._mask_ring
-    
+
     @property
     def mask_inside(self):
         return self._mask_inside
@@ -261,7 +279,6 @@ class FindBeadsImaging(object):
     def bead_dims_inside(self):
         return self.get_dimensions(self._mask_inside)
 
-    
     # Class methods
     @classmethod
     def make_mask_outside(cls, mask, size, buffer=0):
@@ -294,20 +311,24 @@ class FindBeadsImaging(object):
 
     @classmethod
     def filters(cls, properties, filter_params, filter_names, slice_types):
-        # Get labels of areas outside of limits.
-        lbls_out_tmp = [cls.filter(properties, param, name, stype) for param, name, stype in zip(filter_params, filter_names, slice_types)]
+        """Get labels of areas outside of limits.
+        """
+        lbls_out_tmp = [cls.filter(properties, param, name, stype) for param, name, stype in zip(
+            filter_params, filter_names, slice_types)]
         lbls_out = np.unique(np.hstack(lbls_out_tmp))
         return lbls_out
 
     @classmethod
     def img2thr(cls, image, thr_block, thr_c):
+        """Convert and adaptive threshold image.
+        """
         img = cls.img2ubyte(image)
-        img_thr = cv2.adaptiveThreshold(src = img,
-                                        maxValue = 1, 
-                                        adaptiveMethod = cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                        thresholdType = cv2.THRESH_BINARY,
-                                        blockSize = thr_block,
-                                        C = thr_c)
+        img_thr = cv2.adaptiveThreshold(src=img,
+                                        maxValue=1,
+                                        adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                        thresholdType=cv2.THRESH_BINARY,
+                                        blockSize=thr_block,
+                                        C=thr_c)
         return img_thr
 
     @classmethod
@@ -316,14 +337,18 @@ class FindBeadsImaging(object):
         """
         img = cls.cirle_overlay(image, dims, ring)
         plt.imshow(img)
-    
+
     @classmethod
     def show_cross_overlay(cls, image, dims):
+        """Show image with overlay crosses.
+        """
         img = color.gray2rgb(cls.img2ubyte(image))
         #dims = np.array(np.round(dims), dtype=np.int)
-        for center_x, center_y, radius in zip(dims[:,0], dims[:,1], dims[:,2]):
-            line_y = slice(int(round(center_y) - round(radius)), int(round(center_y) + round(radius)))
-            line_x = slice(int(round(center_x) - round(radius)), int(round(center_x) + round(radius)))
+        for center_x, center_y, radius in zip(dims[:, 0], dims[:, 1], dims[:, 2]):
+            line_y = slice(int(round(center_y) - round(radius)),
+                           int(round(center_y) + round(radius)))
+            line_x = slice(int(round(center_x) - round(radius)),
+                           int(round(center_x) + round(radius)))
             img[int(round(center_y)), line_x] = (20, 20, 220)
             img[line_y, int(round(center_x))] = (20, 20, 220)
         plt.imshow(img)
@@ -331,34 +356,37 @@ class FindBeadsImaging(object):
 
     @classmethod
     def circle_roi(cls, image, circle_size=340):
+        """Apply a circular image ROI.
+        """
         img = cls.img2ubyte(image)
-        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=2, minDist=img.shape[0], param1=10, param2=7)
+        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT,
+                                dp=2, minDist=img.shape[0], param1=10, param2=7)
         if len(dims) > 1 or len(dims) == 0:
             return None
         cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
-        mask = cls.sector_mask(img.shape, [cx,cy], circle_size)
+        mask = cls.sector_mask(img.shape, [cx, cy], circle_size)
         mask_img = img.copy()
         mask_img[~mask] = 0
         return mask_img, mask, [cx, cy, radius]
-    
+
     # Static methods
     @staticmethod
     def sector_mask(shape, centre, radius):
         """Return a boolean mask for a circular ROI. 
         """
-        x,y = np.ogrid[:shape[0],:shape[1]]
-        cx,cy = centre
+        x, y = np.ogrid[:shape[0], :shape[1]]
+        cx, cy = centre
         # convert cartesian --> polar coordinates
-        r2 = (x-cx)*(x-cx) + (y-cy)*(y-cy)
+        r2 = (x - cx) * (x - cx) + (y - cy) * (y - cy)
         # circular mask
-        circmask = r2 <= radius*radius
+        circmask = r2 <= radius * radius
         return circmask
 
     @staticmethod
     def get_unique_values(mask):
         """Get all unique positive values from an array.
         """
-        values = np.unique(mask[mask>0])
+        values = np.unique(mask[mask > 0])
         if values.size == 0:
             values = None
         return values
@@ -367,7 +395,7 @@ class FindBeadsImaging(object):
     def get_unique_count(mask):
         """Get count of unique positive values from an array.
         """
-        return np.unique(mask[mask>0]).size
+        return np.unique(mask[mask > 0]).size
 
     @staticmethod
     def get_dimensions(mask):
@@ -375,7 +403,7 @@ class FindBeadsImaging(object):
         """
         properties = source_properties(mask, mask)
         if not properties:
-            return  None
+            return None
         tbl = properties_table(properties)  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=int)
         x = tbl['xcentroid']
@@ -384,8 +412,10 @@ class FindBeadsImaging(object):
         area = tbl['area']
         perimeter = tbl['perimeter']
         eccentricity = tbl['eccentricity']
-        pdata = np.array([lbl.astype(int), x, y, r, area, perimeter, eccentricity]).T
-        dims = pd.DataFrame(data=pdata, columns=['label','x_centroid','y_centroid','radius','area','perimeter','eccentricity'])
+        pdata = np.array([lbl.astype(int), x, y, r, area,
+                          perimeter, eccentricity]).T
+        dims = pd.DataFrame(data=pdata, columns=[
+                            'label', 'x_centroid', 'y_centroid', 'radius', 'area', 'perimeter', 'eccentricity'])
         return dims
 
     @staticmethod
@@ -400,7 +430,7 @@ class FindBeadsImaging(object):
             return image
         img_min = image - image.min()
         img_max = img_min.max()
-        img_conv = np.array( (img_min/img_max) * 255, dtype=np.uint8 )
+        img_conv = np.array((img_min / img_max) * 255, dtype=np.uint8)
         return img_conv
 
     @staticmethod
@@ -423,11 +453,14 @@ class FindBeadsImaging(object):
         for dim_idx, dim in enumerate(dims):
             if ring_size is not None:
                 if type(ring) is int:
-                    cv2.circle(img, (int(ring[dim_idx][0]), int(ring[dim_idx][1])), int(ceil(ring[dim_idx][2])), (0, 255, 0), 1)
+                    cv2.circle(img, (int(ring[dim_idx][0]), int(ring[dim_idx][1])), int(
+                        ceil(ring[dim_idx][2])), (0, 255, 0), 1)
                 else:
                     for dim_r in ring:
-                        cv2.circle(img, (int(dim_r[0]), int(dim_r[1])), int(ceil(dim_r[2])), (0, 255, 0), 1)
-            cv2.circle(img, (int(dim[0]), int(dim[1])), int(ceil(dim[2])), (0, 255, 0), 1)
+                        cv2.circle(img, (int(dim_r[0]), int(dim_r[1])), int(
+                            ceil(dim_r[2])), (0, 255, 0), 1)
+            cv2.circle(img, (int(dim[0]), int(dim[1])),
+                       int(ceil(dim[2])), (0, 255, 0), 1)
         plt.imshow(img)
         return img
 
@@ -503,14 +536,18 @@ class FindBeadsImaging(object):
         """
         if type(filter_param) is list:
             if slice_type == 'outside':
-                lbls_out = properties[(properties[filter_name] < filter_param[0]) | (properties[filter_name] > filter_param[1])].label.values
+                lbls_out = properties[(properties[filter_name] < filter_param[0]) | (
+                    properties[filter_name] > filter_param[1])].label.values
             elif slice_type == 'inside':
-                lbls_out = properties[(properties[filter_name] >= filter_param[0]) & (properties[filter_name] <= filter_param[1])].label.values
+                lbls_out = properties[(properties[filter_name] >= filter_param[0]) & (
+                    properties[filter_name] <= filter_param[1])].label.values
         else:
             if slice_type == 'up':
-                lbls_out = properties[properties[filter_name] > filter_param].label.values
+                lbls_out = properties[properties[filter_name]
+                                      > filter_param].label.values
             elif slice_type == 'down':
-                lbls_out = properties[properties[filter_name] < filter_param].label.values
+                lbls_out = properties[properties[filter_name]
+                                      < filter_param].label.values
         return lbls_out
 
     @staticmethod
@@ -551,8 +588,11 @@ class FindBeadsImaging(object):
         return sqrt(1 - (minor**2 / major**2))
 
 # Backwards compatibility with previous name.
+
+
 def FindBeads2(*args, **kwargs):
     """Depracation warning: class renamed to FindBeadsImaging.
+
     Name changed to distinguish between FindBeadsImaging (imaging based) and FindBeadsCircle (hough-circle based).
     See docstring of FindBeadsImaging for information.
     """
@@ -592,7 +632,12 @@ class FindBeadsCircle(object):
         1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
         Defaults to 1, no enlarging/shrinking.
     """
-    def __init__(self, min_r, max_r, param_1=10, param_2=10, annulus_width = 2, min_dist = None, enlarge = 1, auto_filt=True, border_clear=False):
+
+    def __init__(self, min_r, max_r,
+                 param_1=10, param_2=10,
+                 annulus_width=2,
+                 min_dist=None, enlarge=1,
+                 auto_filt=True, border_clear=False):
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width
@@ -605,7 +650,7 @@ class FindBeadsCircle(object):
         if min_dist is not None:
             self.min_dist = min_dist
         else:
-            self.min_dist = 2*min_r
+            self.min_dist = 2 * min_r
         self._labeled_mask = None
         self._labeled_annulus_mask = None
         self._circles_dim = None
@@ -636,7 +681,7 @@ class FindBeadsCircle(object):
             print("Unexpected error:", sys.exc_info())
         else:
             if img_type == 'uint16':
-                image = np.array( ((image / 2**16) * 2**8), dtype='uint8')
+                image = np.array(((image / 2**16) * 2**8), dtype='uint8')
         finally:
             return image
 
@@ -645,17 +690,17 @@ class FindBeadsCircle(object):
         """Find initial circles using Hough transform and return mask.
         """
         try:  # TO-DO: HACK - Fix later
-            circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,  
-                                       minDist=min_dist, 
-                                       param1=param_1, 
-                                       param2=param_2, 
-                                       minRadius=min_r, 
+            circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1,
+                                       minDist=min_dist,
+                                       param1=param_1,
+                                       param2=param_2,
+                                       minRadius=min_r,
                                        maxRadius=max_r)[0]
         except:
             return None
         mask = np.zeros(image.shape, np.uint8)  # Make mask
         for c in circles:
-            x, y, r = c[0], c[1], int(np.ceil(c[2]*enlarge))
+            x, y, r = c[0], c[1], int(np.ceil(c[2] * enlarge))
             # Draw circle on mask (line width -1 fills circle)
             cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
         return mask, circles
@@ -667,7 +712,7 @@ class FindBeadsCircle(object):
         D = ndi.distance_transform_edt(mask, sampling=1)
         markers_circles = np.zeros_like(mask)
         for idx, circle in enumerate(circles):
-            markers_circles[int(circle[1]),int(circle[0])] = 1
+            markers_circles[int(circle[1]), int(circle[0])] = 1
         markers = ndi.label(markers_circles, structure=np.ones((3, 3)))[0]
         labels = watershed(-D, markers, mask=mask)
         print("Number of unique segments found: {}".format(
@@ -684,8 +729,8 @@ class FindBeadsCircle(object):
             mask_detect = np.zeros(labels.shape, dtype="uint8")
             mask_detect[labels == label] = 255
             # Detect contours in the mask and grab the largest one
-            cnts = cv2.findContours(mask_detect.copy(), 
-                                    cv2.RETR_EXTERNAL, 
+            cnts = cv2.findContours(mask_detect.copy(),
+                                    cv2.RETR_EXTERNAL,
                                     cv2.CHAIN_APPROX_SIMPLE)[-2]
             c = max(cnts, key=cv2.contourArea)
             # Get circle dimensions
@@ -699,16 +744,18 @@ class FindBeadsCircle(object):
         """Find objects in image and return data.
         """
         img = self.convert(image)
-        mask, circles = self.circle_mask(img, self.min_dist, 
-                                     self.min_r, 
-                                     self.max_r, 
-                                     self.param_1, 
-                                     self.param_2,
-                                     self.enlarge)
-        if mask is None: return None
+        mask, circles = self.circle_mask(img, self.min_dist,
+                                         self.min_r,
+                                         self.max_r,
+                                         self.param_1,
+                                         self.param_2,
+                                         self.enlarge)
+        if mask is None:
+            return None
         self._labeled_mask = self.circle_separate(mask, circles)
         self._circles_dim = self._get_dimensions(self._labeled_mask)
-        self._labeled_annulus_mask = self.create_annulus_mask(self._labeled_mask)
+        self._labeled_annulus_mask = self.create_annulus_mask(
+            self._labeled_mask)
         if self.auto_filt is True:
             self._filter()
 
@@ -717,12 +764,12 @@ class FindBeadsCircle(object):
         """
         labeled_annulus_mask = labeled_mask.copy()
         for cd in self._circles_dim:
-            if (int(cd[2] - self.annulus_width)) < ((self.min_r+1) - self.annulus_width): 
+            if (int(cd[2] - self.annulus_width)) < ((self.min_r + 1) - self.annulus_width):
                 r_dim = 1
             else:
                 r_dim = int(cd[2] - self.annulus_width)
-            cv2.circle(labeled_annulus_mask, 
-                       (int(cd[0]), int(cd[1])), r_dim, 
+            cv2.circle(labeled_annulus_mask,
+                       (int(cd[0]), int(cd[1])), r_dim,
                        (0, 0, 0), -1)
         return labeled_annulus_mask
 
@@ -737,25 +784,32 @@ class FindBeadsCircle(object):
             circ_dim = self._circles_dim
         for dim in circ_dim:
             if annulus is True:
-                if (int(dim[2] - self.annulus_width)) < ((self.min_r+1) - self.annulus_width): 
+                if (int(dim[2] - self.annulus_width)) < ((self.min_r + 1) - self.annulus_width):
                     r_dim = 1
                 else:
                     r_dim = int(dim[2] - self.annulus_width)
-                cv2.circle(img, (int(dim[0]), int(dim[1])), r_dim, (0, 255, 0), 1)
-            cv2.circle(img, (int(dim[0]), int(dim[1])), int(dim[2]), (0, 255, 0), 1)
+                cv2.circle(img, (int(dim[0]), int(
+                    dim[1])), r_dim, (0, 255, 0), 1)
+            cv2.circle(img, (int(dim[0]), int(dim[1])),
+                       int(dim[2]), (0, 255, 0), 1)
         return img
 
     def _filter(self):
-        remove_list = np.where( (self._circles_dim[:,2] < self.min_r) & (self._circles_dim[:,2] > self.max_r) )[0]
+        remove_list = np.where((self._circles_dim[:, 2] < self.min_r) & (
+            self._circles_dim[:, 2] > self.max_r))[0]
         if remove_list.size > 0:
-            self._circles_dim = np.delete(self._circles_dim, remove_list, axis=0)
+            self._circles_dim = np.delete(
+                self._circles_dim, remove_list, axis=0)
             for remove in remove_list:
                 self._labeled_mask[self._labeled_mask == remove + 1] = 0
-                self._labeled_annulus_mask[self._labeled_mask == remove + 1] = 0
+                self._labeled_annulus_mask[self._labeled_mask ==
+                                           remove + 1] = 0
         if self.border_clear is True:
             clear_border(self._labeled_mask, in_place=True)
             clear_border(self._labeled_annulus_mask, in_place=True)
 # Backwards compatibility with previous name.
+
+
 def FindBeads(*args, **kwargs):
     """Depracation warning: class renamed to FindBeadsCircle.
     Name changed to distinguish between FindBeadsImaging (imaging based) and FindBeadsCircle (hough-circle based).
@@ -781,6 +835,7 @@ class SpectralUnmixing(FrozenClass):
     names : list
         List of channel names. When using Spectra object, names are imlied.
     """
+
     def __init__(self, ref_data, names=None):
         if isinstance(ref_data, Spectra):
             self._ref_object = ref_data
@@ -789,9 +844,10 @@ class SpectralUnmixing(FrozenClass):
         elif isinstance(ref_data, np.ndarray):
             self._ref_data = ref_data
             if self._names is None:
-                self._names = range(len(self._ref_data[0,:]))
+                self._names = range(len(self._ref_data[0, :]))
         else:
-            raise TypeError("Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")
+            raise TypeError(
+                "Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")
         self._dataframe = pd.Panel(items=self._names)
         #self._dataframe = xd.DataArray(dims=['c','y','x'], coords={'c':self._names})
         #self._freeze()
@@ -818,17 +874,19 @@ class SpectralUnmixing(FrozenClass):
         self._y_size = images[0, :, 0].size
         self._x_size = images[0, 0, :].size
         if self._ref_data.shape[0] != images.shape[0]:
-            print("Number of channels not equal. Ref: ", ref_shape, " Image: ", img_shape)
+            print("Number of channels not equal. Ref: ",
+                  ref_shape, " Image: ", img_shape)
             raise IndexError
         img_flat = self._flatten(images)
         unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
         unmix_result = self._rebuilt(unmix_flat)
         # TO-DO Change to proper insert
         self._dataframe = pd.Panel(unmix_result, items=self._names)
-    
+
     @property
     def pdata(self):
         return self._dataframe
+
     @property
     def ndata(self):
         return self._dataframe.values
@@ -838,14 +896,16 @@ class SpectralUnmixing(FrozenClass):
         """Flatten
         Flatten X and Y of images in NumPy array
         """
-        images_flat = images.reshape(self._c_size, (self._y_size * self._x_size))
+        images_flat = images.reshape(
+            self._c_size, (self._y_size * self._x_size))
         return images_flat
 
     def _rebuilt(self, images_flat):
         """Rebuilt
         Rebuilt images to NumPy array
         """
-        images = images_flat.reshape(self._ref_size, self._y_size, self._x_size)
+        images = images_flat.reshape(
+            self._ref_size, self._y_size, self._x_size)
         return images
 
 
@@ -898,6 +958,7 @@ class ICP(object):
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
+
     def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct=0, train=False, echo=True):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
@@ -971,9 +1032,10 @@ class ICP(object):
         if naxes1 == naxes2:
             matrix = np.eye(naxes1)
             for n in range(naxes1):
-                matrix[n, n] = func(input1[:,n]) / func(input2[:,n])
+                matrix[n, n] = func(input1[:, n]) / func(input2[:, n])
         else:
-            raise ValueError("Lengths of input1 = %s and input2 = %s do not match", naxes1, naxes2)
+            raise ValueError(
+                "Lengths of input1 = %s and input2 = %s do not match", naxes1, naxes2)
         return matrix
 
     def transform(self, data=None):
@@ -984,7 +1046,7 @@ class ICP(object):
             result = pd.DataFrame()
             for num, val in enumerate(self._pdata.index):
                 for n, v in enumerate(self._pdata.columns):
-                    result.loc[val, ('%s_icp' % v)] = tdata[num,n]
+                    result.loc[val, ('%s_icp' % v)] = tdata[num, n]
         else:
             result = np.dot(data, self.matrix) + self.offset
         return result
@@ -1024,7 +1086,8 @@ class ICP(object):
             distances = pairwise_distances(data_transform, target)
             min_dist = np.min(distances, axis=1)
             # Filter percentile of furthest away points
-            min_dist_pct = np.percentile(min_dist, [0, (1-self.outlierpct)*100])[1]
+            min_dist_pct = np.percentile(
+                min_dist, [0, (1 - self.outlierpct) * 100])[1]
             min_dist_filt = np.argwhere(min_dist < min_dist_pct)[:, 0]
             # Match codes and levels
             matched_code = np.argmin(distances, axis=1)
@@ -1035,9 +1098,10 @@ class ICP(object):
             #matched_levels = target[indices[:,0], :]
             ### TEST
             # Least squaress
-            d = np.c_[data[min_dist_filt], np.ones(len(data[min_dist_filt, 0]))]
+            d = np.c_[data[min_dist_filt], np.ones(
+                len(data[min_dist_filt, 0]))]
             m = np.linalg.lstsq(d, matched_levels)[0]
-            
+
             # Store new tranformation matrix and offset vector
             self.matrix = m[0:-1, :]
             self.offset = m[-1, :]
@@ -1045,9 +1109,11 @@ class ICP(object):
             # Compare step by step delta
             d_compare = np.sum(np.square(self.matrix - matrix_old))
             d_compare = d_compare + np.sum(np.square(self.offset - offset_old))
-            n_compare = np.sum(np.square(self.matrix)) + np.sum(np.square(self.offset))
+            n_compare = np.sum(np.square(self.matrix)) + \
+                np.sum(np.square(self.offset))
             delta = np.sqrt(d_compare / n_compare)
             print("Delta: ", delta)
+
 
 class Classify(object):
     """Classification of beads by Gaussian Mixture Model.
@@ -1057,6 +1123,7 @@ class Classify(object):
     target : list of ratios
         Bla.
     """
+
     def __init__(self, target, tol=1e-5, min_covar=1e-7, sigma=1e-5, train=False):
         self._target = target
         self._tol = tol
@@ -1066,7 +1133,7 @@ class Classify(object):
 
         self._nclusters = len(self._target[:, 0])
         self._naxes = len(self._target[0, :])
-        
+
         self._confs = None
         self._log_prob = None
 
@@ -1080,17 +1147,17 @@ class Classify(object):
 
     def _setup_gmix(self):
         if (self._train is False) or (self._init is True):
-            self._gmix = GaussianMixture(covariance_type='full', 
-                                         tol=self._tol, 
-                                         reg_covar=self._min_covar, 
-                                         n_components = self._nclusters, 
-                                         means_init = self._target, 
-                                         weights_init = self.init_weights, 
-                                         precisions_init = self.init_covars)
+            self._gmix = GaussianMixture(covariance_type='full',
+                                         tol=self._tol,
+                                         reg_covar=self._min_covar,
+                                         n_components=self._nclusters,
+                                         means_init=self._target,
+                                         weights_init=self.init_weights,
+                                         precisions_init=self.init_covars)
             self._init = False
         else:
             warnings.warn("Training mode: ON")
-        
+
     @property
     def init_covars(self):
         sigmas = np.eye(self._naxes) * self._sigma
@@ -1113,12 +1180,14 @@ class Classify(object):
     @property
     def confs(self):
         return self._confs
+
     def _set_confs(self, data):
-        self._confs = 1-np.exp(-self._gmix.score_samples(data))
+        self._confs = 1 - np.exp(-self._gmix.score_samples(data))
 
     @property
     def log_prob(self):
         return self._log_proba
+
     def _set_log_prob(self, data):
         self._log_proba = self._gmix.score_samples(data)
 
@@ -1127,13 +1196,14 @@ class Classify(object):
         unit_sphere = self.unit_sphere(resolution)
         for n in range(self._nclusters):
             C = (nsigma * np.dot(self.stds, np.reshape(unit_sphere, (unit_sphere.shape[0], unit_sphere[1].size)))) + \
-                np.matlib.repmat(np.reshape(self.means[n], (3,1)), 1, unit_sphere[0].size)
+                np.matlib.repmat(np.reshape(
+                    self.means[n], (3, 1)), 1, unit_sphere[0].size)
             elps.append(np.reshape(C, unit_sphere.shape))
         return elps
 
     @property
     def output(self):
-        data =  pd.DataFrame(columns=['code','confidence','log_prob'])
+        data = pd.DataFrame(columns=['code', 'confidence', 'log_prob'])
         if type(self._data) is pd.DataFrame:
             for num, val in enumerate(self._data.index):
                 data.loc[val, ('code')] = self._predict[num]
@@ -1152,14 +1222,15 @@ class Classify(object):
     @property
     def missing(self):
         if len(np.unique(self._predict)) != self._nclusters:
-            missing = np.setxor1d(np.unique(self._predict), np.arange(0,self._nclusters))
-        else: 
+            missing = np.setxor1d(np.unique(self._predict),
+                                  np.arange(0, self._nclusters))
+        else:
             missing = None
         return missing
 
-    #TO-DO    
+    #TO-DO
     def code_metrics(self, nsigma=3, resolution=100):
-        data =  pd.DataFrame()
+        data = pd.DataFrame()
         data['means'] = self.means.tolist()
         data['stds'] = self.stds.tolist()
         data['ellipsoids'] = self.ellipsoids(nsigma, resolution)
@@ -1175,9 +1246,9 @@ class Classify(object):
 
     @staticmethod
     def unit_sphere(resolution=100):
-        theta = np.linspace(0,2*np.pi,resolution)
-        phi = np.linspace(0,np.pi,resolution)
-        x = np.outer(np.cos(theta),np.sin(phi))
-        y = np.outer(np.sin(theta),np.sin(phi))
-        z = np.outer(np.ones(resolution),np.cos(phi))
-        return np.array((x,y,z))
+        theta = np.linspace(0, 2 * np.pi, resolution)
+        phi = np.linspace(0, np.pi, resolution)
+        x = np.outer(np.cos(theta), np.sin(phi))
+        y = np.outer(np.sin(theta), np.sin(phi))
+        z = np.outer(np.ones(resolution), np.cos(phi))
+        return np.array((x, y, z))

@@ -3,10 +3,11 @@
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-from future.standard_library import install_aliases
-install_aliases()
 import sys
-if sys.version_info < (3,0): from __builtin__ import *
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *
+    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : gui.py

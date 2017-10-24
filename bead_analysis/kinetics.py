@@ -1,39 +1,46 @@
+"""
+Kinetics Classes and Functions
+================================
+
+This file stores the kinetics classes and functions for the MRBLEs Analysis module.
+"""
+
 # !/usr/bin/env python
 
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-from future.standard_library import install_aliases
-install_aliases()
 import sys
-if sys.version_info < (3,0): from __builtin__ import *
-
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *
+    install_aliases()
 # [File header]     | Copy and edit for each file in this project!
 # title             : kinetics.py
-# description       : Bead Kinetics module
+# description       : Bead Analaysis - Kinetics
 # author            : Bjorn Harink
-# credits           : 
+# credits           :
 # date              : 20160511
 # version update    : 20170601
 # version           : v0.2
 # usage             : As module
 # notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : 2.7
+# python_version    : 2.7 & 3.6
 
 # [TO-DO]
 
 # [Modules]
-# General
-import numpy as np
+# General Python
 from math import sqrt
-# Project
-import bead_analysis as ba
+# Data Structure
+import numpy as np
+
 
 class kshow(object):
     """Kurt's white paper for competive binding.
-    
+
     Assuming substrate (peptide on bead) or complex (protein) concentration in excess.
-    
+
     Parameters
     ----------
     c_substrate : array
@@ -68,6 +75,7 @@ class kshow(object):
         >>> plt.plot(test_kshow.result)
         ...
     """
+
     def __init__(self, c_substrate, c_complex, kd_init, tol=1E-4):
         self.n_substrate = len(c_substrate)
         self.n_complex = len(c_complex)
@@ -75,7 +83,7 @@ class kshow(object):
         self.c_complex = c_complex
         self.kds = self.kd_init(kd_init, self.n_substrate)
         self.tol = tol
-        
+
     @property
     def result(self):
         """Return result from fit.
@@ -86,16 +94,17 @@ class kshow(object):
         """Fit solution and save to results. Access result with object.result
         """
         self.MPfinal = np.zeros((self.n_complex, self.n_substrate))
-        MPapproxM = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
+        MPapproxM = self.comp_excess(
+            self.c_complex, self.c_substrate, self.kds)
         MPapproxP = self.sub_excess(self.c_complex, self.c_substrate, self.kds)
         MPnew = np.zeros((self.n_substrate))
         for m in range(self.n_complex):
             Mt = self.c_complex[m]  # total protein concentration
             # initial guess
             if Mt > sum(self.c_substrate):
-                MP = MPapproxM[m,:]
+                MP = MPapproxM[m, :]
             else:
-                MP = MPapproxP[m,:]
+                MP = MPapproxP[m, :]
             err = 1
             while err > self.tol:
                 MPsum = sum(MP)
@@ -103,18 +112,19 @@ class kshow(object):
                     MPsump = MPsum - MP[p]
                     b = MPsump - Mt - self.c_substrate[p] - self.kds[p]
                     c = self.c_substrate[p] * (Mt - MPsump)
-                    MPnew[p] = (-b - sqrt(b**2 - 4*c)) / 2
-                err = abs(sum((MP - MPnew)/MPnew))
-                MP = (0.1*MPnew + MP) / 1.1
-            self.MPfinal[m,:] = MP
-    
+                    MPnew[p] = (-b - sqrt(b**2 - 4 * c)) / 2
+                err = abs(sum((MP - MPnew) / MPnew))
+                MP = (0.1 * MPnew + MP) / 1.1
+            self.MPfinal[m, :] = MP
+
     @staticmethod
     def kd_init(kd_init, n_substrate):
         """Initial Kd values
         """
-        Kd = np.logspace(0, kd_init, n_substrate)  # Kd for each protein-peptide complex
+        Kd = np.logspace(
+            0, kd_init, n_substrate)  # Kd for each protein-peptide complex
         return Kd
-    
+
     @staticmethod
     def sub_excess(Mmat, Pt, Kd):
         """Substrate (e.g. peptides on bead) in excess
@@ -123,9 +133,9 @@ class kshow(object):
         for m in range(len(Mmat)):
             Mt = Mmat[m]  # total protein concentration
             for p in range(len(Pt)):
-                MPapproxP[m,p] = (Pt[p]/Kd[p]) * (Mt / (1 + sum(Pt/Kd)))
+                MPapproxP[m, p] = (Pt[p] / Kd[p]) * (Mt / (1 + sum(Pt / Kd)))
         return MPapproxP
-    
+
     @staticmethod
     def comp_excess(Mmat, Pt, Kd):
         """Complex (e.g. added protein concentration) in excess
@@ -134,8 +144,9 @@ class kshow(object):
         for m in range(len(Mmat)):
             Mt = Mmat[m]  # total protein concentration
             for p in range(len(Pt)):
-                MPapproxM[m,p] = Mt * Pt[p] / (Kd[p] + Mt)
+                MPapproxM[m, p] = Mt * Pt[p] / (Kd[p] + Mt)
         return MPapproxM
+
 
 class GlobalFit():
 

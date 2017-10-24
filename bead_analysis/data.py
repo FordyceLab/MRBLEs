@@ -1,12 +1,20 @@
+"""
+Data Classes and Functions
+==========================
+
+This file stores the data classes and functions for the MRBLEs Analysis module.
+"""
+
 # !/usr/bin/env python
 
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-from future import standard_library
-standard_library.install_aliases()
 import sys
-if sys.version_info < (3,0): from __builtin__ import *
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *
+    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : data.py
@@ -84,6 +92,7 @@ class FrozenClass(object):
 class OutputMethod():
     """Data output methods.
     """
+
     def _data_out(self, func, output=None):
         """Checks data output method setting for Numpy or Pandas.
         """
@@ -97,6 +106,7 @@ class OutputMethod():
     # TO-DO!
     def _crop_data(self):
         pass
+
 
 class ChannelDescriptor(object):
     def __init__(self, name):
@@ -172,13 +182,13 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         """Return spectra names.
         """
         return self._dataframe.columns.tolist()
- 
+
     @property
     def spec_size(self):
         """Return spectra count.
         """
         return len(self.spec_names)
-    
+
     def spec_index(self, name):
         """Return spectrum by index.
         """
@@ -256,13 +266,13 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
         """Return label names.
         """
         return self._dataframe.index.tolist()
-    
+
     @property
     def c_size(self):
         """Return label count.
         """
         return len(self.c_names)
-    
+
     def c_index(self, name):
         """Return label index.
         """
@@ -310,13 +320,15 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
     @property
     def data(self):
         return self._data_out(self._dataframe, self.output)
+
     @property
     def ndata(self):
         return self._dataframe.values
+
     @property
     def pdata(self):
         return self._dataframe
-    
+
     # Data file output/input functions
     def to_csv(self, filepath):
         if self._dataframe is not None:
@@ -332,13 +344,14 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
 
     def read_csv(self, filepath):
         if self._dataframe is not None:
-            self._dataframe = pd.read_csv(filepath,'rb')
+            self._dataframe = pd.read_csv(filepath, 'rb')
         else:
             print("No spectra to export!")
 
     def read_excel(self, filepath, sheetname=0):
         if self._dataframe is not None:
-            self._dataframe = pd.read_excel(open(filepath,'rb'), sheetname=sheetname)
+            self._dataframe = pd.read_excel(
+                open(filepath, 'rb'), sheetname=sheetname)
         else:
             print("No spectra to export!")
 
@@ -387,6 +400,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
     >>> image_data_object['BF', 100:400, 100:400]
     (301L, 301L)
     """
+
     def __init__(self, file_path, series=0, output='nd'):
         super(ImageSetRead, self).__init__()
         self._dataframe, self._metadata, self._files = \
@@ -428,7 +442,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         >>> image_files = ['C:/folder/file.tif', 'C:/folder/file.tif']
         >>> ImageSetRead.load(image_files)
         """
-        if type(file_path) is str: 
+        if type(file_path) is str:
             file_path = [file_path]
         with tff.TiffSequence(file_path, pattern='XYCZT') as ts, tff.TiffFile(file_path[0]) as tf:
             files = ts.files
@@ -442,7 +456,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
                 panel_data = ts.asarray(series=series)
         if len(file_path) == 1 and series != 'all':
             panel_data = np.vstack(panel_data)
-        image_data = cls.convert_to_xd(panel_data, image_metadata, file_path, series)
+        image_data = cls.convert_to_xd(
+            panel_data, image_metadata, file_path, series)
         return image_data, image_metadata, files
 
     # Channel properties and methods
@@ -539,7 +554,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         Default in milliseconds (ms), check object.t_unit for time unit.
         """
         return self._metadata['summary']['Interval_ms']
-    
+
     @property
     def t_deltas(self):
         """Return time deltas between each image acquisition (each channel, position etc.). 
@@ -547,7 +562,8 @@ class ImageSetRead(FrozenClass, OutputMethod):
         """
         xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value
         xml_tree = minidom.parseString(xml_string)
-        t_deltas = [float(xm.attributes['DeltaT'].value) for xm in xml_tree.getElementsByTagName('Plane')]
+        t_deltas = [float(xm.attributes['DeltaT'].value)
+                    for xm in xml_tree.getElementsByTagName('Plane')]
         return t_deltas
 
     @property
@@ -577,7 +593,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         'TCYX'
         """
         return ''.join(self._dataframe.dims).upper()
-    
+
     # Data properties and methods
     @property
     def data(self):
@@ -601,6 +617,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
     @property
     def crop_x(self):
         return self._crop_x
+
     @crop_x.setter
     def crop_x(self, value):
         self._crop_x = self.set_slice(value)
@@ -608,6 +625,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
     @property
     def crop_y(self):
         return self._crop_y
+
     @crop_x.setter
     def crop_y(self, value):
         self._crop_y = self.set_slice(value)
@@ -634,24 +652,28 @@ class ImageSetRead(FrozenClass, OutputMethod):
         elif type(values) is list:
             return slice(values[0], values[1])
         else:
-            raise ValueError("Use slice(value, value) or [value, value] for range! Input: %s" % values)
+            raise ValueError(
+                "Use slice(value, value) or [value, value] for range! Input: %s" % values)
 
     @staticmethod
     def convert_to_xd(data, metadata, file_path, series):
         """Convert data and metadata to xarray DataArray.
         """
         if data.ndim == 2:
-            panel_data = xr.DataArray(data, dims=['y','x'])
+            panel_data = xr.DataArray(data, dims=['y', 'x'])
         else:
             # Added check if using newer version of Scikit-Image
             try:
                 if type(metadata['series'][0]) is tff.tifffile.TiffPageSeries:
-                    dims = [letter.lower() for letter in metadata['series'][0].axes]
+                    dims = [letter.lower()
+                            for letter in metadata['series'][0].axes]
             except:
                 # For backwards compatibility of Scikit-Image versions 0.12.3
                 # and below.
-                dims = [letter.lower() for letter in metadata['series'][0]['axes']]
-                warnings.warn("Scikit-Image latest update has changed method to retrieve metadata. Please upgrade to the latest Scikit-Image package.")
+                dims = [letter.lower()
+                        for letter in metadata['series'][0]['axes']]
+                warnings.warn(
+                    "Scikit-Image latest update has changed method to retrieve metadata. Please upgrade to the latest Scikit-Image package.")
             if len(metadata['series']) > 1 and (series is 'all'):
                 dims.insert(0, 'p')
                 data = np.squeeze(data)
@@ -659,9 +681,9 @@ class ImageSetRead(FrozenClass, OutputMethod):
                 dims[dims.index('i')] = 'c'
             if len(file_path) > 1:
                 dims.insert(0, 'f')
-            panel_data = xr.DataArray(data, dims=dims, coords={'c':metadata['summary']['ChNames']})
+            panel_data = xr.DataArray(data, dims=dims, coords={
+                                      'c': metadata['summary']['ChNames']})
         return panel_data
-
 
     @staticmethod
     def scan_path(path, pattern="*.tif"):
@@ -682,11 +704,10 @@ class ImageSetRead(FrozenClass, OutputMethod):
         #        image_files.append(os.path.join(root, file))
         r = re.compile(pattern)
         for root, dirs, files in os.walk(path):
-          l = [os.path.join(root,x) for x in files if r.match(x)]
+          l = [os.path.join(root, x) for x in files if r.match(x)]
           if l:
               image_files.append(l)
         return np.hstack(image_files).tolist()
-
 
     @classmethod
     def scan_paths(cls, paths, pattern=".tif"):
@@ -772,6 +793,7 @@ class BeadSet(object):
             return self._dataframe[self._dataframe['code'] == value].values
         else:
             return self._dataframe['code'].values
+
     @code.setter
     def code(self, value):
         self._dataframe['code'] = value
@@ -779,6 +801,7 @@ class BeadSet(object):
     @property
     def lbl(self):
         return self._dataframe['lbl'].values
+
     @lbl.setter
     def ratio(self, value):
         self._dataframe['lbl'] = value
@@ -786,20 +809,22 @@ class BeadSet(object):
     @property
     def img(self):
         return self._dataframe['img'].values
+
     @img.setter
     def ratio(self, value):
         self._dataframe['img'] = value
 
     @property
     def dim(self):
-        return [self._dataframe['R'].values,self._dataframe['Y'].values,self._dataframe['X'].values]
+        return [self._dataframe['R'].values, self._dataframe['Y'].values, self._dataframe['X'].values]
+
     @dim.setter
     def dim(self, value):
         """Insert list for [R,Y,X]
         """
-        self._dataframe['R'] = value[:,0]
-        self._dataframe['R'] = value[:,1]
-        self._dataframe['R'] = value[:,2]
+        self._dataframe['R'] = value[:, 0]
+        self._dataframe['R'] = value[:, 1]
+        self._dataframe['R'] = value[:, 2]
 
     def get_median(mask, images, label=None):
         """Get Median Intensities of each object location from the given image.
@@ -816,7 +841,8 @@ class BeadSet(object):
         medians_data = np.empty((data_size, channel_no))
         for ch in channels:
             # Get median value of each object
-            medians_data[:, ch] = ndi.labeled_comprehension(images[ch, :, :], mask, idx, np.median, float, -1)
+            medians_data[:, ch] = ndi.labeled_comprehension(
+                images[ch, :, :], mask, idx, np.median, float, -1)
         return medians_data
 
     def get_data(mask, images, function, label=None):
@@ -827,11 +853,12 @@ class BeadSet(object):
         """
         if label is None:
             idx = np.arange(1, len(np.unique(mask)))
-        else: 
+        else:
             idx = label
         channel_no = images[:, 0, 0].size
         channels = range(channel_no)
-        data = [ndi.labeled_comprehension(images[ch, :, :], mask, idx, function, float, -1) for ch in channels]
+        data = [ndi.labeled_comprehension(
+            images[ch, :, :], mask, idx, function, float, -1) for ch in channels]
         return np.array(data)
 
     def get_per(labels, data):
@@ -839,7 +866,7 @@ class BeadSet(object):
         size = len(idx)
 
     def median_per(labels, data):
-        pass        
+        pass
 
     def median_all():
         pass
@@ -849,4 +876,3 @@ class BeadSet(object):
 
     def mean_all():
         pass
-
