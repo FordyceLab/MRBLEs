@@ -86,23 +86,19 @@ class FindBeadsImaging(object):
     bead_size : int
         Approximate width of beads (circles) in pixels.
         Defaults to 18.
-
     eccen_param : int, list of int
         Sets the maximum of eccentricity [0-1] of the beads (circles).
         Values close to 0 mean very circular, values closer to 1 mean very elliptical.
         Defaults to 0.55.
-
     area_param : int, list of int
         Sets the default min and max fraction for bead (circle) area. 
         Set as single int (1+/-: 0.XX) value or of 2 values [0.XX, 1.XX].
         E.g. area_param=0.5 or area_param=[0.5, 1.5] filters all below 50% and above 150% of area calculated by approximate bead_size.
         Defaults to 0.5, which equals to [0.5, 1.5].
-
     Attributes
     ----------
     area_min : int or float
         Sets the minimum area in pixels.
-
     area_max : int or float
         Sets the maximum area in pixels.
     """
@@ -142,7 +138,7 @@ class FindBeadsImaging(object):
     # Main method
     # TODO: Split inside filter and whole bead filter, or change method.
     def find(self, image, circle_size=None):
-        """Find objects.
+        """Find objects in given image.
         """
         # Convert image to uint8
         if circle_size is None:
@@ -199,8 +195,20 @@ class FindBeadsImaging(object):
             self._mask_bkg[~roi_mask] = 0
         return True
 
-    @classmethod
+    @staticmethod
     def img_invert(img_thr):
+        """Set docstring here.
+
+        Parameters
+        ----------
+        img_thr : NumPy array
+            Boolean image in NumPy format.
+
+        Returns
+        -------
+        img_inv : Numpy array
+            Inverted boolean of the image array.
+        """   
         img_inv = (~img_thr.astype(bool)).astype(int)
         return img_inv
 
@@ -441,10 +449,8 @@ class FindBeadsImaging(object):
         ----------
         image : NumPy array
             Base image.
-
         dims : NumPy array
             Array with dimensions of circles: np.array([radius, x_position, y_position], [...]): Shape: Nx3.
-
         ring_size: int
             Will print inside ring (annulus) with radius minus set value.
             Defaults to None, meaning not printing inside ring.
@@ -472,14 +478,11 @@ class FindBeadsImaging(object):
         ----------
         image : NumPy array
             Base image.
-
         image_blend : NumPy arra
             Image to blend over base image.
-
         aplha : float
             Amount of blending. Value between 0 and 1.
             Defaults to 0.3.
-
         c_map1 : cmap
             Color scheme using cmap. See matplotlib for color schemes.
             Defaults to 'Greys_r', which are reversed grey values.        
@@ -498,7 +501,6 @@ class FindBeadsImaging(object):
         ----------
         size : int
             Set number of dilation (positive value, grow outward) or erosion (negative value, shrink inward) steps.
-
         mask : NumPy array
             Labeled mask to be dilated or eroded.
         """
@@ -522,12 +524,10 @@ class FindBeadsImaging(object):
             >>> from photutils import source_properties, properties_table
             >>> tbl = properties_table(properties)
             >>> properties = source_properties(mask, mask)
-
         filter_param : float, int, list
             Parameters to filter by. 
             If provided a list it will filter by range, inside or outside).
             If provided a value it filter up or down that value.
-
         slice_type : string
             'outside' : < >
             'inside'  : >= <=
@@ -558,7 +558,6 @@ class FindBeadsImaging(object):
         ----------
         value : float, int
             Value to get min and max value from.
-
         min_max : float, list
             Percentage of min and max. 
             If set by single value, e.g. +/- 0.25: min 75% / 125% of set value.
@@ -579,7 +578,6 @@ class FindBeadsImaging(object):
         Parameters:
         a : float
             Size major axis a.
-
         b : float
             Size major axis b.
         """
@@ -609,24 +607,18 @@ class FindBeadsCircle(object):
     ----------
     min_r : int
         Sets the minimum diameter of the bead in pixels.
-
     max_r : int
         Sets the maximum diameter of the bead in pixels.
-
     param_1 : int
         Sets the gradient steepness. CHECK
-
     param_2 : int
         Sets the sparsity. CHECK
-
     annulus_width : int, optional
         Sets the width of the annulus in pixels.
         Defaults to 2 pixels.
-
     min_dist : int, optional
         Sets the minimal distance between the centers of the beads in pixels.
         Defaults to 2x of the minimum diameter (min_r).
-
     enlarge : float, optional
         Enlarges the found diameter by this factor. 
         1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
@@ -828,10 +820,8 @@ class SpectralUnmixing(FrozenClass):
     ----------
     ref_data : list, ndarray, bead_analysis.data.Spectra
         Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels.
-
     image_data : list, ndarray
         Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
-
     names : list
         List of channel names. When using Spectra object, names are imlied.
     """
@@ -863,7 +853,8 @@ class SpectralUnmixing(FrozenClass):
         return self._dataframe.ix[index].values
 
     def unmix(self, images):
-        """Unmix
+        """Unmix images based on initiated reference data.
+        
         Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
         ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
         image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
@@ -959,7 +950,14 @@ class ICP(object):
         Function to apply transformat data using current transformation matrix and offset vector.
     """
 
-    def __init__(self, matrix_method='std', offset=None, max_iter=100, tol=1e-4, outlier_pct=0, train=False, echo=True):
+    def __init__(self,
+                 matrix_method='std',
+                 offset=None,
+                 max_iter=100,
+                 tol=1e-4,
+                 outlier_pct=0,
+                 train=False,
+                 echo=True):
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
@@ -1120,8 +1118,20 @@ class Classify(object):
 
     Parameters
     ----------
-    target : list of ratios
-        Bla.
+    target : list, NumPy array
+        List of target ratios.
+    tol : float
+        Tolerance.
+        Defaults to 1e-5.
+    min_covar : float
+        Minimum covariance.
+        Defaults to 1e-7.
+    sigma : float
+        ...
+        Defaults to 1e-5.
+    train : boolean
+        Sets training mode. Remembers covariance matrix or resets to initial covariance matrix.
+        Defaults to False.
     """
 
     def __init__(self, target, tol=1e-5, min_covar=1e-7, sigma=1e-5, train=False):
