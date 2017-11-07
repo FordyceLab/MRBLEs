@@ -619,7 +619,7 @@ class FindBeadsCircle(object):
         Sets the minimal distance between the centers of the beads in pixels.
         Defaults to 2x of the minimum diameter (min_r).
     enlarge : float, optional
-        Enlarges the found diameter by this factor. 
+        Enlarges the found diameter by this factor.
         1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
         Defaults to 1, no enlarging/shrinking.
     """
@@ -908,26 +908,20 @@ class ICP(object):
         Transformation matrix method. Standard methods: 'max', 'mean', 'std'. 
         Other options: own function or list of initial guesses. 
         Defaults to 'std'.
-
     offset : list of float, optional
-
     max_iter : int, optional
         Maximum number of iterations. 
         Defaults to 100.
-
     tol : float, optional
         Convergence threshold. ICP will stop after delta < tol.
         Defaults to 1e-4.
-
     outlier_pct : float, optional
         Discard percentile 0.x of furthest distance from target. Percentile given in fraction [0-1], e.g. '0.001'.
         Defaults to 0.
-
     train : boolean
         Turn on (True) or off (False) traning mode.
         This will keep the current tranformation from resetting to default initial values.
         Defaults to True.
-
     echo: boolean
         Turn on (True) or off (False) printing information while in process.
         Prints the delta for each iteration, the final number of iterations, and the final transformation and offset matrices.
@@ -936,7 +930,6 @@ class ICP(object):
     ----------
     matrix : NumPy array
         This stores the transformation matrix.
-
     offset : NumPy vector
         This stores the offset vector.
 
@@ -944,7 +937,6 @@ class ICP(object):
     ---------
     fit : function
         Function to find ICP using set parameters and attributes.
-
     transform : function
         Function to apply transformat data using current transformation matrix and offset vector.
     """
@@ -1010,11 +1002,8 @@ class ICP(object):
 
         parameters
         ----------
-        naxes : int
-            Number of axes or features.
-        
         func : function
-            Function to apply on input1 divided by input2, e.g. 'np.std'. 
+            Function to apply on input1 divided by input2, e.g. 'np.std'.
             Insert function without function call: ().
         input1 : list, ndarray
         input2 : list, ndarray
