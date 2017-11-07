@@ -85,11 +85,10 @@ class FindBeadsImaging(object):
     ----------
     bead_size : int
         Approximate width of beads (circles) in pixels.
-        Defaults to 18.
     eccen_param : int, list of int
         Sets the maximum of eccentricity [0-1] of the beads (circles).
         Values close to 0 mean very circular, values closer to 1 mean very elliptical.
-        Defaults to 0.55.
+        Defaults to 0.65.
     area_param : int, list of int
         Sets the default min and max fraction for bead (circle) area. 
         Set as single int (1+/-: 0.XX) value or of 2 values [0.XX, 1.XX].
@@ -208,7 +207,7 @@ class FindBeadsImaging(object):
         -------
         img_inv : Numpy array
             Inverted boolean of the image array.
-        """   
+        """
         img_inv = (~img_thr.astype(bool)).astype(int)
         return img_inv
 

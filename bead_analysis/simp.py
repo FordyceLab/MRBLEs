@@ -92,6 +92,8 @@ class ReferenceSpectra(object):
                 "Use slice(value, value) or [value, value] for range! Input: %s" % values)
 
     def get_spectra(self):
+        """Get spectra.
+        """
         # for name, file in self.files.iteritems():
         for name, file in self.files.items():
             print("Spectrum: %s" % name)
