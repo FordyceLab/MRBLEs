@@ -80,8 +80,10 @@ def accepts(*types):
 
 ### Classes
 
-class FindBeadsImagingBETA(object):
+class FindBeadsImagingP(object):
     """Find and identify beads and their regions using imaging.
+
+    Parallel computing version.
 
     Parameters
     ----------
@@ -151,19 +153,23 @@ class FindBeadsImagingBETA(object):
 
     # Main function
     def find(self, image):
+        """Find beads.
+        """
         if image.ndim == 3:
             pool_size = image.shape[0]
-            mp_worker = mp.Pool(pool_size)
-            result = mp_worker.map(self._find, image)
+            mp_worker = mp.Pool()
+            result = xd.concat(mp_worker.map(self._find, image), dim='f')
+            mp_worker.close()
+            mp_worker.join()
         else:
             result = self._find(image)
         return result
-    
+
     def _find(self, image):
         bin_img = self.img2bin(image)
         mask_inside, mask_inside_neg = self.find_inside(bin_img)
         if np.unique(mask_inside).size <= 1:
-            blank_img = np.zeros_like(img)
+            blank_img = np.zeros_like(bin_img)
             mask_bead = blank_img
             mask_ring = blank_img
             mask_outside = blank_img
@@ -177,9 +183,9 @@ class FindBeadsImagingBETA(object):
             # Create outside and buffered background areas around bead
             mask_outside = self.make_mask_outside(mask_bead, self.mask_bkg_size, buffer=0)
             mask_bkg = self.make_mask_outside(mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
-        masks = xd.DataArray([mask_bead, mask_ring, mask_outside, mask_bkg],
-                             dims=['mask','y','x'], 
-                             coords={'mask':['whole','ring','outside','bkg']})
+        masks = xd.DataArray(np.array([mask_bead, mask_ring, mask_outside, mask_bkg]),
+                             dims=['m','y','x'],
+                             coords={'m':['whole','ring','outside','bkg']})
         return masks
 
     def find_inside(self, bin_img):
@@ -188,7 +194,7 @@ class FindBeadsImagingBETA(object):
                                  self._area_max * self.circle_area(self._bead_size)]]
         filter_names_inside = ['area']
         slice_types_inside = ['outside']
-        mask_inside, mask_inside_neg = self.filter_mask(mask_inside,
+        mask_inside, mask_inside_neg = self.filter_mask(seg_img,
                                                         filter_params_inside,
                                                         filter_names_inside,
                                                         slice_types_inside,
@@ -293,7 +299,7 @@ class FindBeadsImagingBETA(object):
     def filter_properties(cls, properties, filter_params, filter_names, slice_types):
         """Get labels of areas outside of limits.
         """
-        lbls_out_tmp = [cls.filter(properties, param, name, stype) for param, name, stype in zip(
+        lbls_out_tmp = [cls.filter_property(properties, param, name, stype) for param, name, stype in zip(
             filter_params, filter_names, slice_types)]
         lbls_out = np.unique(np.hstack(lbls_out_tmp))
         return lbls_out    
@@ -359,11 +365,11 @@ class FindBeadsImagingBETA(object):
         return lbls_out
 
     @staticmethod
-    def bin2seg(cls, image):
+    def bin2seg(image):
         """Convert and adaptive threshold image.
         """
         kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
-        seg_img = ndi.label(img_thr, structure=kernel)[0]
+        seg_img = ndi.label(image, structure=kernel)[0]
         return seg_img
 
     @staticmethod
