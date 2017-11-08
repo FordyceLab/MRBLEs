@@ -68,7 +68,6 @@ class ReferenceSpectra(object):
     @property
     def crop_x(self):
         return self._crop_x
-
     @crop_x.setter
     def crop_x(self, value):
         self._crop_x = self.set_slice(value)
@@ -76,7 +75,6 @@ class ReferenceSpectra(object):
     @property
     def crop_y(self):
         return self._crop_y
-
     @crop_x.setter
     def crop_y(self, value):
         self._crop_y = self.set_slice(value)
@@ -137,7 +135,6 @@ class ReferenceSpectra(object):
         ----------
         dark_noise : int
             Intrinsic dark noise of camera. Image taken when shutter closed.
-
         channels : slice, list
             Slice of channels
         """
