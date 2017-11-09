@@ -110,8 +110,8 @@ class FindBeadsImagingP(object):
         # Default values for filtering
         self._bead_size = bead_size
         self.border_clear = border_clear
-        self._area_min = 0.25 * self.circle_area(bead_size)
-        self._area_max = 1.5 * self.circle_area(bead_size)
+        self._area_min = 0.1 * self.circle_area(bead_size)
+        self._area_max = 2.0 * self.circle_area(bead_size)
         self._eccen_max = 0.65
         # Default values for local background
         self.mask_bkg_size = 2
@@ -156,7 +156,6 @@ class FindBeadsImagingP(object):
         """Find beads.
         """
         if image.ndim == 3:
-            pool_size = image.shape[0]
             mp_worker = mp.Pool()
             result = xd.concat(mp_worker.map(self._find, image), dim='f')
             mp_worker.close()
@@ -168,30 +167,32 @@ class FindBeadsImagingP(object):
     def _find(self, image):
         bin_img = self.img2bin(image)
         mask_inside, mask_inside_neg = self.find_inside(bin_img)
+        print(np.unique(mask_inside).size)
         if np.unique(mask_inside).size <= 1:
+            print('empty')
             blank_img = np.zeros_like(bin_img)
             mask_bead = blank_img
             mask_ring = blank_img
             mask_outside = blank_img
             mask_bkg = blank_img
         else:
-            self.find_whole(mask_inside, bin_img)
+            print('not empty')
+            mask_bead, mask_bead_neg = self.find_whole(mask_inside, bin_img)
             # Create and update final masks
-            mask_ring = mask_bead - self._mask_inside
+            mask_ring = mask_bead - mask_inside
             mask_ring[mask_ring < 0] = 0
             mask_inside[mask_bead_neg < 0] = 0
             # Create outside and buffered background areas around bead
             mask_outside = self.make_mask_outside(mask_bead, self.mask_bkg_size, buffer=0)
             mask_bkg = self.make_mask_outside(mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
-        masks = xd.DataArray(np.array([mask_bead, mask_ring, mask_outside, mask_bkg]),
-                             dims=['m','y','x'],
-                             coords={'m':['whole','ring','outside','bkg']})
+            masks = xd.DataArray(np.array([mask_bead, mask_ring, mask_outside, mask_bkg]),
+                                dims=['m','y','x'],
+                                coords={'m':['whole','ring','outside','bkg']})
         return masks
 
     def find_inside(self, bin_img):
         seg_img = self.bin2seg(bin_img)
-        filter_params_inside = [[self._area_min * self.circle_area(self._bead_size), 
-                                 self._area_max * self.circle_area(self._bead_size)]]
+        filter_params_inside = [[self._area_min, self._area_max]]
         filter_names_inside = ['area']
         slice_types_inside = ['outside']
         mask_inside, mask_inside_neg = self.filter_mask(seg_img,
@@ -202,12 +203,12 @@ class FindBeadsImagingP(object):
         return mask_inside, mask_inside_neg
 
     def find_whole(self, mask_inside, bin_img):                            
-        bin_img_invert = img_invert(bin_img)
+        bin_img_invert = self.img_invert(bin_img)
         mask_all_bin = mask_inside + bin_img_invert
         mask_all_bin[mask_all_bin > 0] = 1
         dist_trans = ndi.distance_transform_edt(mask_all_bin, sampling=3)
         mask_full = watershed(-dist_trans, markers=mask_inside, mask=mask_all_bin)
-        filter_params = [self._eccen_param,
+        filter_params = [self._eccen_max,
                          [self.area_min, self.area_max]]
         filter_names = ['eccentricity', 'area']
         slice_types = ['up', 'outside']
@@ -306,28 +307,6 @@ class FindBeadsImagingP(object):
 
     # Static Methods
     @staticmethod
-    def morph_mask_step(size, mask):
-        """Morph mask step-by-step using erosion or dilation.
-
-        This function will erode or dilate step-by-step, in a loop, each labeled feature in labeled mask array.
-
-        Parameters
-        ----------
-        size : int
-            Set number of dilation (positive value, grow outward) or erosion (negative value, shrink inward) steps.
-        mask : NumPy array
-            Labeled mask to be dilated or eroded.
-        """
-        morph_mask = mask.copy()
-        if size < 0:
-            for n in range(abs(size)):
-                morph_mask = erosion(morph_mask)
-        elif size > 0:
-            for n in range(size):
-                morph_mask = dilation(morph_mask)
-        return morph_mask
-
-    @staticmethod
     def filter_property(properties, filter_param, filter_name, slice_type):
         """Get labels of beads outside/inside/up/down of propert limits.
 
@@ -363,6 +342,28 @@ class FindBeadsImagingP(object):
                 lbls_out = properties[properties[filter_name]
                                       < filter_param].label.values
         return lbls_out
+    
+    @staticmethod
+    def morph_mask_step(size, mask):
+        """Morph mask step-by-step using erosion or dilation.
+
+        This function will erode or dilate step-by-step, in a loop, each labeled feature in labeled mask array.
+
+        Parameters
+        ----------
+        size : int
+            Set number of dilation (positive value, grow outward) or erosion (negative value, shrink inward) steps.
+        mask : NumPy array
+            Labeled mask to be dilated or eroded.
+        """
+        morph_mask = mask.copy()
+        if size < 0:
+            for n in range(abs(size)):
+                morph_mask = erosion(morph_mask)
+        elif size > 0:
+            for n in range(size):
+                morph_mask = dilation(morph_mask)
+        return morph_mask
 
     @staticmethod
     def bin2seg(image):
@@ -433,7 +434,7 @@ class FindBeadsImagingP(object):
             Diameter of circle.
         """
         radius = ceil(diameter / 2)
-        return pi * radius**2
+        return np.pi * radius**2
 
     @staticmethod
     def eccentricity(a, b):
