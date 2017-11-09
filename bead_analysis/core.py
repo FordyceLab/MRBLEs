@@ -10,11 +10,6 @@ This file stores the core classes and functions for the MRBLEs Analysis module.
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-import sys
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *
-    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : core.py
@@ -23,11 +18,10 @@ if sys.version_info < (3, 0):
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
 # version update    : 20170823
-# version           : v0.6.0
-
 
 # [Modules]
 # General Python
+import sys
 import os
 import types
 import warnings
@@ -57,14 +51,19 @@ from matplotlib import pyplot as plt
 # Intra-Package dependencies
 from .data import *
 
+# Function compatibility between Python 2.x and 3.x
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *
+    install_aliases()
 
-### Decorators
+
+# Decorators
+
 
 def accepts(*types):
-    """Checks input parameters for data types.
-    """
+    """Check input parameters for data types."""
     def check_accepts(f):
-        #assert len(types) == f.func_code.co_argcount
         assert len(types) == f.__code__.co_argcount
 
         def new_f(*args, **kwds):
@@ -72,13 +71,16 @@ def accepts(*types):
                 assert isinstance(a, t), \
                     "arg %r does not match %s" % (a, t)
             return f(*args, **kwds)
-        #new_f.func_name = f.func_name
         new_f.func_name = f.__name__
         return new_f
     return check_accepts
 
+def pmap():
+    pass
 
-### Classes
+
+# Classes
+
 
 class FindBeadsImagingP(object):
     """Find and identify beads and their regions using imaging.
@@ -102,12 +104,14 @@ class FindBeadsImagingP(object):
         Sets the maximum area in pixels. Set maximum size outside of ring.
         Defaults to 1.5 * area of set bead_size.
     eccen_max : float
-        Get or set maximum eccentricity of beads in value 0 to 1, where a perfect circle is 0.
+        Get or set maximum eccentricity of beads in value 0 to 1, where a
+        perfect circle is 0.
         Defaults to 0.65.
+
     """
 
     def __init__(self, bead_size, border_clear=True):
-        # Default values for filtering
+        """Find and identify beads and their regions using imaging."""
         self._bead_size = bead_size
         self.border_clear = border_clear
         self._area_min = 0.1 * self.circle_area(bead_size)
@@ -120,14 +124,12 @@ class FindBeadsImagingP(object):
     # Properties - Settings
     @property
     def bead_size(self):
-        """Get or set approximate width of beads (circles) in pixels.
-        """
+        """Get or set approximate width of beads (circles) in pixels."""
         return self._bead_size
 
     @property
     def area_min(self):
-        """Get or set minimum area of beads (circles) in pixels.
-        """
+        """Get or set minimum area of beads (circles) in pixels."""
         return self._area_min
     @area_min.setter
     def area_min(self, value):
@@ -135,8 +137,7 @@ class FindBeadsImagingP(object):
 
     @property
     def area_max(self):
-        """Get or set minimum area of beads (circles) in pixels.
-        """
+        """Get or set minimum area of beads (circles) in pixels."""
         return self._area_max
     @area_max.setter
     def area_max(self, value):
@@ -144,7 +145,9 @@ class FindBeadsImagingP(object):
 
     @property
     def eccen_max(self):
-        """Get or set maximum eccentricity of beads in value 0 to 1, where a perfect circle is 0.
+        """Get or set maximum eccentricity of beads from 0 to 1.
+
+        A perfect circle is 0 and parabola is 1.
         """
         return self._eccen_max
     @eccen_max.setter
@@ -153,8 +156,7 @@ class FindBeadsImagingP(object):
 
     # Main function
     def find(self, image):
-        """Find beads.
-        """
+        """Find beads."""
         if image.ndim == 3:
             mp_worker = mp.Pool()
             result = xd.concat(mp_worker.map(self._find, image), dim='f')
@@ -183,11 +185,21 @@ class FindBeadsImagingP(object):
             mask_ring[mask_ring < 0] = 0
             mask_inside[mask_bead_neg < 0] = 0
             # Create outside and buffered background areas around bead
-            mask_outside = self.make_mask_outside(mask_bead, self.mask_bkg_size, buffer=0)
-            mask_bkg = self.make_mask_outside(mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
-            masks = xd.DataArray(np.array([mask_bead, mask_ring, mask_outside, mask_bkg]),
-                                dims=['m','y','x'],
-                                coords={'m':['whole','ring','outside','bkg']})
+            mask_outside = self.make_mask_outside(mask_bead,
+                                                  self.mask_bkg_size,
+                                                  buffer=0)
+            mask_bkg = self.make_mask_outside(mask_bead_neg,
+                                              self.mask_bkg_size,
+                                              buffer=self.mask_bkg_buffer)
+            masks = xd.DataArray(data=np.array([mask_bead,
+                                                mask_ring,
+                                                mask_outside,
+                                                mask_bkg]),
+                                 dims=['m', 'y', 'x'],
+                                 coords={'m': ['whole',
+                                               'ring',
+                                               'outside',
+                                               'bkg']})
         return masks
 
     def find_inside(self, bin_img):
@@ -207,7 +219,9 @@ class FindBeadsImagingP(object):
         mask_all_bin = mask_inside + bin_img_invert
         mask_all_bin[mask_all_bin > 0] = 1
         dist_trans = ndi.distance_transform_edt(mask_all_bin, sampling=3)
-        mask_full = watershed(-dist_trans, markers=mask_inside, mask=mask_all_bin)
+        mask_full = watershed(-dist_trans,
+                              markers=mask_inside,
+                              mask=mask_all_bin)
         filter_params = [self._eccen_max,
                          [self.area_min, self.area_max]]
         filter_names = ['eccentricity', 'area']
@@ -216,7 +230,7 @@ class FindBeadsImagingP(object):
                                                     filter_params,
                                                     filter_names,
                                                     slice_types,
-                                                    self.border_clear)                                                        
+                                                    self.border_clear)
         return mask_bead, mask_bead_neg
 
     # Functions
@@ -226,36 +240,49 @@ class FindBeadsImagingP(object):
     # Properties - Masks
     @property
     def mask_bead(self):
+        """Return labeled mask of the whole bead."""
         return self._mask_bead
 
     @property
     def mask_ring(self):
+        """Return labeled mask of the ring of the bead."""
         return self._mask_ring
 
     @property
     def mask_inside(self):
+        """Return labeled mask of the inside of the bead."""
         return self._mask_inside
 
     @property
     def mask_outside(self):
+        """Return labeled mask of outside area of the bead."""
         return self._mask_outside
+
+    @property
+    def mask_bkg(self):
+        """Return labeled mask of local background around the bead."""
+        return self._mask_bkg
 
     # Properties - Output values
     @property
     def bead_num(self):
+        """Return number of beads labeled mask."""
         return self.get_unique_count(self._mask_bead)
 
     @property
     def bead_labels(self):
+        """Return all positive labels of labeled mask."""
         return self.get_unique_values(self._mask_bead)
 
     @property
     def bead_dims_bead(self):
+        """Return all positive labels of labeled mask."""
         return self.get_dimensions(self._mask_bead)
 
     # Class methods
     @classmethod
     def make_mask_outside(cls, mask, size, buffer=0):
+        """Return labeled mask of area around bead."""
         if buffer > 0:
             mask_min = cls.morph_mask_step(buffer, mask)
         else:
@@ -266,8 +293,7 @@ class FindBeadsImagingP(object):
 
     @classmethod
     def img2bin(cls, image, thr_block=15, thr_c=11):
-        """Convert and adaptive threshold image.
-        """
+        """Convert and adaptive threshold image."""
         img = cls.img2ubyte(image)
         img_thr = cv2.adaptiveThreshold(src=img,
                                         maxValue=1,
@@ -298,8 +324,7 @@ class FindBeadsImagingP(object):
 
     @classmethod
     def filter_properties(cls, properties, filter_params, filter_names, slice_types):
-        """Get labels of areas outside of limits.
-        """
+        """Get labels of areas outside of limits."""
         lbls_out_tmp = [cls.filter_property(properties, param, name, stype) for param, name, stype in zip(
             filter_params, filter_names, slice_types)]
         lbls_out = np.unique(np.hstack(lbls_out_tmp))
@@ -326,6 +351,7 @@ class FindBeadsImagingP(object):
             'inside'  : >= <=
             'up'      : >
             'down'    : <
+
         """
         if type(filter_param) is list:
             if slice_type == 'outside':
@@ -342,19 +368,22 @@ class FindBeadsImagingP(object):
                 lbls_out = properties[properties[filter_name]
                                       < filter_param].label.values
         return lbls_out
-    
+
     @staticmethod
     def morph_mask_step(size, mask):
         """Morph mask step-by-step using erosion or dilation.
 
-        This function will erode or dilate step-by-step, in a loop, each labeled feature in labeled mask array.
+        This function will erode or dilate step-by-step, in a loop, each
+        labeled feature in labeled mask array.
 
         Parameters
         ----------
         size : int
-            Set number of dilation (positive value, grow outward) or erosion (negative value, shrink inward) steps.
+            Set number of dilation (positive value, grow outward) or erosion
+            (negative value, shrink inward) steps.
         mask : NumPy array
             Labeled mask to be dilated or eroded.
+
         """
         morph_mask = mask.copy()
         if size < 0:
@@ -367,16 +396,15 @@ class FindBeadsImagingP(object):
 
     @staticmethod
     def bin2seg(image):
-        """Convert and adaptive threshold image.
-        """
-        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
+        """Convert and adaptive threshold image."""
+        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE,
+                                           ksize=(3, 3))
         seg_img = ndi.label(image, structure=kernel)[0]
         return seg_img
 
     @staticmethod
     def get_dimensions(mask):
-        """Get dimensions of labeled regions in labeled mask.
-        """
+        """Get dimensions of labeled regions in labeled mask."""
         properties = source_properties(mask, mask)
         if not properties:
             return None
@@ -390,8 +418,14 @@ class FindBeadsImagingP(object):
         eccentricity = tbl['eccentricity']
         pdata = np.array([lbl.astype(int), x, y, r, area,
                           perimeter, eccentricity]).T
-        dims = pd.DataFrame(data=pdata, columns=[
-                            'label', 'x_centroid', 'y_centroid', 'radius', 'area', 'perimeter', 'eccentricity'])
+        dims = pd.DataFrame(data=pdata,
+                            columns=['label',
+                                     'x_centroid',
+                                     'y_centroid',
+                                     'radius',
+                                     'area',
+                                     'perimeter',
+                                     'eccentricity'])
         return dims
 
     @staticmethod
@@ -401,6 +435,7 @@ class FindBeadsImagingP(object):
 
         Parameters : NumPy or xarray
             Image to be converted and rescaled to ubuyte.
+
         """
         if type(image) is (xd.DataArray):
             image = image.values
@@ -420,18 +455,20 @@ class FindBeadsImagingP(object):
         ----------
         img_thr : NumPy array
             Boolean image in NumPy format.
+
         """
         img_inv = (~img_thr.astype(bool)).astype(int)
         return img_inv
 
     @staticmethod
     def circle_area(diameter):
-        """"Returns area of circle.
+        """Returns area of circle.
 
         Parameters
         ----------
         diameter : float
             Diameter of circle.
+
         """
         radius = ceil(diameter / 2)
         return np.pi * radius**2
@@ -445,6 +482,7 @@ class FindBeadsImagingP(object):
             Size major axis a.
         b : float
             Size major axis b.
+
         """
         major = max([a, b])
         minor = min([a, b])
@@ -1225,8 +1263,9 @@ class SpectralUnmixing(FrozenClass):
     def unmix(self, images):
         """Unmix images based on initiated reference data.
         
-        Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, 
-        Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
+        Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm
+        images to Dy, Sm and Tm nanophospohorous lanthanides using reference
+        spectra for each dye.
 
         Parameters
         ----------
@@ -1279,13 +1318,14 @@ class SpectralUnmixing(FrozenClass):
 
 
 class ICP(object):
-    """Iterative Closest Point (ICP) algorithm to minimize the difference between two clouds of points.
+    """Iterative Closest Point (ICP) algorithm to minimize the difference
+    between two clouds of points.
 
     Parameters
     ----------
     matrix_method : string/function/list, optional
-        Transformation matrix method. Standard methods: 'max', 'mean', 'std'. 
-        Other options: own function or list of initial guesses. 
+        Transformation matrix method. Standard methods: 'max', 'mean', 'std'.
+        Other options: own function or list of initial guesses.
         Defaults to 'std'.
     offset : list of float, optional
     max_iter : int, optional
