@@ -37,7 +37,7 @@ class MainWindow(wx.Frame):
         super(MainWindow, self).__init__(parent)
         self.SetTitle('Bead Analysis')
         self.init()
-        
+
     def init(self):
         # MainSizer and Tabs
         self.mainSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -58,12 +58,12 @@ class MainWindow(wx.Frame):
 class BeadFinder(wx.Panel):
     def __init__(self, parent=None):
         super(BeadFinder, self).__init__(parent)
-        
+
         # mainSizer
         mainSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         imageSizer = wx.BoxSizer(wx.VERTICAL)
-        self.bead_image = wx.EmptyBitmap(900, 900)        
+        self.bead_image = wx.EmptyBitmap(900, 900)
         self.beadImageFrame = wx.StaticBitmap(self, bitmap=self.bead_image)
         imageSizer.Add(self.beadImageFrame, 1, wx.EXPAND|wx.ALL|wx.SHAPED, 0)
         imageSizer.Fit(self)
@@ -100,7 +100,7 @@ def main():
     main_gui = MainWindow(None)
     main_gui.show()
     wxapp.MainLoop()
-    
+
     return 0
 
 # Main loop

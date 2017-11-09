@@ -36,16 +36,21 @@ print(bead_image_obj.c_names)  # Print channel names
 #%%
 fig_x = 10
 plt.figure()
-plt.imshow(bead_image_obj[fig_x,'Brightfield'])
+plt.imshow(bead_image_obj[fig_x, 'Brightfield'])
 
 #%%
-xdata = bead_objects.find(bead_image_obj[:,'Brightfield'])
+xdata = bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
+plt.figure()
+plt.imshow(xdata[0])
+
+#%%
+xdata = bead_objects.find(bead_image_obj[:, 'Brightfield'])
+
 #%%
 for x in range(xdata.sizes['f']):
     plt.figure(dpi=150)
-    plt.imshow(xdata.loc[x,'whole'].values)
+    plt.imshow(xdata.loc[x, 'whole'].values)
 
 #%%
-xdata = bead_objects.find(bead_image_obj[fig_x,'Brightfield'])
-plt.figure()
-plt.imshow(xdata[0])
+plt.imshow(bead_objects.mask_inside[0])
+

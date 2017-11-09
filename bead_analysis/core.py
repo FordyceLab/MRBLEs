@@ -58,7 +58,7 @@ if sys.version_info < (3, 0):
     install_aliases()
 
 
-# Decorators
+### Decorators
 
 
 def accepts(*types):
@@ -75,11 +75,11 @@ def accepts(*types):
         return new_f
     return check_accepts
 
-def pmap():
-    pass
+
+### Descriptor classes
 
 
-# Classes
+### Classes
 
 
 class FindBeadsImagingP(object):
@@ -114,12 +114,15 @@ class FindBeadsImagingP(object):
         """Find and identify beads and their regions using imaging."""
         self._bead_size = bead_size
         self.border_clear = border_clear
-        self._area_min = 0.1 * self.circle_area(bead_size)
-        self._area_max = 2.0 * self.circle_area(bead_size)
+        # Default values for filtering
+        self._area_min = 0.25 * self.circle_area(bead_size)
+        self._area_max = 1.5 * self.circle_area(bead_size)
         self._eccen_max = 0.65
         # Default values for local background
-        self.mask_bkg_size = 2
-        self.mask_bkg_buffer = 11
+        self.mask_bkg_size = 11
+        self.mask_bkg_buffer = 2
+        # Data set
+        self._dataframe = None
 
     # Properties - Settings
     @property
@@ -156,7 +159,7 @@ class FindBeadsImagingP(object):
 
     # Main function
     def find(self, image):
-        """Find beads."""
+        """Exectuye finding beads in data-set."""
         if image.ndim == 3:
             mp_worker = mp.Pool()
             result = xd.concat(mp_worker.map(self._find, image), dim='f')
@@ -164,11 +167,12 @@ class FindBeadsImagingP(object):
             mp_worker.join()
         else:
             result = self._find(image)
+        self._dataframe = result
         return result
 
     def _find(self, image):
         bin_img = self.img2bin(image)
-        mask_inside, mask_inside_neg = self.find_inside(bin_img)
+        mask_inside, mask_inside_neg = self._find_inside(bin_img)
         print(np.unique(mask_inside).size)
         if np.unique(mask_inside).size <= 1:
             print('empty')
@@ -179,7 +183,7 @@ class FindBeadsImagingP(object):
             mask_bkg = blank_img
         else:
             print('not empty')
-            mask_bead, mask_bead_neg = self.find_whole(mask_inside, bin_img)
+            mask_bead, mask_bead_neg = self._find_whole(mask_inside, bin_img)
             # Create and update final masks
             mask_ring = mask_bead - mask_inside
             mask_ring[mask_ring < 0] = 0
@@ -193,16 +197,18 @@ class FindBeadsImagingP(object):
                                               buffer=self.mask_bkg_buffer)
             masks = xd.DataArray(data=np.array([mask_bead,
                                                 mask_ring,
+                                                mask_inside,
                                                 mask_outside,
                                                 mask_bkg]),
                                  dims=['m', 'y', 'x'],
                                  coords={'m': ['whole',
                                                'ring',
+                                               'inside',
                                                'outside',
                                                'bkg']})
         return masks
 
-    def find_inside(self, bin_img):
+    def _find_inside(self, bin_img):
         seg_img = self.bin2seg(bin_img)
         filter_params_inside = [[self._area_min, self._area_max]]
         filter_names_inside = ['area']
@@ -214,7 +220,7 @@ class FindBeadsImagingP(object):
                                                         border_clear=False)
         return mask_inside, mask_inside_neg
 
-    def find_whole(self, mask_inside, bin_img):                            
+    def _find_whole(self, mask_inside, bin_img):
         bin_img_invert = self.img_invert(bin_img)
         mask_all_bin = mask_inside + bin_img_invert
         mask_all_bin[mask_all_bin > 0] = 1
@@ -234,34 +240,37 @@ class FindBeadsImagingP(object):
         return mask_bead, mask_bead_neg
 
     # Functions
-    def mask_bkg(self):
-        return self._mask_bkg
+    def _data_return(self, value):
+        if self._dataframe.ndim > 3:
+            return self._dataframe.loc[:, value].values
+        else:
+            return self._dataframe.loc[value].values
 
     # Properties - Masks
     @property
     def mask_bead(self):
         """Return labeled mask of the whole bead."""
-        return self._mask_bead
+        return self._data_return("whole")
 
     @property
     def mask_ring(self):
         """Return labeled mask of the ring of the bead."""
-        return self._mask_ring
+        return self._data_return("ring")
 
     @property
     def mask_inside(self):
         """Return labeled mask of the inside of the bead."""
-        return self._mask_inside
+        return self._data_return("inside")
 
     @property
     def mask_outside(self):
         """Return labeled mask of outside area of the bead."""
-        return self._mask_outside
+        return self._data_return("outside")
 
     @property
     def mask_bkg(self):
-        """Return labeled mask of local background around the bead."""
-        return self._mask_bkg
+        """Return labeled mask of the local background arourd the bead."""
+        return self._data_return("bkg")
 
     # Properties - Output values
     @property
@@ -328,7 +337,7 @@ class FindBeadsImagingP(object):
         lbls_out_tmp = [cls.filter_property(properties, param, name, stype) for param, name, stype in zip(
             filter_params, filter_names, slice_types)]
         lbls_out = np.unique(np.hstack(lbls_out_tmp))
-        return lbls_out    
+        return lbls_out
 
     # Static Methods
     @staticmethod
@@ -343,7 +352,7 @@ class FindBeadsImagingP(object):
             >>> tbl = properties_table(properties)
             >>> properties = source_properties(mask, mask)
         filter_param : float, int, list
-            Parameters to filter by. 
+            Parameters to filter by.
             If provided a list it will filter by range, inside or outside).
             If provided a value it filter up or down that value.
         slice_type : string
@@ -533,8 +542,8 @@ class FindBeadsImaging(object):
             shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
         self.filt_iter = 1
         # Default values for local background
-        self.mask_bkg_size = 2
-        self.mask_bkg_buffer = 11
+        self.mask_bkg_size = 11
+        self.mask_bkg_buffer = 2
 
     # Parameter methods
     def set_area_limits(self, bead_size):
@@ -791,7 +800,7 @@ class FindBeadsImaging(object):
     # Static methods
     @staticmethod
     def sector_mask(shape, centre, radius):
-        """Return a boolean mask for a circular ROI. 
+        """Return a boolean mask for a circular ROI.
         """
         x, y = np.ogrid[:shape[0], :shape[1]]
         cx, cy = centre
@@ -896,7 +905,7 @@ class FindBeadsImaging(object):
             Defaults to 0.3.
         c_map1 : cmap
             Color scheme using cmap. See matplotlib for color schemes.
-            Defaults to 'Greys_r', which are reversed grey values.        
+            Defaults to 'Greys_r', which are reversed grey values.
         """
         plt.axis('off')
         plt.imshow(image, cmap=cmap1)
@@ -936,7 +945,7 @@ class FindBeadsImaging(object):
             >>> tbl = properties_table(properties)
             >>> properties = source_properties(mask, mask)
         filter_param : float, int, list
-            Parameters to filter by. 
+            Parameters to filter by.
             If provided a list it will filter by range, inside or outside).
             If provided a value it filter up or down that value.
         slice_type : string
@@ -970,7 +979,7 @@ class FindBeadsImaging(object):
         value : float, int
             Value to get min and max value from.
         min_max : float, list
-            Percentage of min and max. 
+            Percentage of min and max.
             If set by single value, e.g. +/- 0.25: min 75% / 125% of set value.
             If set by list, e.g. [0.75, 1.25]: min 75% / max 125% of set value.
         """
@@ -1080,8 +1089,6 @@ class FindBeadsCircle(object):
             img_type = image.dtype
         except ValueError:
             print("Not a NumPy array of image: %s" % image)
-        except:
-            print("Unexpected error:", sys.exc_info())
         else:
             if img_type == 'uint16':
                 image = np.array(((image / 2**16) * 2**8), dtype='uint8')
@@ -1222,9 +1229,9 @@ def FindBeads(*args, **kwargs):
 
 class SpectralUnmixing(FrozenClass):
     """Spectrally unmix images using reference spectra.
-    
+
     Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
-    
+
     parameters
     ----------
     ref_data : list, ndarray, bead_analysis.data.Spectra
@@ -1262,7 +1269,7 @@ class SpectralUnmixing(FrozenClass):
 
     def unmix(self, images):
         """Unmix images based on initiated reference data.
-        
+
         Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm
         images to Dy, Sm and Tm nanophospohorous lanthanides using reference
         spectra for each dye.
@@ -1270,10 +1277,10 @@ class SpectralUnmixing(FrozenClass):
         Parameters
         ----------
         ref_data : NumPy array
-            Reference spectra for each dye channel as Numpy Array: N x M, 
+            Reference spectra for each dye channel as Numpy Array: N x M,
             where N are the spectral channels and M the dye channels.
         image_data : NumPy array
-            Spectral images as NumPy array: N x M x P, 
+            Spectral images as NumPy array: N x M x P,
             where N are the spectral channels and M x P the image pixels (Y x X).
         """
         # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
@@ -1329,7 +1336,7 @@ class ICP(object):
         Defaults to 'std'.
     offset : list of float, optional
     max_iter : int, optional
-        Maximum number of iterations. 
+        Maximum number of iterations.
         Defaults to 100.
     tol : float, optional
         Convergence threshold. ICP will stop after delta < tol.

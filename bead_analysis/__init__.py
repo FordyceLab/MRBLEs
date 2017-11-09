@@ -2,7 +2,8 @@
 Bead Analysis Package
 =====================
 
-This package contains the necessary classes, methods and data structures to perform the Bead Analysis for MRBLs.
+This package contains the necessary classes, methods and data structures to
+perform the Bead Analysis for MRBLs.
 """
 
 # !/usr/bin/env python
@@ -41,7 +42,7 @@ __maintainer__ = "Bjorn Harink"
 __email__ = "bjorn@harink.info"
 # Software information
 __license__ = "MIT"
-__version__ = "v0.6.0"
+__version__ = "v0.6.1"
 __status__ = "Development"
 # Package settings
 __all__ = ['core', 'data']

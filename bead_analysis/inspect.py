@@ -84,14 +84,14 @@ class GenerateCodes(object):
     Parameters
     ----------
     colors : list of str
-        List of coding colors in a list of strings.    
+        List of coding colors in a list of strings.
 
     s0s : liat of float
         List of standard deviations (SD) at intensity 0 for each encoding color.
 
     slopes : float
         List of slopes of the SDs versus intensity for each encoding color.
-   
+
     nsigma : float
         The number of SD to separate coding levels.
 

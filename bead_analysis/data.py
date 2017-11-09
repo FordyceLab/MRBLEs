@@ -10,11 +10,6 @@ This file stores the data classes and functions for the MRBLEs Analysis module.
 # [Future imports]
 # Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-import sys
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *
-    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : data.py
@@ -32,6 +27,7 @@ if sys.version_info < (3, 0):
 
 # [Modules]
 # General Python
+import sys
 import os
 import warnings
 import fnmatch
@@ -46,24 +42,29 @@ from skimage.external import tifffile as tff
 # Graphs
 import matplotlib.pyplot as plt
 
+# Function compatibility between Python 2.x and 3.x
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *
+    install_aliases()
+
 # TO-DO
 # Check error exceptions
 # Create error checking functions for clustering
 
-### Main functions and classes
 
-## Functions
+### Descriptor classes
 
 
-## Classes
 class PropEdit(object):
     """Dynamically add attributes as properties.
 
     Used as a inheritance class.
     """
+
     def _addprop(inst, name, method):
         cls = type(inst)
-        #if not hasattr(cls, '__perinstance'):
+        # if not hasattr(cls, '__perinstance'):
         #    cls = type(cls.__name__, (cls,), {})
         #    cls.__perinstance = True
         #    inst.__class__ = cls
@@ -75,9 +76,12 @@ class PropEdit(object):
 
 
 class FrozenClass(object):
+    """Freeze class."""
+
     __isfrozen = False
 
     def __setattr__(self, key, value):
+        """Create attribute."""
         if self.__isfrozen and not hasattr(self, key):
             raise TypeError("%r is a frozen class" % self)
         object.__setattr__(self, key, value)
@@ -90,12 +94,10 @@ class FrozenClass(object):
 
 
 class OutputMethod():
-    """Data output methods.
-    """
+    """Data output methods."""
 
     def _data_out(self, func, output=None):
-        """Checks data output method setting for Numpy or Pandas.
-        """
+        """Check data output method setting for Numpy or Pandas."""
         if (output == "pd") or (output == "xr"):
             return func
         elif output == "nd":
@@ -103,12 +105,14 @@ class OutputMethod():
         else:
             raise ValueError("Unspecified output method: '%s'." % output)
 
-    # TO-DO!
+    # TODO
     def _crop_data(self):
         pass
 
 
 class ChannelDescriptor(object):
+    """Channel descriptor."""
+
     def __init__(self, name):
         self.name = name
 
@@ -117,6 +121,9 @@ class ChannelDescriptor(object):
 
     def __set__(self, obj, val):
         obj._dataframe[self.name] = val
+
+
+### Classes
 
 
 class Spectra(PropEdit, FrozenClass, OutputMethod):
@@ -146,11 +153,11 @@ class Spectra(PropEdit, FrozenClass, OutputMethod):
     Functions
     ---------
     spec_add : function
-        Add spectrum to object.    
+        Add spectrum to object.
 
     spec_get : function
         Get spectrum by name or number from object.
-    
+
     spec_del : function
         Delete spectrum from object.
     """
@@ -371,7 +378,7 @@ class ImageSetRead(FrozenClass, OutputMethod):
         File path as string, e.g. 'C:/folder/file.tif', or as list of file paths, e.g. ['C:/folder/file.tif', 'C:/folder/file.tif'].
 
     series : int, optional
-        Sets the series number if file has multiple series. 
+        Sets the series number if file has multiple series.
         To Loads all series set to series='all'.
         Defaults to 0.
 
@@ -550,14 +557,14 @@ class ImageSetRead(FrozenClass, OutputMethod):
 
     @property
     def t_interval(self):
-        """Return set time interval. 
+        """Return set time interval.
         Default in milliseconds (ms), check object.t_unit for time unit.
         """
         return self._metadata['summary']['Interval_ms']
 
     @property
     def t_deltas(self):
-        """Return time deltas between each image acquisition (each channel, position etc.). 
+        """Return time deltas between each image acquisition (each channel, position etc.).
         Default in milliseconds (ms), check object.t_unit for time unit.
         """
         xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value

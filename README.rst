@@ -1,25 +1,24 @@
-A sample Python project
+MRBLEs Analysis Package
 =======================
 
-A sample project that exists as an aid to the `Python Packaging User Guide
-<https://packaging.python.org>`_'s `Tutorial on Packaging and Distributing
-Projects <https://packaging.python.org/en/latest/distributing.html>`_.
+This project aims to provide a package to **find**, **decode**, **extract**,
+**analyze**and MRBLEs using a set of images.
 
-This projects does not aim to cover best practices for Python project
-development as a whole. For example, it does not provide guidance or tool
-recommendations for version control, documentation, or testing.
+This package provides the tools to: (1) **find** the MRBLEs in a monochrome
+brightfield microscopy image; (2) **decode** the MRBLEs beads by spectral
+unmxing, using reference spectra, and then spectrally decode the found beads
+using Iterative Closest Point Matching and Gaussian Mixture Modeling; (3)
+**extract**, statistical values of interest in additional fluorescence
+channels using the morphology of the MRBLEs, their locations, and respective
+code; (4) **analyze** affinity information based on titrations of MRBLEs
+assays.
 
 ----
 
-This is the README file for the project.
-
-The file should use UTF-8 encoding and be written using `reStructuredText
-<http://docutils.sourceforge.net/rst.html>`_. It
-will be used to generate the project webpage on PyPI and will be displayed as
-the project homepage on common code-hosting services, and should be written for
-that purpose.
-
-Typical contents for this file would include an overview of the project, basic
-usage examples, etc. Generally, including the project changelog in here is not
-a good idea, although a simple "What's New" section for the most recent version
-may be appropriate.
+MRBLEs (Microspheres with Ratiometric Barcode Lanthanide Encoding) rely on
+spectral multiplexing to track analytes throughout an experiment. In these
+assays, we can create microspheres containing > 1,000 unique ratios of
+lanthanide nanophosphors that can be uniquely identified via imaging alone.
+We are currently developing new assays that use these microspheres to
+understand how signaling proteins recognize their peptide substrates and to
+improve our ability to extract information from single cells.

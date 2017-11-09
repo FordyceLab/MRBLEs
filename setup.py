@@ -1,35 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""A setuptools based setup module.
-
-See:
-https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
-"""
+"""Setuptools setup for MRBLEs package."""
 
 from os import path
 # To use a consistent encoding
-from codecs import open
+from codecs import open as c_open
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
-here = path.abspath(path.dirname(__file__))
+ABS_PATH = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+with c_open(path.join(ABS_PATH, 'README.rst'), encoding='utf-8') as f:
+    LONG_DESCRIPTION = f.read()
 
 setup(
-    name='sample',
+    name='mrbles',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.6.1',
 
-    description='MRBLEs Analysis package',
-    long_description=long_description,
+    description='MRBLEs decoding and analysis package',
+    long_description=LONG_DESCRIPTION,
 
     # The project's main homepage.
     url='https://github.com/FordyceLab/MRBLEs',
@@ -47,7 +42,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Beta',
+        'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
@@ -64,12 +59,16 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
+    # Python versions supported
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4',
+
     # What does your project relate to?
-    keywords='MRBLEs optical encoding',
+    keywords='mrbles optical encoding suspension arrays',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages=find_packages(include=['mrbles'],
+                           exclude=['contrib', 'docs', 'tests']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
@@ -79,7 +78,17 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['peppercorn'],
+    install_requires=['numpy',
+                      'scipy',
+                      'pandas',
+                      'xarray',
+                      'cv2',
+                      'scikit-learn',
+                      'scikit-image',
+                      'photutils',
+                      'xml',
+                      'matplotlib',
+                      'lmfit'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -93,22 +102,22 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_data={
-        'sample': ['package_data.dat'],
-    },
+    # package_data={
+    #     'sample': ['package_data.dat'],
+    # },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    data_files=[('my_data', ['data/data_file'])],
+    # data_files=[('my_data', ['data/data_file'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-    entry_points={
-        'console_scripts': [
-            'sample=sample:main',
-        ],
-    },
+    # entry_points={
+    #     'console_scripts': [
+    #         'sample=sample:main',
+    #     ],
+    # },
 )
