@@ -1,3 +1,5 @@
+# !/usr/bin/env python
+
 """
 Core Classes and Functions
 ==========================
@@ -5,10 +7,7 @@ Core Classes and Functions
 This file stores the core classes and functions for the MRBLEs Analysis module.
 """
 
-# !/usr/bin/env python
-
 # [Future imports]
-# Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
@@ -17,7 +16,6 @@ from __future__ import print_function, division
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
-# version update    : 20170823
 
 # [Modules]
 # General Python
@@ -54,7 +52,7 @@ from .data import *
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
     from future.standard_library import install_aliases
-    from __builtin__ import *
+    from __builtin__ import *  # NOQA
     install_aliases()
 
 
@@ -134,6 +132,7 @@ class FindBeadsImagingP(object):
     def area_min(self):
         """Get or set minimum area of beads (circles) in pixels."""
         return self._area_min
+
     @area_min.setter
     def area_min(self, value):
         self._area_min = value
@@ -142,6 +141,7 @@ class FindBeadsImagingP(object):
     def area_max(self):
         """Get or set minimum area of beads (circles) in pixels."""
         return self._area_max
+
     @area_max.setter
     def area_max(self, value):
         self._area_max = value
@@ -153,6 +153,7 @@ class FindBeadsImagingP(object):
         A perfect circle is 0 and parabola is 1.
         """
         return self._eccen_max
+
     @eccen_max.setter
     def eccen_max(self, value):
         self._eccen_max = value
@@ -317,7 +318,8 @@ class FindBeadsImagingP(object):
         # Get dimensions from the mask
         props = cls.get_dimensions(mask)
         # Get labels to be removed
-        lbls_out = cls.filter_properties(props, filter_params, filter_names, slice_types)
+        lbls_out = cls.filter_properties(
+            props, filter_params, filter_names, slice_types)
         # Create new masks
         mask_pos = mask.copy()
         mask_neg = mask.copy()
@@ -1218,6 +1220,7 @@ class FindBeadsCircle(object):
             clear_border(self._labeled_mask, in_place=True)
             clear_border(self._labeled_annulus_mask, in_place=True)
 
+
 def FindBeads(*args, **kwargs):
     """Depracation warning: class renamed to FindBeadsCircle.
     Name changed to distinguish between FindBeadsImaging (imaging based) and FindBeadsCircle (hough-circle based).
@@ -1255,7 +1258,7 @@ class SpectralUnmixing(FrozenClass):
             raise TypeError(
                 "Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")
         self._dataframe = None
-        #self._freeze()
+        # self._freeze()
 
     def __repr__(self):
         """Returns Pandas dataframe representation.
@@ -1296,7 +1299,8 @@ class SpectralUnmixing(FrozenClass):
         unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
         unmix_result = self._rebuilt(unmix_flat)
         # TO-DO Change to proper insert
-        self._dataframe = xd.DataArray(unmix_result, dims=['c','y','x'], coords={'c':self._names})
+        self._dataframe = xd.DataArray(
+            unmix_result, dims=['c', 'y', 'x'], coords={'c': self._names})
 
     @property
     def xdata(self):
@@ -1647,7 +1651,7 @@ class Classify(object):
             missing = None
         return missing
 
-    #TO-DO
+    # TO-DO
     def code_metrics(self, nsigma=3, resolution=100):
         data = pd.DataFrame()
         data['means'] = self.means.tolist()

@@ -1,34 +1,38 @@
 # !/usr/bin/env python
 
+"""
+Gui Classes and Functions
+=========================
+
+This file stores the GUI classes and functions for the MRBLEs Analysis module.
+"""
+
 # [Future imports]
-# Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-import sys
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *
-    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : gui.py
 # description       : Bead Analysis GUI interface
 # author            : Bjorn Harink
-# credits           : Kurt Thorn, Huy Nguyen
+# credits           :
 # date              : 20161118
-# version update    : 20161118
-# version           : v0.1
-# usage             : As part of Bead Analysis module
-# notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : 2.7
-
-# [TO-DO]
 
 # [Modules]
 # General Python
+import sys
 import os
-import warnings
 # GUI
 import wx
+
+# Function compatibility between Python 2.x and 3.x
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *  # NOQA
+    install_aliases()
+
+
+### Classes
+
 
 class MainWindow(wx.Frame):
     """This is the main window for the Flow Module of the Microfluidic Control program.

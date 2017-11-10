@@ -1,3 +1,5 @@
+# !/usr/bin/env python
+
 """
 Data Classes and Functions
 ==========================
@@ -5,25 +7,15 @@ Data Classes and Functions
 This file stores the data classes and functions for the MRBLEs Analysis module.
 """
 
-# !/usr/bin/env python
-
 # [Future imports]
-# Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : data.py
 # description       : Bead Analysis - Data Structures
 # author            : Bjorn Harink
-# credits           : Kurt Thorn, Huy Nguyen
+# credits           :
 # date              : 20160623
-# version update    : 20170601
-# version           : v0.5
-# usage             : As part of Bead Analysis module
-# notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : >2.7 and >3.6
-
-# [TO-DO]
 
 # [Modules]
 # General Python
@@ -45,10 +37,10 @@ import matplotlib.pyplot as plt
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
     from future.standard_library import install_aliases
-    from __builtin__ import *
+    from __builtin__ import *  # NOQA
     install_aliases()
 
-# TO-DO
+# TODO
 # Check error exceptions
 # Create error checking functions for clustering
 

@@ -1,31 +1,18 @@
 # !/usr/bin/env python
 
 # [Future imports]
-# Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-import sys
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *
-    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : simp.py
-# description       : Simplified and condensed function.
+# description       : Simplified and condensed functions.
 # author            : Bjorn Harink
 # credits           :
 # date              : 20170219
-# version update    : 20170219
-# version           : v0.1
-# usage             : As module
-# notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : 2.7
 
 # [Modules]
 # General Python
-import os
-import types
-import warnings
+import sys
 from math import sqrt
 # Data Structure
 import numpy as np
@@ -36,8 +23,17 @@ from scipy import ndimage as ndi
 # Graphs
 from matplotlib import pyplot as plt
 # Project
-from bead_analysis.core import *
-from bead_analysis.data import *
+from .core import FindBeadsImaging
+from .data import Spectra, ImageSetRead
+
+# Function compatibility between Python 2.x and 3.x
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *  # NOQA
+    install_aliases()
+
+
+### Classes
 
 
 class ReferenceSpectra(object):
@@ -338,7 +334,7 @@ def get_stats(data_array):
 
     Parameters
     ----------
-    data_array : 
+    data_array :
 
     Returns
     -------
@@ -372,7 +368,7 @@ def get_weighted_stats(data_array):
     Returns
     -------
     NumPy array
-        Returns array with weighted stats over 
+        Returns array with weighted stats over
     """
     data_mean = np.average(data_array[:, 0], weights=data_array[:, 2])
     data_sd = sqrt(np.average(

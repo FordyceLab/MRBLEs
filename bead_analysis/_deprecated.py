@@ -1,4 +1,6 @@
-# Depreacted functions and classes a.k.a. The Graveyard
+# !/usr/bin/env python
+"""Depreacted functions and classes a.k.a. The Graveyard"""
+
 
 # DEPRECTAED - BioFormats method --> Use ba.data.ImageSetRead
 class ImageSetBF(object):
@@ -19,7 +21,7 @@ class ImageSetBF(object):
         self.sizeT = self.getMetaDataNumber("SizeT", self.metadata)  # No. timepoints
         self.sizeZ = self.getMetaDataNumber("SizeZ", self.metadata)  # No. Z slices
         # TO-DO self.sizeS = self.getMetaDataNumber("SizeS", self.metadata)  # No. series/positions
-        self.sizeI = self.sizeC * self.sizeT * self.sizeZ  # No. images total        
+        self.sizeI = self.sizeC * self.sizeT * self.sizeZ  # No. images total
         self.imageY = self._image_reader.rdr.getSizeY()
         self.imageX = self._image_reader.rdr.getSizeX()
         self.arrayOrder = self.identifyOrder()
@@ -50,7 +52,7 @@ class ImageSetBF(object):
             print("Unexpected error:", sys.exc_info())
         else:
             image_reader = bf.ImageReader(file_path)
-            metadata = bf.get_omexml_metadata(file_path)            
+            metadata = bf.get_omexml_metadata(file_path)
             return image_reader, metadata
 
     @staticmethod
@@ -141,7 +143,7 @@ class ImageSetBF(object):
         """
         # Set length timepoints and channels
         timepoints = range(self.sizeT)
-        channels = range(self.sizeC) 
+        channels = range(self.sizeC)
         # Iterate over timepoints and channels
         if self.arrayOrder == "[t,c,y,x]":
             image_set = np.array( [np.array( [self.readImage(c=ch, t=tp, rescale=rescale) for ch in channels] ) for tp in timepoints] )
@@ -159,7 +161,7 @@ class ImageSetBF(object):
         """
         # Set length timepoints and channels
         timepoints = range(self.sizeT)
-        channels = range(self.sizeC) 
+        channels = range(self.sizeC)
         # Iterate over timepoints and channels
         if self.arrayOrder == "[t,c,y,x]":
             image_set = np.array( [np.array( [self.readImage(c=ch, t=tp, rescale=rescale) for ch in channels], dtype=[(ch, 'float64')] ) for tp in timepoints], dtype=[(tp, 'float64')] )
@@ -220,7 +222,7 @@ class Objects(object):
         # Check if image is set, if not use initial image
         if image == None: img = self.image
         else: img = self.imageConvert(image)
-        
+
         # Check if min_dist is set and set to 2 x minimuj radius
         if min_dist == None: min_dist = 2 * min_r
         # Find initial circles using Hough transform and make mask
@@ -228,10 +230,10 @@ class Objects(object):
         # Find and separate circles using watershed on initial mask
         labels = self.separateCircles(mask)
         # Find center of circle and return dimensions
-        circles_dim = self.getCircleDimensions(labels)        
-        
+        circles_dim = self.getCircleDimensions(labels)
+
         # Create annulus mask
-        labels_annulus = labels.copy()  
+        labels_annulus = labels.copy()
         for cd in circles_dim:
             cv2.circle(labels_annulus, (int(cd[0]), int(cd[1])),
                        int(cd[2] - ring_size), (0, 0, 0), -1)
@@ -265,9 +267,9 @@ class Objects(object):
         """
         # Find and separate circles using watershed on initial mask
         D = ndi.distance_transform_edt(mask)
-        localMax = peak_local_max(D, indices=False, 
-                                  min_distance=sep_min_dist, 
-                                  exclude_border=True, 
+        localMax = peak_local_max(D, indices=False,
+                                  min_distance=sep_min_dist,
+                                  exclude_border=True,
                                   labels=mask)
         markers = ndi.label(localMax, structure=np.ones((3, 3)))[0]
         labels = watershed(-D, markers, mask=mask)
@@ -290,8 +292,8 @@ class Objects(object):
             mask_detect = np.zeros(img.shape, dtype="uint8")
             mask_detect[labels == label] = 255
             # Detect contours in the mask and grab the largest one
-            cnts = cv2.findContours(mask_detect.copy(), 
-                                    cv2.RETR_EXTERNAL, 
+            cnts = cv2.findContours(mask_detect.copy(),
+                                    cv2.RETR_EXTERNAL,
                                     cv2.CHAIN_APPROX_SIMPLE)[-2]
             c = max(cnts, key=cv2.contourArea)
             # Get circle dimensions
@@ -336,7 +338,7 @@ class Objects(object):
 def unmix(ref_data, image_data):
     """Unmix
     Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for each dye.
-    ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels 
+    ref_data = Reference spectra for each dye channel as Numpy Array: N x M, where N are the spectral channels and M the dye channels
     image_data = Spectral images as NumPy array: N x M x P, where N are the spectral channels and M x P the image pixels (Y x X)
     """
     # Check if inputs are NumPy arrays and check if arrays have equal channel sizes
@@ -391,6 +393,7 @@ def getRatios(labels, images, reference):
             image_tmp, labels, idx, np.median, float, -1)
     return ratio_data
 
+
 # DEPRECRATED
 class RefSpec(object):
     """Reference Spectra
@@ -422,9 +425,9 @@ class RefSpec(object):
         if crop == None: crop = self.crop
         ref_set = ImageSet(file)
         ref_set_data = ref_set.readSet()[:, crop[0]:crop[1], crop[2]:crop[3]]
-        objects = self.getRefObjects(ref_set_data[object_channel], 
-                                     sep_min_dist=size_param[0], min_dist=size_param[1], 
-                                     param_1=size_param[2], param_2=size_param[3], 
+        objects = self.getRefObjects(ref_set_data[object_channel],
+                                     sep_min_dist=size_param[0], min_dist=size_param[1],
+                                     param_1=size_param[2], param_2=size_param[3],
                                      min_r=size_param[4], max_r=size_param[5])
         channels = range(ref_set_data[:, 0, 0].size)
         channels.remove(object_channel)
@@ -436,7 +439,7 @@ class RefSpec(object):
         """
         objects = Objects(object_image)
         labels, labels_annulus, circles_dim = objects.findObjects(
-            sep_min_dist=sep_min_dist, min_dist=min_dist, 
+            sep_min_dist=sep_min_dist, min_dist=min_dist,
             param_1=param_1, param_2=param_2, min_r=min_r, max_r=max_r)
         self.objects = labels
         return labels
@@ -597,8 +600,8 @@ class FindBeads2(object):
 
     @property
     def mask_outside(self):
-        self._lbl_mask_bkg_incl_neg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg, 
-                                                        self.mask_bkg_size, 
+        self._lbl_mask_bkg_incl_neg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg,
+                                                        self.mask_bkg_size,
                                                         0)
         self._lbl_mask_bkg = self._lbl_mask_bkg_incl_neg.copy()
         self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
@@ -629,7 +632,7 @@ class FindBeads2(object):
         img = self.img2ubyte(image)
         img_thr = self.img2thr(img, self.thr_block, self.thr_c)
 
-        labels = ndi.label(img_thr, structure=self.kernel)[0]        
+        labels = ndi.label(img_thr, structure=self.kernel)[0]
         self._lbl_mask, self._lbl_mask_incl_neg = self.lbl_mask_flt(labels)
 
         if len(np.unique(self._lbl_mask)) <= 1:
@@ -645,8 +648,8 @@ class FindBeads2(object):
         self._lbl_mask_ann[self._lbl_mask_ann < 0] = 0
         self._lbl_mask[self._lbl_mask_ann_incl_neg < 0] = 0
 
-        self._lbl_mask_bkg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg, 
-                                               self.mask_bkg_size, 
+        self._lbl_mask_bkg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg,
+                                               self.mask_bkg_size,
                                                self.mask_bkg_buffer)
         self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
 
@@ -749,7 +752,7 @@ class FindBeads2(object):
     def img2thr(cls, image, thr_block=THR_BLOCK, thr_c=THR_C):
         img = cls.img2ubyte(image)
         img_thr = cv2.adaptiveThreshold(src = img,
-                            maxValue = 1, 
+                            maxValue = 1,
                             adaptiveMethod = cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                             thresholdType = cv2.THRESH_BINARY,
                             blockSize = thr_block,
@@ -762,9 +765,9 @@ class FindBeads2(object):
         flood_mask = np.zeros((image.shape[0]+2, image.shape[1]+2), dtype='uint8')
         for idx, c in enumerate(circles):
             cv2.floodFill(image=img_fill, mask=flood_mask,
-                          seedPoint = (c[1],c[0]), 
-                          newVal = 2, 
-                          loDiff = 0, 
+                          seedPoint = (c[1],c[0]),
+                          newVal = 2,
+                          loDiff = 0,
                           upDiff = 1)
         img_fill[image == 0] = 0     # Add previous threshold image to filled image
         img_fill[img_fill == 0] = 1  # Set lines to 1
@@ -774,9 +777,9 @@ class FindBeads2(object):
 
     @staticmethod
     def fill2filter(image, iter=FILT_ITER, kernel=KERNEL):
-        img_filter = cv2.morphologyEx(image, 
-                                      cv2.MORPH_OPEN, 
-                                      kernel, 
+        img_filter = cv2.morphologyEx(image,
+                                      cv2.MORPH_OPEN,
+                                      kernel,
                                       iterations = iter)
         return img_filter
 
@@ -791,9 +794,9 @@ class FindBeads2(object):
         return c_min, c_max, c_min_dist
 
     #@classmethod
-    #def img2bin(cls, image, 
-    #            bead_size_param, param1=PARAM1, param2=PARAM2, 
-    #            thr_block=THR_BLOCK, thr_c=THR_C, 
+    #def img2bin(cls, image,
+    #            bead_size_param, param1=PARAM1, param2=PARAM2,
+    #            thr_block=THR_BLOCK, thr_c=THR_C,
     #            iter=FILT_ITER, kernel=KERNEL):
     #    img = cls.img2ubyte(image)
     #    img_thr = cls.img2thr(img, thr_block, thr_c)
@@ -813,7 +816,7 @@ class FindBeads2(object):
             c_min, c_max, c_min_dist = bead_size_parem
         circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1,
                                    minDist=c_min_dist,
-                                   minRadius=c_min, 
+                                   minRadius=c_min,
                                    maxRadius=c_max,
                                    param1=param1,
                                    param2=param2)

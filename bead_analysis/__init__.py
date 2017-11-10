@@ -1,3 +1,5 @@
+# !/usr/bin/env python
+
 """
 Bead Analysis Package
 =====================
@@ -6,10 +8,7 @@ This package contains the necessary classes, methods and data structures to
 perform the Bead Analysis for MRBLs.
 """
 
-# !/usr/bin/env python
-
 # [Future imports]
-# Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division, absolute_import
 
 # [File header]     | Copy and edit for each file in this project!
@@ -18,10 +17,6 @@ from __future__ import print_function, division, absolute_import
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308
-# version update    : 20171108
-# version           : 0.6.1
-# usage             : As module
-# python_version    : >2.7 and >3.6
 
 # [Main header with project metadata] | Only in the main file!
 # Name of package
@@ -42,7 +37,7 @@ __maintainer__ = "Bjorn Harink"
 __email__ = "bjorn@harink.info"
 # Software information
 __license__ = "MIT"
-__version__ = "v0.6.1"
+__version__ = "v__version__ = '0.6.2'"
 __status__ = "Development"
 # Package settings
 __all__ = ['core', 'data']
@@ -62,16 +57,17 @@ __all__ = ['core', 'data']
 # [Module Imports]
 import sys
 from . import core
-from .core import *  # TODO Must change to specific
+from .core import *  # TODO Must change to specific before public
 from . import data
-from .data import *  # TODO Must change to specific
+from .data import *  # TODO Must change to specific before public
 from . import inspect
 from . import simp
 from . import kinetics
 
+# Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
     from future.standard_library import install_aliases
-    from __builtin__ import *
+    from __builtin__ import *  # NOQA
     install_aliases()
 
 print(__copyright__)

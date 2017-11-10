@@ -1,3 +1,5 @@
+# !/usr/bin/env python
+
 """
 Inspection Classes and Functions
 ================================
@@ -5,34 +7,19 @@ Inspection Classes and Functions
 This file stores the inspection classes and functions for the MRBLEs Analysis module.
 """
 
-# !/usr/bin/env python
-
 # [Future imports]
-# Function compatibility between Python 2.x and 3.x
 from __future__ import print_function, division
-import sys
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *
-    install_aliases()
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : inpect.py
 # description       : Bead Analaysis - Inspection
 # author            : Bjorn Harink
-# credits           : Kurt Thorn, Huy Nguyen
+# credits           : Kurt Thorn
 # date              : 20161114
-# version update    : 20161114
-# version           : v0.4
-# usage             : As module
-# notes             : Do not quick fix functions for specific needs, keep them general!
-# python_version    : 2.7
 
 # [Modules]
 # General Python
-import os
-import types
-import warnings
+import sys
 import itertools
 import random
 # Data
@@ -42,14 +29,21 @@ import pandas as pd
 import cv2
 # Image display
 from matplotlib import pyplot as plt
-import matplotlib.animation as manimation
-from mpl_toolkits.mplot3d import axes3d
 import plotly.graph_objs as go
 
+# Function compatibility between Python 2.x and 3.x
+if sys.version_info < (3, 0):
+    from future.standard_library import install_aliases
+    from __builtin__ import *  # NOQA
+    install_aliases()
 
-## Fucntions
+
+### Functions
+
+
 def cirle_overlay(image, dims=None, ring=None):
-    """Cirle Overlay Image
+    """Cirle Overlay Image.
+
     Overlay image with circles of labeled mask.
     """
     img = image.copy()
