@@ -12,7 +12,7 @@ from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : data.py
-# description       : Bead Analysis - Data Structures
+# description       : MRBLEs - Data Structures
 # author            : Bjorn Harink
 # credits           :
 # date              : 20160623

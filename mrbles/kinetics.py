@@ -12,7 +12,7 @@ from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : kinetics.py
-# description       : Bead Analaysis - Kinetics functions
+# description       : MRBLEs - Kinetics functions
 # author            : Bjorn Harink
 # credits           : Kurt Thorn
 # date              : 20160511

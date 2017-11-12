@@ -12,7 +12,7 @@ from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : gui.py
-# description       : Bead Analysis GUI interface
+# description       : MRBLEs GUI tools
 # author            : Bjorn Harink
 # credits           :
 # date              : 20161118

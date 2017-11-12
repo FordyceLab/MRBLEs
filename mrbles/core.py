@@ -12,7 +12,7 @@ from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : core.py
-# description       : Bead Analysis - Core Functions
+# description       : MRBLEs - Core Functions
 # author            : Bjorn Harink
 # credits           : Kurt Thorn, Huy Nguyen
 # date              : 20160308

@@ -12,7 +12,7 @@ from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : inpect.py
-# description       : Bead Analaysis - Inspection
+# description       : MRBLEs - Inspection
 # author            : Bjorn Harink
 # credits           : Kurt Thorn
 # date              : 20161114

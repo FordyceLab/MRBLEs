@@ -5,7 +5,7 @@ from __future__ import print_function, division
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : simp.py
-# description       : Simplified and condensed functions.
+# description       : MRBLEs - Simplified and condensed functions.
 # author            : Bjorn Harink
 # credits           :
 # date              : 20170219
