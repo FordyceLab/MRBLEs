@@ -2,7 +2,7 @@ MRBLEs Analysis Package
 =======================
 
 This project aims to provide a package to **find**, **decode**, **extract**,
-**analyze**and MRBLEs using a set of images.
+**analyze** and MRBLEs using a set of images.
 
 This package provides the tools to: (1) **find** the MRBLEs in a monochrome
 brightfield microscopy image; (2) **decode** the MRBLEs beads by spectral
