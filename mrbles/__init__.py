@@ -37,7 +37,7 @@ __maintainer__ = "Bjorn Harink"
 __email__ = "bjorn@harink.info"
 # Software information
 __license__ = "MIT"
-__version__ = "v__version__ = '0.6.2'"
+__version__ = "v__version__ = '0.7.0'"
 __status__ = "Development"
 # Package settings
 __all__ = ['core', 'data']
