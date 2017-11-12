@@ -20,8 +20,8 @@ from __future__ import print_function, division, absolute_import
 
 # [Main header with project metadata] | Only in the main file!
 # Name of package
-__name__ = "bead_analysis"
-__package__ = "bead_analysis"
+__name__ = "mrbles"
+__package__ = "mrbles"
 # Copyright and credits
 __copyright__ = ("Copyright 2017 - "
                  "The Encoded Beads Project - "
