@@ -237,3 +237,13 @@ ModelManifest.xml
 /module1.py
 kernel-da4acf98-60e5-4510-b33d-b884f25d7bc2.json
 kernel-2a2a5c11-ac36-4ca9-a8a1-58115fa4001b.json
+/dist
+/mrbles.egg-info
+dist/mrbles-0.7.3-py2.py3-none-any.whl
+dist/mrbles-0.7.3.tar.gz
+mrbles.egg-info/PKG-INFO
+mrbles.egg-info/requires.txt
+mrbles.egg-info/PKG-INFO
+mrbles.egg-info/requires.txt
+mrbles.egg-info/requires.txt
+mrbles.egg-info/PKG-INFO
