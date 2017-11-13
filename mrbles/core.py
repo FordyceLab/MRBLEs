@@ -112,10 +112,11 @@ class FindBeadsImagingP(object):
 
     """
 
-    def __init__(self, bead_size, border_clear=True):
+    def __init__(self, bead_size, border_clear=True, circle_size=None):
         """Find and identify beads and their regions using imaging."""
         self._bead_size = bead_size
         self.border_clear = border_clear
+        self.circle_size = circle_size
         # Default values for filtering
         self._area_min = 0.25 * self.circle_area(bead_size)
         self._area_max = 1.5 * self.circle_area(bead_size)
@@ -164,7 +165,7 @@ class FindBeadsImagingP(object):
 
     # Main function
     def find(self, image):
-        """Exectuye finding beads in data-set."""
+        """Execute finding beads image(s)."""
         if image.ndim == 3:
             mp_worker = mp.Pool()
             result = xd.concat(mp_worker.map(self._find, image), dim='f')
@@ -176,18 +177,18 @@ class FindBeadsImagingP(object):
         return result
 
     def _find(self, image):
+        if self.circle_size is not None:
+            image, roi_mask = self.circle_roi(image, self.circle_size)
         bin_img = self.img2bin(image)
         mask_inside, mask_inside_neg = self._find_inside(bin_img)
         print(np.unique(mask_inside).size)
         if np.unique(mask_inside).size <= 1:
-            print('empty')
             blank_img = np.zeros_like(bin_img)
             mask_bead = blank_img
             mask_ring = blank_img
             mask_outside = blank_img
             mask_bkg = blank_img
         else:
-            print('not empty')
             mask_bead, mask_bead_neg = self._find_whole(mask_inside, bin_img)
             # Create and update final masks
             mask_ring = mask_bead - mask_inside
@@ -200,6 +201,9 @@ class FindBeadsImagingP(object):
             mask_bkg = self.make_mask_outside(mask_bead_neg,
                                               self.mask_bkg_size,
                                               buffer=self.mask_bkg_buffer)
+            if self.circle_size is not None:
+                mask_bkg[~roi_mask] = 0
+                mask_bkg[mask_bkg < 0] = 0
             masks = xd.DataArray(data=np.array([mask_bead,
                                                 mask_ring,
                                                 mask_inside,
@@ -350,7 +354,7 @@ class FindBeadsImagingP(object):
         return lbls_out
 
     @classmethod
-    def circle_roi(cls, image, hough_settings=None):
+    def circle_roi(cls, image, circle_size, hough_settings=None):
         """Apply a circular image ROI.
 
         Parameters
@@ -383,7 +387,7 @@ class FindBeadsImagingP(object):
         mask = cls.sector_mask(img.shape, [cx, cy], circle_size)
         mask_img = img.copy()
         mask_img[~mask] = 0
-        return mask_img, mask, [cx, cy, radius]
+        return mask_img, mask
 
     # Static methods
     @staticmethod

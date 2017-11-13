@@ -1,21 +1,21 @@
 # !/usr/bin/env python
 #%%
+import matplotlib
 import matplotlib.pyplot as plt
 % matplotlib inline
 import numpy as np
 import xarray as xd
-import bead_analysis as ba
-ba.FindBeadsImagingP(18)
+import mrbles as ba
 
 #%%
-bead_objects = ba.FindBeadsImagingP(bead_size=18, border_clear=True)
+bead_objects = ba.FindBeadsImagingP(bead_size=18, border_clear=True, circle_size=340)
 # Channel(s) settings
 ASSAY_CHANNELS = ['Cy5']  # Must be list!
 
 # slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X)
 # General Region or interest
-CROPx = slice(312, 712)
-CROPy = slice(312, 712)
+CROPx = slice(12, 1000)
+CROPy = slice(12, 1000)
 
 # Setting bead image folder and image patterns. This will select all images following the pattern.
 BEAD_IMAGE_FOLDER = r"C:\DATA\Huy\20170309 CN"
@@ -41,7 +41,7 @@ plt.imshow(bead_image_obj[fig_x, 'Brightfield'])
 #%%
 xdata = bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
 plt.figure()
-plt.imshow(xdata[0])
+plt.imshow(xdata[3])
 
 #%%
 xdata = bead_objects.find(bead_image_obj[:, 'Brightfield'])
@@ -49,8 +49,12 @@ xdata = bead_objects.find(bead_image_obj[:, 'Brightfield'])
 #%%
 for x in range(xdata.sizes['f']):
     plt.figure(dpi=150)
-    plt.imshow(xdata.loc[x, 'whole'].values)
+    plt.imshow(xdata.loc[x, 'bkg'].values)
 
 #%%
-plt.imshow(bead_objects.mask_inside[0])
+plt.figure(dpi=150)
+plt.imshow(bead_objects.mask_bkg[0])
+
+#%%
+np.unique(bead_objects.mask_bkg[0])
 
