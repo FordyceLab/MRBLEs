@@ -10,38 +10,34 @@ import mrbles as ba
 #%%
 bead_objects = ba.FindBeadsImagingP(bead_size=18, border_clear=True, circle_size=340)
 # Channel(s) settings
-ASSAY_CHANNELS = ['Cy5']  # Must be list!
+ASSAY_CHANNELS = ['Cy5_5%']  # Must be list!
 
 # slice(Y1, Y2) and slice(X1, X2) Y and X are reversed in array since rows (Y) go first and columns go second (X)
 # General Region or interest
-CROPx = slice(12, 1000)
-CROPy = slice(12, 1000)
+CROPx = slice(10, 990)
+CROPy = slice(10, 990)
 
 # Setting bead image folder and image patterns. This will select all images following the pattern.
-BEAD_IMAGE_FOLDER = r"C:\DATA\Huy\20170309 CN"
-BEAD_IMAGE_PATTERNS = {"50 nM": r"20170309_CN_HQN106_PAP_50nM800ms_([1-9]|[1-9][0-9])_MMStack_Pos0.ome.tif",
-                       "100 nM": r"20170309_CN_HQN106_PAP_100nM800ms_([1-9]|[1-9][0-9])_MMStack_Pos0.ome.tif",
-                       "250 nM": r"20170309_CN_HQN106_PAP_250nM800msb_([1-9]|[1-9][0-9])_MMStack_Pos0.ome.tif",
-                       "500 nM": r"20170309_CN_HQN106_PAP_500nM800msb_([1-9]|[1-9][0-9])_MMStack_Pos0.ome.tif",
-                       "1000 nM": r"20170309_CN_HQN106_PAP_1uM800ms_([1-9]|[1-9][0-9])_MMStack_Pos0.ome.tif"}
+BEAD_IMAGE_FOLDER = r"data"
+BEAD_IMAGE_PATTERN = r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome.tif"
 
 # Search for files matching the patter in the bead image folder
 bead_image_files = ba.ImageSetRead.scan_path(BEAD_IMAGE_FOLDER,
-                                             BEAD_IMAGE_PATTERNS['50 nM'])
+                                             BEAD_IMAGE_PATTERN)
 bead_image_obj = ba.ImageSetRead(bead_image_files)
 bead_image_obj.crop_x = CROPx
 bead_image_obj.crop_y = CROPy
 print(bead_image_obj.c_names)  # Print channel names
 
 #%%
-fig_x = 10
+fig_x = 9
 plt.figure()
 plt.imshow(bead_image_obj[fig_x, 'Brightfield'])
 
 #%%
 xdata = bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
 plt.figure()
-plt.imshow(xdata[3])
+plt.imshow(xdata[2])
 
 #%%
 xdata = bead_objects.find(bead_image_obj[:, 'Brightfield'])
@@ -56,5 +52,6 @@ plt.figure(dpi=150)
 plt.imshow(bead_objects.mask_bkg[0])
 
 #%%
-np.unique(bead_objects.mask_bkg[0])
-
+#np.unique(bead_objects.mask_bkg[0])
+bead_objects.bead_num
+bead_objects.bead_labels

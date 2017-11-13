@@ -25,6 +25,7 @@ import types
 import warnings
 from math import ceil, pi, sqrt
 import multiprocessing as mp
+from packaging import version
 # Data Structure
 import numpy as np
 import pandas as pd
@@ -34,7 +35,7 @@ import cv2
 import scipy
 from scipy import ndimage as ndi
 import photutils
-from photutils import source_properties, properties_table
+from photutils import source_properties
 import sklearn
 from sklearn.metrics.pairwise import pairwise_distances
 import skimage
@@ -181,7 +182,6 @@ class FindBeadsImagingP(object):
             image, roi_mask = self.circle_roi(image, self.circle_size)
         bin_img = self.img2bin(image)
         mask_inside, mask_inside_neg = self._find_inside(bin_img)
-        print(np.unique(mask_inside).size)
         if np.unique(mask_inside).size <= 1:
             blank_img = np.zeros_like(bin_img)
             mask_bead = blank_img
@@ -189,7 +189,8 @@ class FindBeadsImagingP(object):
             mask_outside = blank_img
             mask_bkg = blank_img
         else:
-            mask_bead, mask_bead_neg = self._find_whole(mask_inside, bin_img)
+            mask_bead, mask_bead_neg = self._find_watershed(mask_inside,
+                                                            bin_img)
             # Create and update final masks
             mask_ring = mask_bead - mask_inside
             mask_ring[mask_ring < 0] = 0
@@ -229,7 +230,7 @@ class FindBeadsImagingP(object):
                                                         border_clear=False)
         return mask_inside, mask_inside_neg
 
-    def _find_whole(self, mask_inside, bin_img):
+    def _find_watershed(self, mask_inside, bin_img):
         bin_img_invert = self.img_invert(bin_img)
         mask_all_bin = mask_inside + bin_img_invert
         mask_all_bin[mask_all_bin > 0] = 1
@@ -285,12 +286,12 @@ class FindBeadsImagingP(object):
     @property
     def bead_num(self):
         """Return number of beads labeled mask."""
-        return self.get_unique_count(self._mask_bead)
+        return self.get_unique_count(self._data_return("whole"))
 
     @property
     def bead_labels(self):
         """Return all positive labels of labeled mask."""
-        return self.get_unique_values(self._mask_bead)
+        return self.get_unique_values(self._data_return("whole"))
 
     @property
     def bead_dims_bead(self):
@@ -402,6 +403,19 @@ class FindBeadsImagingP(object):
         return circmask
 
     @staticmethod
+    def get_unique_values(mask):
+        """Get all unique positive values from labeled mask."""
+        values = np.unique(mask[mask > 0])
+        if values.size == 0:
+            values = None
+        return values
+
+    @staticmethod
+    def get_unique_count(mask):
+        """Get count of unique positive values from labeled mask."""
+        return np.unique(mask[mask > 0]).size
+
+    @staticmethod
     def filter_property(properties, filter_param, filter_name, slice_type):
         """Get labels of beads outside/inside/up/down of propert limits.
 
@@ -478,7 +492,11 @@ class FindBeadsImagingP(object):
         properties = source_properties(mask, mask)
         if not properties:
             return None
-        tbl = properties.to_table()  # Convert to table
+        if version.parse(photutils.__version__) < version.parse("0.4.0"):
+            tbl = photutils.properties_table(properties)
+            warnings.warn('Please upgrade photutils to latest version.')
+        else:
+            tbl = properties.to_table()  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=int)
         x = tbl['xcentroid']
         y = tbl['ycentroid']
@@ -532,7 +550,7 @@ class FindBeadsImagingP(object):
 
     @staticmethod
     def circle_area(diameter):
-        """Returns area of circle.
+        """Return area of circle.
 
         Parameters
         ----------
@@ -582,6 +600,7 @@ class FindBeadsImaging(object):
         Sets the minimum area in pixels.
     area_max : int or float
         Sets the maximum area in pixels.
+
     """
 
     def __init__(self, bead_size, eccen_param=0.65, area_param=0.5, border_clear=True):

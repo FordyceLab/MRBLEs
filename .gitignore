@@ -206,44 +206,21 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
-# LightSwitch generated files
-GeneratedArtifacts/
-_Pvt_Extensions/
-ModelManifest.xml
+# VS Code/Studio
 *.sln
 *.pyc
 *.pyproj
 /.vs
 /.vscode
+
+# LightSwitch generated files
+GeneratedArtifacts/
+_Pvt_Extensions/
+ModelManifest.xml
+
 /.git
-/test
-/data/referencespectra.csv
-/Final  Peptide List with CN Binding data 20160604.xlsx
-/20160810 CN - PxIxIT Data.xlsx
-*.xlsx
 /.ipynb_checkpoints
 /examples/.ipynb_checkpoints
 /Untitled.ipynb
-/Stanford - 96 codes - Simplified Example1.ipynb
-/Stanford - 96 codes - Simplified Example.ipynb
-/Stanford - 96 codes - Jupyer example.ipynb
-/Stanford - 96 codes - Alt #2.ipynb
-/20170321 - Adam Cy5 extract - Mitomi MUCH.ipynb
-/20170319 - Adam DNA 12 - 12 codes.ipynb
-/20170317 - Adam Oligo - 12codes.ipynb
-/examples/Stanford - 96 codes - Alt #2.ipynb
-/examples/Stanford - 96 codes - Jupyer example.ipynb
-/Stanford - 96 codes - Simplified Example - Compare pre and post pep synth.ipynb
-/module1.py
-kernel-da4acf98-60e5-4510-b33d-b884f25d7bc2.json
-kernel-2a2a5c11-ac36-4ca9-a8a1-58115fa4001b.json
 /dist
 /mrbles.egg-info
-dist/mrbles-0.7.3-py2.py3-none-any.whl
-dist/mrbles-0.7.3.tar.gz
-mrbles.egg-info/PKG-INFO
-mrbles.egg-info/requires.txt
-mrbles.egg-info/PKG-INFO
-mrbles.egg-info/requires.txt
-mrbles.egg-info/requires.txt
-mrbles.egg-info/PKG-INFO
