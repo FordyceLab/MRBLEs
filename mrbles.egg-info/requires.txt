@@ -7,6 +7,7 @@ scikit-learn
 scikit-image
 photutils
 matplotlib
+plotly
 lmfit
 
 [dev]

@@ -1,11 +1,12 @@
 Metadata-Version: 1.2
 Name: mrbles
-Version: 0.7.1
+Version: 0.7.2
 Summary: MRBLEs decoding and analysis package
 Home-page: https://github.com/FordyceLab/MRBLEs
 Author: Björn Harink
 Author-email: bjorn@harink.info
 License: MIT
+Description-Content-Type: UNKNOWN
 Description: MRBLEs Analysis Package
         =======================
         
