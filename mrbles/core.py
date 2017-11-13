@@ -31,10 +31,13 @@ import pandas as pd
 import xarray as xd
 # Image Processing
 import cv2
+import scipy
 from scipy import ndimage as ndi
+import photutils
 from photutils import source_properties, properties_table
+import sklearn
 from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.neighbors import NearestNeighbors
+import skimage
 from skimage.feature import peak_local_max, canny
 from skimage.morphology import watershed, dilation, erosion
 from skimage.draw import circle, circle_perimeter
@@ -45,6 +48,7 @@ from skimage import data, color
 # Classification
 from sklearn.mixture import GaussianMixture
 # Graphs
+import matplotlib
 from matplotlib import pyplot as plt
 # Intra-Package dependencies
 from .data import *
