@@ -82,11 +82,10 @@ setup(
                       'scipy',
                       'pandas',
                       'xarray',
-                      'cv2',
+                      'opencv-python',
                       'scikit-learn',
                       'scikit-image',
                       'photutils',
-                      'xml',
                       'matplotlib',
                       'lmfit'],
 

@@ -1,11 +1,16 @@
 # !/usr/bin/env python
 
 """
-Bead Analysis Package
-=====================
+MRBLEs Analysis Package
+=======================
 
-This package contains the necessary classes, methods and data structures to
-perform the Bead Analysis for MRBLs.
+This package provides the tools to: (1) find the MRBLEs in a monochrome
+brightfield microscopy image; (2) decode the MRBLEs beads by spectral unmxing,
+using reference spectra, and then spectrally decode the found beads using
+Iterative Closest Point Matching and Gaussian Mixture Modeling; (3) extract,
+statistical values of interest in additional fluorescence channels using the
+morphology of the MRBLEs, their locations, and respective code; (4) analyze
+affinity information based on titrations of MRBLEs assays.
 """
 
 # [Future imports]

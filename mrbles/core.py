@@ -314,7 +314,9 @@ class FindBeadsImagingP(object):
         return img_thr
 
     @classmethod
-    def filter_mask(cls, mask, filter_params, filter_names, slice_types, border_clear=False):
+    def filter_mask(cls, mask, filter_params, filter_names, slice_types,
+                    border_clear=False):
+        """Filter labeled mask based on provided parameters."""
         # Get dimensions from the mask
         props = cls.get_dimensions(mask)
         # Get labels to be removed
@@ -336,12 +338,61 @@ class FindBeadsImagingP(object):
     @classmethod
     def filter_properties(cls, properties, filter_params, filter_names, slice_types):
         """Get labels of areas outside of limits."""
-        lbls_out_tmp = [cls.filter_property(properties, param, name, stype) for param, name, stype in zip(
-            filter_params, filter_names, slice_types)]
+        lbls_out_tmp = [cls.filter_property(properties, param, name, stype)
+                        for param, name, stype in zip(filter_params,
+                                                      filter_names,
+                                                      slice_types)]
         lbls_out = np.unique(np.hstack(lbls_out_tmp))
         return lbls_out
 
-    # Static Methods
+    @classmethod
+    def circle_roi(cls, image, hough_settings=None):
+        """Apply a circular image ROI.
+
+        Parameters
+        ==========
+        image : NumPy array image
+
+        hough_settings : list, int
+            Settings for HoughCircles in list.
+            list[0] = dp, list[1] = param1, list[2] = param2
+
+        """
+        img = cls.img2ubyte(image)
+        # Default Hough settings
+        if hough_settings is None:
+            dp = 2
+            param1 = 10
+            param2 = 7
+        else:
+            dp = hough_settings[0]
+            param1 = hough_settings[1]
+            param2 = hough_settings[2]
+        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT,
+                                dp=dp,
+                                minDist=img.shape[0],
+                                param1=param1,
+                                param2=param2)
+        if len(dims) > 1 or len(dims) == 0:
+            return None
+        cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
+        mask = cls.sector_mask(img.shape, [cx, cy], circle_size)
+        mask_img = img.copy()
+        mask_img[~mask] = 0
+        return mask_img, mask, [cx, cy, radius]
+
+    # Static methods
+    @staticmethod
+    def sector_mask(shape, centre, radius):
+        """Return a boolean mask for a circular ROI."""
+        x, y = np.ogrid[:shape[0], :shape[1]]
+        cx, cy = centre
+        # convert cartesian --> polar coordinates
+        r2 = (x - cx) * (x - cx) + (y - cy) * (y - cy)
+        # circular mask
+        circmask = r2 <= radius * radius
+        return circmask
+
     @staticmethod
     def filter_property(properties, filter_param, filter_name, slice_type):
         """Get labels of beads outside/inside/up/down of propert limits.
@@ -419,7 +470,7 @@ class FindBeadsImagingP(object):
         properties = source_properties(mask, mask)
         if not properties:
             return None
-        tbl = properties_table(properties)  # Convert to table
+        tbl = properties.to_table()  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=int)
         x = tbl['xcentroid']
         y = tbl['ycentroid']
