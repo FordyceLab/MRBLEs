@@ -108,11 +108,25 @@ setup(
     #     'sample': ['package_data.dat'],
     # },
 
+    # Data files are specified in MANIFEST.in file.
+    include_package_data=True,
+
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    # data_files=[('my_data', ['data/data_file'])],
+    # data_files=[('test_images',
+    #              ['data/peptide_biotin_streptavidin_01_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_02_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_03_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_04_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_05_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_06_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_07_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_08_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_09_MMStack_Pos0.ome.tif',
+    #               'data/peptide_biotin_streptavidin_10_MMStack_Pos0.ome.tif'])
+    #            ],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
