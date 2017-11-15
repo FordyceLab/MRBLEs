@@ -60,6 +60,9 @@ if sys.version_info < (3, 0):
     from __builtin__ import *  # NOQA
     install_aliases()
 
+    warnings.warn(
+        "mrbles: Please use Python >3.6 for multiprocessing.")
+
 
 ### Decorators
 
@@ -83,6 +86,10 @@ def accepts(*types):
 
 
 ### Classes
+
+# Python 2 - multiprocessing compatibilty
+#def _unwrap_self_find(arg, **kwarg):
+#    return FindBeadsImagingP._find(*arg, **kwarg)
 
 
 class FindBeadsImagingP(object):
@@ -168,10 +175,13 @@ class FindBeadsImagingP(object):
     def find(self, image):
         """Execute finding beads image(s)."""
         if image.ndim == 3:
-            mp_worker = mp.Pool()
-            result = xd.concat(mp_worker.map(self._find, image), dim='f')
-            mp_worker.close()
-            mp_worker.join()
+            if sys.version_info < (3, 0):
+                result = xd.concat(map(self._find, image), dim='f')
+            else:
+                mp_worker = mp.Pool()
+                result = xd.concat(mp_worker.map(self._find, image), dim='f')
+                mp_worker.close()
+                mp_worker.join()
         else:
             result = self._find(image)
         self._dataframe = result
@@ -494,7 +504,8 @@ class FindBeadsImagingP(object):
             return None
         if version.parse(photutils.__version__) < version.parse("0.4.0"):
             tbl = photutils.properties_table(properties)
-            warnings.warn('Please upgrade photutils to latest version.')
+            warnings.warn(
+                "mrbles: Please upgrade photutils to latest version.")
         else:
             tbl = properties.to_table()  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=int)

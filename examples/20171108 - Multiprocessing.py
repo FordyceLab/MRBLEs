@@ -30,14 +30,14 @@ bead_image_obj.crop_y = CROPy
 print(bead_image_obj.c_names)  # Print channel names
 
 #%%
-fig_x = 9
+fig_x = 0
 plt.figure()
 plt.imshow(bead_image_obj[fig_x, 'Brightfield'])
 
 #%%
 xdata = bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
 plt.figure()
-plt.imshow(xdata[2])
+plt.imshow(xdata[0])
 
 #%%
 xdata = bead_objects.find(bead_image_obj[:, 'Brightfield'])
@@ -54,4 +54,4 @@ plt.imshow(bead_objects.mask_bkg[0])
 #%%
 #np.unique(bead_objects.mask_bkg[0])
 bead_objects.bead_num
-bead_objects.bead_labels
+#bead_objects.bead_labels
