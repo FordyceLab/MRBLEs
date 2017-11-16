@@ -44,8 +44,7 @@ from skimage.morphology import watershed, dilation, erosion
 from skimage.draw import circle, circle_perimeter
 from skimage.external import tifffile as tff
 from skimage.segmentation import clear_border
-from skimage.transform import hough_circle, hough_circle_peaks
-from skimage import data, color
+from skimage import color
 # Classification
 from sklearn.mixture import GaussianMixture
 # Graphs
@@ -86,10 +85,6 @@ def accepts(*types):
 
 
 ### Classes
-
-# Python 2 - multiprocessing compatibilty
-#def _unwrap_self_find(arg, **kwarg):
-#    return FindBeadsImagingP._find(*arg, **kwarg)
 
 
 class FindBeadsImagingP(object):

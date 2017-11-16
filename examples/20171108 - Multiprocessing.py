@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 #%%
-import matplotlib
-import matplotlib.pyplot as plt
-% matplotlib inline
 import numpy as np
 import xarray as xd
 import mrbles as ba
+import matplotlib
+import matplotlib.pyplot as plt
+% matplotlib inline
 
 #%%
 bead_objects = ba.FindBeadsImagingP(bead_size=18, border_clear=True, circle_size=340)
