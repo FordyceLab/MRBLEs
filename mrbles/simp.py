@@ -93,7 +93,7 @@ class ReferenceSpectra(object):
             print("Spectrum: %s" % name)
             img_obj = ImageSetRead(file)
             self.ref_objects.find(
-                img_obj[self.object_channel, self._crop_y, self._crop_x], circle_size=None)
+                img_obj[self.object_channel, self._crop_y, self._crop_x])
             print("No beads:", self.ref_objects.bead_num)
             channels = img_obj[self._channels, self._crop_y, self._crop_x]
             if type(self._channels) is slice:

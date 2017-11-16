@@ -5,10 +5,10 @@ import xarray as xd
 import mrbles as ba
 import matplotlib
 import matplotlib.pyplot as plt
-% matplotlib inline
+% matplotlib tk
 
 #%%
-bead_objects = ba.FindBeadsImagingP(bead_size=18, border_clear=True, circle_size=340)
+bead_objects = ba.FindBeadsImaging(bead_size=18, border_clear=True, circle_size=340)
 # Channel(s) settings
 ASSAY_CHANNELS = ['Cy5_5%']  # Must be list!
 
@@ -35,23 +35,33 @@ plt.figure()
 plt.imshow(bead_image_obj[fig_x, 'Brightfield'])
 
 #%%
-xdata = bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
+bead_image_obj.xdata
+
+#%%
+bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
+xdata = bead_objects.xdata
 plt.figure()
 plt.imshow(xdata[0])
 
 #%%
-xdata = bead_objects.find(bead_image_obj[:, 'Brightfield'])
+bead_objects.find(bead_image_obj[:, 'Brightfield'])
+xdata = bead_objects.xdata
 
 #%%
 for x in range(xdata.sizes['f']):
-    plt.figure(dpi=150)
-    plt.imshow(xdata.loc[x, 'bkg'].values)
+    plt.figure(dpi=113)
+    plt.imshow(xdata.loc[x, 'image_roi'].values)
 
 #%%
 plt.figure(dpi=150)
-plt.imshow(bead_objects.mask_bkg[0])
+bead_objects.show_image_overlay(bead_image_obj[fig_x, 'Brightfield'],
+                                bead_objects.mask_ring[fig_x],
+                                alpha=0.4)
 
 #%%
 #np.unique(bead_objects.mask_bkg[0])
-bead_objects.bead_num
+#bead_objects.bead_num
+bead_objects.bead_dims.to_csv(r"D:\test.csv")
 #bead_objects.bead_labels
+
+#%%

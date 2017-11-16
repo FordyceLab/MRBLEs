@@ -516,198 +516,424 @@ def filterObjects(data, back, reference, objects_radius, back_std_factor=3, refe
     # Return list of indices of filtered-in objects
     return filter_list
 
-class FindBeads2(object):
+class FindBeadsImaging(object):
     """Find beads based on pure imaging.
-
+    Parameters
+    ----------
+    bead_size : int
+        Approximate width of beads (circles) in pixels.
+    eccen_param : int, list of int
+        Sets the maximum of eccentricity [0-1] of the beads (circles).
+        Values close to 0 mean very circular, values closer to 1 mean very elliptical.
+        Defaults to 0.65.
+    area_param : int, list of int
+        Sets the default min and max fraction for bead (circle) area.
+        Set as single int (1+/-: 0.XX) value or of 2 values [0.XX, 1.XX].
+        E.g. area_param=0.5 or area_param=[0.5, 1.5] filters all below 50% and above 150% of area calculated by approximate bead_size.
+        Defaults to 0.5, which equals to [0.5, 1.5].
     Attributes
     ----------
-    param1 : int
-        First parameters of Hough circle find algorithm.
-        Defaults to PARAM1 (100).
-    param2 : int
-        First parameters of Hough circle find algorithm.
-        Defaults to PARAM2 (5)
+    area_min : int or float
+        Sets the minimum area in pixels.
+    area_max : int or float
+        Sets the maximum area in pixels.
     """
-    ## Default values
-    # Default values OpenCV Hough
-    global PARAM1
-    PARAM1 = 200
-    global PARAM2
-    PARAM2 = 10
-    # Default values OpenCV Thershold and Filter
-    global THR_BLOCK
-    THR_BLOCK = 11
-    global THR_C
-    THR_C = 15
-    global KERNEL
-    KERNEL = cv2.getStructuringElement(shape = cv2.MORPH_ELLIPSE, ksize = (3,3))
-    global FILT_ITER
-    FILT_ITER = 1
 
-    def __init__(self, bead_size, *args, **kwargs):
-        self.bead_size = bead_size
-        self.circles = None
-        self._lbl_mask = None
-        self._lbl_mask_ann = None
-        self._lbl_mask_bkg = None
-        self.mask_bkg_size = 15
-        self.mask_bkg_buffer = 3
-        self.mask_ann_size = 2
-        # Default values OpenCV Hough
-        self.param1 = PARAM1
-        self.param2 = PARAM2
+    def __init__(self, bead_size, eccen_param=0.65, area_param=0.5, border_clear=True):
+        # Default values for filtering
+        self._bead_size = bead_size
+        self._eccen_param = eccen_param
+        self._area_param = area_param
+        self.set_area_limits(bead_size)
+        self.filter_params = [self._eccen_param,
+                              [self.area_min,
+                               self.area_max]]
+        self.filter_names = ['eccentricity', 'area']
+        self.slice_types = ['up', 'outside']
+        self.border_clear = border_clear
         # Default values OpenCV Thershold
-        self.thr_block = THR_BLOCK
-        self.thr_c = THR_C
-        self.kernel = KERNEL
-        self.filt_iter = FILT_ITER
+        self.thr_block = 15
+        self.thr_c = 11
+        self.kernel = cv2.getStructuringElement(
+            shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
+        self.filt_iter = 1
+        # Default values for local background
+        self.mask_bkg_size = 11
+        self.mask_bkg_buffer = 2
 
+    # Parameter methods
+    def set_area_limits(self, bead_size):
+        """"Sets area limits dependent on given bead width (pixels).
+        Sets: maximum and minimum area.
+        """
+        # Set limits
+        radius = ceil(self._bead_size / 2)
+        area_avg = pi * radius**2
+        self.area_min, self.area_max = self.min_max(area_avg, self._area_param)
+
+    # Main method
+    # TODO: Split inside filter and whole bead filter, or change method.
+    def find(self, image, circle_size=None):
+        """Find objects in given image.
+        """
+        # Convert image to uint8
+        if circle_size is None:
+            img = self.img2ubyte(image)
+            self._mask_radius = 0
+        else:
+            img, roi_mask, self._mask_radius = self.circle_roi(
+                image, circle_size)
+        self._masked_img = img.copy()
+        # Threshold to binary image
+        img_thr = self.img2thr(img, self.thr_block, self.thr_c)
+        self._img_thr = img_thr
+        # Label all separate parts
+        mask_inside = ndi.label(img_thr, structure=self.kernel)[0]
+
+        filter_params_inside = [[0.1 * self._bead_size **
+                                 2 * np.pi, 2 * self._bead_size**2 * np.pi]]
+        filter_names_inside = ['area']
+        slice_types_inside = ['outside']
+        self._mask_inside, self._mask_inside_neg = self.filter_mask(mask_inside,
+                                                                    filter_params_inside,
+                                                                    filter_names_inside,
+                                                                    slice_types_inside,
+                                                                    border_clear=False)
+        # Check if image not empty
+        if np.unique(self._mask_inside).size <= 1:
+            blank_img = np.zeros_like(img)
+            self._mask_bead = blank_img
+            self._mask_ring = blank_img
+            self._mask_outside = blank_img
+            self._mask_bkg = blank_img
+            return False
+        # Find full bead
+        img_thr_invert = (~img_thr.astype(bool)).astype(int)
+        mask_all_bin = self._mask_inside + img_thr_invert
+        mask_all_bin[mask_all_bin > 0] = 1
+        D = ndi.distance_transform_edt(mask_all_bin, sampling=3)
+        mask_full = watershed(-D, markers=self._mask_inside, mask=mask_all_bin)
+        self._mask_bead, self._mask_bead_neg = self.filter_mask(mask_full,
+                                                                self.filter_params,
+                                                                self.filter_names,
+                                                                self.slice_types,
+                                                                self.border_clear)
+        # Create and update final masks
+        self._mask_ring = self._mask_bead - self._mask_inside
+        self._mask_ring[self._mask_ring < 0] = 0
+        self._mask_inside[self._mask_bead_neg < 0] = 0
+        # Create outside and buffered background areas around bead
+        self._mask_outside = self.make_mask_outside(
+            self._mask_bead, self.mask_bkg_size, buffer=0)
+        self._mask_bkg = self.make_mask_outside(
+            self._mask_bead_neg, self.mask_bkg_size, buffer=self.mask_bkg_buffer)
+        if circle_size is not None:
+            self._mask_bkg[~roi_mask] = 0
+        return True
+
+    @staticmethod
+    def img_invert(img_thr):
+        """Set docstring here.
+        Parameters
+        ----------
+        img_thr : NumPy array
+            Boolean image in NumPy format.
+        Returns
+        -------
+        img_inv : Numpy array
+            Inverted boolean of the image array.
+        """
+        img_inv = (~img_thr.astype(bool)).astype(int)
+        return img_inv
+
+    # Properties - Settings
     @property
     def bead_size(self):
+        """Get or set approximate width of beads (circles) in pixels.
+        """
         return self._bead_size
+
     @bead_size.setter
-    def bead_size(self, value):
-        self._bead_size = value
-        self.c_min, self.c_max, self.c_min_dist = self.get_bead_dims(value)
+    def bead_size(self, bead_size):
+        self._bead_size = bead_size
+        self.set_area_limits(bead_size)
 
     @property
-    def bead_num(self):
-        if self._lbl_mask is not None:
-            return self.get_bead_num(self._lbl_mask)
-        else:
-            return 0
+    def area_param(self):
+        """Get or set approximate width of beads (circles) in pixels.
+        """
+        return self._area_param
+
+    @area_param.setter
+    def area_param(self, value):
+        self._area_param = value
+        self.set_area_limits(self.bead_size)
+        self.filter_params = [self._eccen_param,
+                              [self.area_min, self.area_max]]
 
     @property
-    def bead_labels(self):
-        return self.get_bead_labels(self._lbl_mask)
+    def eccen_param(self):
+        """Get or set approximate width of beads (circles) in pixels.
+        """
+        return self._eccen_param
 
-    @staticmethod
-    def get_bead_labels(mask):
-        idx = np.unique(mask[mask>0])
-        return idx
+    @area_param.setter
+    def eccen_param(self, value):
+        self._eccen_param = value
+        self.filter_params = [self._eccen_param,
+                              [self.area_min, self.area_max]]
 
-    @staticmethod
-    def get_bead_num(mask):
-        return len(np.unique(mask[mask>0]))
-
+    # Properties - Output masks
     @property
     def mask_bead(self):
-        return self._lbl_mask+self._lbl_mask_ann
-
-    @property
-    def mask_inside(self):
-        return self._lbl_mask
-
-    @property
-    def mask_outside(self):
-        self._lbl_mask_bkg_incl_neg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg,
-                                                        self.mask_bkg_size,
-                                                        0)
-        self._lbl_mask_bkg = self._lbl_mask_bkg_incl_neg.copy()
-        self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
-        return self._lbl_mask_bkg
+        return self._mask_bead
 
     @property
     def mask_ring(self):
-        return self._lbl_mask_ann
+        return self._mask_ring
+
+    @property
+    def mask_inside(self):
+        return self._mask_inside
+
+    @property
+    def mask_outside(self):
+        return self._mask_outside
 
     @property
     def mask_bkg(self):
-        return self._lbl_mask_bkg
+        return self._mask_bkg
+
+    # Properties - Output values
+    @property
+    def bead_num(self):
+        return self.get_unique_count(self._mask_bead)
 
     @property
-    def bead_dims(self):
-        props = source_properties(self._lbl_mask, self._lbl_mask)
-        if not props:
-            return  np.array([None, None, None]).T
-        tbl = properties_table(props)
+    def bead_labels(self):
+        return self.get_unique_values(self._mask_bead)
+
+    @property
+    def bead_dims_bead(self):
+        return self.get_dimensions(self._mask_bead)
+
+    @property
+    def bead_dims_inside(self):
+        return self.get_dimensions(self._mask_inside)
+
+    # Class methods
+    @classmethod
+    def make_mask_outside(cls, mask, size, buffer=0):
+        if buffer > 0:
+            mask_min = cls.morph_mask_step(buffer, mask)
+        else:
+            mask_min = mask
+        mask_outside = cls.morph_mask_step(size, mask)
+        mask_outside[mask_min > 0] = 0
+        return mask_outside
+
+    @classmethod
+    def filter_mask(cls, mask, filter_params, filter_names, slice_types, border_clear=False):
+        # Get dimensions from the mask
+        props = cls.get_dimensions(mask)
+        # Get labels to be removed
+        lbls_out = cls.filters(props, filter_params, filter_names, slice_types)
+        # Create new masks
+        mask_pos = mask.copy()
+        mask_neg = mask.copy()
+        # Set mask to 0 or negative label for labels outside limits.
+        if lbls_out.size > 0:
+            for lbl in lbls_out:
+                mask_pos[mask == lbl] = 0
+                mask_neg[mask == lbl] = -lbl
+        if border_clear is True:
+            clear_border(mask_pos, in_place=True)
+            clear_border(mask_neg, bgval=-1, in_place=True)
+        return mask_pos, mask_neg
+
+    @classmethod
+    def filters(cls, properties, filter_params, filter_names, slice_types):
+        """Get labels of areas outside of limits.
+        """
+        lbls_out_tmp = [cls.filter(properties, param, name, stype) for param, name, stype in zip(
+            filter_params, filter_names, slice_types)]
+        lbls_out = np.unique(np.hstack(lbls_out_tmp))
+        return lbls_out
+
+    @classmethod
+    def img2thr(cls, image, thr_block, thr_c):
+        """Convert and adaptive threshold image.
+        """
+        img = cls.img2ubyte(image)
+        img_thr = cv2.adaptiveThreshold(src=img,
+                                        maxValue=1,
+                                        adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                        thresholdType=cv2.THRESH_BINARY,
+                                        blockSize=thr_block,
+                                        C=thr_c)
+        return img_thr
+
+    @classmethod
+    def show_cirle_overlay(cls, image, dims=None, ring=None):
+        """Show image with overlaid drawn circles of labeled mask.
+        """
+        img = cls.cirle_overlay(image, dims, ring)
+        plt.imshow(img)
+
+    @classmethod
+    def show_cross_overlay(cls, image, dims):
+        """Show image with overlay crosses.
+        """
+        img = color.gray2rgb(cls.img2ubyte(image))
+        #dims = np.array(np.round(dims), dtype=np.int)
+        for center_x, center_y, radius in zip(dims[:, 0], dims[:, 1], dims[:, 2]):
+            line_y = slice(int(round(center_y) - round(radius)),
+                           int(round(center_y) + round(radius)))
+            line_x = slice(int(round(center_x) - round(radius)),
+                           int(round(center_x) + round(radius)))
+            img[int(round(center_y)), line_x] = (20, 20, 220)
+            img[line_y, int(round(center_x))] = (20, 20, 220)
+        plt.imshow(img)
+        return img
+
+    @classmethod
+    def circle_roi(cls, image, circle_size=340):
+        """Apply a circular image ROI.
+        """
+        img = cls.img2ubyte(image)
+        dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT,
+                                dp=2, minDist=img.shape[0], param1=10, param2=7)
+        if len(dims) > 1 or len(dims) == 0:
+            return None
+        cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
+        mask = cls.sector_mask(img.shape, [cx, cy], circle_size)
+        mask_img = img.copy()
+        mask_img[~mask] = 0
+        return mask_img, mask, [cx, cy, radius]
+
+    # Static methods
+    @staticmethod
+    def sector_mask(shape, centre, radius):
+        """Return a boolean mask for a circular ROI.
+        """
+        x, y = np.ogrid[:shape[0], :shape[1]]
+        cx, cy = centre
+        # convert cartesian --> polar coordinates
+        r2 = (x - cx) * (x - cx) + (y - cy) * (y - cy)
+        # circular mask
+        circmask = r2 <= radius * radius
+        return circmask
+
+    @staticmethod
+    def get_unique_values(mask):
+        """Get all unique positive values from an array.
+        """
+        values = np.unique(mask[mask > 0])
+        if values.size == 0:
+            values = None
+        return values
+
+    @staticmethod
+    def get_unique_count(mask):
+        """Get count of unique positive values from an array.
+        """
+        return np.unique(mask[mask > 0]).size
+
+    @staticmethod
+    def get_dimensions(mask):
+        """Get dimensions of labeled regions in labeled mask.
+        """
+        properties = source_properties(mask, mask)
+        if not properties:
+            return None
+        tbl = properties_table(properties)  # Convert to table
+        lbl = np.array(tbl['min_value'], dtype=int)
         x = tbl['xcentroid']
         y = tbl['ycentroid']
         r = tbl['equivalent_radius']
         area = tbl['area']
-        dims = np.array([x,y,r]).T
+        perimeter = tbl['perimeter']
+        eccentricity = tbl['eccentricity']
+        pdata = np.array([lbl.astype(int), x, y, r, area,
+                          perimeter, eccentricity]).T
+        dims = pd.DataFrame(data=pdata, columns=[
+                            'label', 'x_centroid', 'y_centroid', 'radius', 'area', 'perimeter', 'eccentricity'])
         return dims
 
-    def find(self, image):
-        img = self.img2ubyte(image)
-        img_thr = self.img2thr(img, self.thr_block, self.thr_c)
+    @staticmethod
+    @accepts((np.ndarray, xd.DataArray))
+    def img2ubyte(image):
+        """Convert image to ubuyte (uint8) and rescale to min/max.
+        """
+        if type(image) is (xd.DataArray):
+            image = image.values
+        img_dtype = image.dtype
+        if img_dtype is np.dtype('uint8'):
+            return image
+        img_min = image - image.min()
+        img_max = img_min.max()
+        img_conv = np.array((img_min / img_max) * 255, dtype=np.uint8)
+        return img_conv
 
-        labels = ndi.label(img_thr, structure=self.kernel)[0]
-        self._lbl_mask, self._lbl_mask_incl_neg = self.lbl_mask_flt(labels)
+    @staticmethod
+    def cirle_overlay(image, dims, ring_size=None):
+        """Overlay image with drawn circles of labeled mask.
+        Parameters
+        ----------
+        image : NumPy array
+            Base image.
+        dims : NumPy array
+            Array with dimensions of circles: np.array([radius, x_position, y_position], [...]): Shape: Nx3.
+        ring_size: int
+            Will print inside ring (annulus) with radius minus set value.
+            Defaults to None, meaning not printing inside ring.
+        """
+        img = image.copy()
+        for dim_idx, dim in enumerate(dims):
+            if ring_size is not None:
+                if type(ring) is int:
+                    cv2.circle(img, (int(ring[dim_idx][0]), int(ring[dim_idx][1])), int(
+                        ceil(ring[dim_idx][2])), (0, 255, 0), 1)
+                else:
+                    for dim_r in ring:
+                        cv2.circle(img, (int(dim_r[0]), int(dim_r[1])), int(
+                            ceil(dim_r[2])), (0, 255, 0), 1)
+            cv2.circle(img, (int(dim[0]), int(dim[1])),
+                       int(ceil(dim[2])), (0, 255, 0), 1)
+        plt.imshow(img)
+        return img
 
-        if len(np.unique(self._lbl_mask)) <= 1:
-            return
+    @staticmethod
+    def show_image_overlay(image, image_blend, alpha=0.3, cmap1='Greys_r', cmap2='jet'):
+        """Overlay of 2 images using alpha blend.
+        Parameters
+        ----------
+        image : NumPy array
+            Base image.
+        image_blend : NumPy arra
+            Image to blend over base image.
+        aplha : float
+            Amount of blending. Value between 0 and 1.
+            Defaults to 0.3.
+        c_map1 : cmap
+            Color scheme using cmap. See matplotlib for color schemes.
+            Defaults to 'Greys_r', which are reversed grey values.
+        """
+        plt.axis('off')
+        plt.imshow(image, cmap=cmap1)
+        plt.imshow(image_blend, cmap=cmap2, interpolation='none', alpha=alpha)
 
-        img_thr_invert = np.invert(img_thr.copy())-254
-        labels_all_bin = self._lbl_mask.copy() + img_thr_invert
-        labels_all_bin[labels_all_bin > 0] = 1
-        D = ndi.distance_transform_edt(labels_all_bin, sampling=3)
-        labels_full = watershed(-D, markers=self._lbl_mask, mask=labels_all_bin)
-
-        self._lbl_mask_ann, self._lbl_mask_ann_incl_neg = self.lbl_mask_flt( labels_full ) - self._lbl_mask
-        self._lbl_mask_ann[self._lbl_mask_ann < 0] = 0
-        self._lbl_mask[self._lbl_mask_ann_incl_neg < 0] = 0
-
-        self._lbl_mask_bkg = self.lbl_mask_bkg(self._lbl_mask_incl_neg+self._lbl_mask_ann_incl_neg,
-                                               self.mask_bkg_size,
-                                               self.mask_bkg_buffer)
-        self._lbl_mask_bkg[self._lbl_mask_bkg < 0] = 0
-
-    @classmethod
-    def lbl_mask_flt(cls, labels):
-        idx = np.unique(labels)
-        props = source_properties(labels, labels)
-        tbl = properties_table(props)
-
-        area_high = np.median(tbl['area'])*1.25
-        area_low = np.median(tbl['area'])*0.75
-        eccentricity = 0.55
-
-        indices_ec = np.argwhere(tbl['eccentricity'] > eccentricity)
-        indices_ar_max = np.argwhere(tbl['area'] > area_high)
-        indices_ar_min = np.argwhere(tbl['area'] < area_low)
-        indices_all = np.unique(np.concatenate((indices_ec,indices_ar_max,indices_ar_min)))
-        lbl_filter = labels.copy()
-        lbl_filter_incl_neg = labels.copy()
-        if len(indices_all) > 0:
-            for x in indices_all:
-                lbl_filter[labels == idx[x+1]] = 0
-                lbl_filter_incl_neg[labels == idx[x+1]] = -idx[x+1]
-        return lbl_filter, lbl_filter_incl_neg
-
-    def morph_filter(self):
-        idx = cls.get_bead_labels(labels)
-        props = source_properties(labels, labels)
-        tbl = properties_table(props)
-
-    @classmethod
-    def lbl_mask_ann(cls, mask, size):
-        mask_max = cls.mask_morph_step(size, mask)
-        mask_max[mask > 0] = 0
-        return mask_max
-
-    @classmethod
-    def lbl_mask_bkg(cls, mask, size, buffer=0):
-        if buffer > 0:
-            mask_min = cls.mask_morph_kernel(buffer, mask)
-        else:
-            mask_min = mask
-        mask_max = cls.mask_morph_kernel(size, mask)
-        mask_max[mask_min > 0] = 0
-        return mask_max
-
-    @classmethod
-    def mask_morph_kernel(cls, size, mask):
-        morph_mask = None
-        kernel = cls.circle_kernel(abs(size))
-        if size < 0:
-            morph_mask = erosion(mask, kernel)
-        elif size > 0:
-            morph_mask = dilation(mask, kernel)
-        return morph_mask
-
-    @classmethod
-    def mask_morph_step(cls, size, mask):
+    @staticmethod
+    def morph_mask_step(size, mask):
+        """Morph mask step-by-step using erosion or dilation.
+        This function will erode or dilate step-by-step, in a loop, each labeled feature in labeled mask array.
+        Parameters
+        ----------
+        size : int
+            Set number of dilation (positive value, grow outward) or erosion (negative value, shrink inward) steps.
+        mask : NumPy array
+            Labeled mask to be dilated or eroded.
+        """
         morph_mask = mask.copy()
         if size < 0:
             for n in range(abs(size)):
@@ -718,106 +944,70 @@ class FindBeads2(object):
         return morph_mask
 
     @staticmethod
-    def circle_kernel(size):
-        kernel = np.zeros((size, size), dtype=np.uint8)
-        rr, cc = circle(np.floor(size/2), np.floor(size/2), np.ceil(size/2))
-        kernel[rr, cc] = 1
-        return kernel
-
-    @staticmethod
-    def create_labeled_mask(image, circles, kernel=KERNEL):
-        img = image.copy()
-        D = ndi.distance_transform_edt(img, sampling=3)
-        markers_circles = np.zeros_like(img)
-        for idx, c in enumerate(circles):
-            markers_circles[int(c[1]),int(c[0])] = 1
-        markers = ndi.label(markers_circles, structure=kernel)[0]
-        labels = watershed(-D, markers, mask=img)
-        return labels
-
-    @staticmethod
-    @accepts((np.ndarray, xd.DataArray))
-    def img2ubyte(image):
-        if type(image) is (xd.DataArray):
-            image = image.values
-        img_dtype = image.dtype
-        if img_dtype is np.dtype('uint8'):
-            return image
-        img_min = image - image.min()
-        img_max = img_min.max()
-        img_conv = np.array( (img_min/img_max) * 255, dtype=np.uint8 )
-        return img_conv
-
-    @classmethod
-    def img2thr(cls, image, thr_block=THR_BLOCK, thr_c=THR_C):
-        img = cls.img2ubyte(image)
-        img_thr = cv2.adaptiveThreshold(src = img,
-                            maxValue = 1,
-                            adaptiveMethod = cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                            thresholdType = cv2.THRESH_BINARY,
-                            blockSize = thr_block,
-                            C = thr_c)
-        return img_thr
-
-    @staticmethod
-    def thr2fill(image, circles, kernel=KERNEL):
-        img_fill = image.copy()
-        flood_mask = np.zeros((image.shape[0]+2, image.shape[1]+2), dtype='uint8')
-        for idx, c in enumerate(circles):
-            cv2.floodFill(image=img_fill, mask=flood_mask,
-                          seedPoint = (c[1],c[0]),
-                          newVal = 2,
-                          loDiff = 0,
-                          upDiff = 1)
-        img_fill[image == 0] = 0     # Add previous threshold image to filled image
-        img_fill[img_fill == 0] = 1  # Set lines to 1
-        img_fill[img_fill == 2] = 0  # Set background to 0
-        img_fill_final = ndi.binary_fill_holes(img_fill, structure=kernel).astype(np.uint8)
-        return img_fill_final
-
-    @staticmethod
-    def fill2filter(image, iter=FILT_ITER, kernel=KERNEL):
-        img_filter = cv2.morphologyEx(image,
-                                      cv2.MORPH_OPEN,
-                                      kernel,
-                                      iterations = iter)
-        return img_filter
-
-    @staticmethod
-    def get_bead_dims(bead_size):
-        """Set default bead dimensions, min/max range, and min distance.
+    def filter(properties, filter_param, filter_name, slice_type):
+        """Get labels of beads outside/inside/up/down of propert limits.
+        Parameters
+        ----------
+        properties : photutils table
+            Table with feature properties from labeled mask.
+            >>> from photutils import source_properties, properties_table
+            >>> tbl = properties_table(properties)
+            >>> properties = source_properties(mask, mask)
+        filter_param : float, int, list
+            Parameters to filter by.
+            If provided a list it will filter by range, inside or outside).
+            If provided a value it filter up or down that value.
+        slice_type : string
+            'outside' : < >
+            'inside'  : >= <=
+            'up'      : >
+            'down'    : <
         """
-        c_radius = bead_size / 2
-        c_min = int(c_radius * 0.75)
-        c_max = int(c_radius * 1.25)
-        c_min_dist = (c_min * 2) - 1
-        return c_min, c_max, c_min_dist
-
-    #@classmethod
-    #def img2bin(cls, image,
-    #            bead_size_param, param1=PARAM1, param2=PARAM2,
-    #            thr_block=THR_BLOCK, thr_c=THR_C,
-    #            iter=FILT_ITER, kernel=KERNEL):
-    #    img = cls.img2ubyte(image)
-    #    img_thr = cls.img2thr(img, thr_block, thr_c)
-    #    circles = cls.circle_find(img, bead_size_param, param1, param2)
-    #    img_fill = cls.thr2fill(img_thr, circles, kernel)
-    #    img_final = cls.fill2filter(img_fill, iter=iter, kernel=kernel)
-    #    return img_final, circles
-
-    @classmethod
-    def circle_find(cls, image, bead_size_parem, param1=PARAM1, param2=PARAM2):
-        """Find circles using OpenCV Hough transform.
-        """
-        img = cls.img2ubyte(image)
-        if type(bead_size_parem) is int:
-            c_min, c_max, c_min_dist = cls.get_bead_dims(bead_size_parem)
+        if type(filter_param) is list:
+            if slice_type == 'outside':
+                lbls_out = properties[(properties[filter_name] < filter_param[0]) | (
+                    properties[filter_name] > filter_param[1])].label.values
+            elif slice_type == 'inside':
+                lbls_out = properties[(properties[filter_name] >= filter_param[0]) & (
+                    properties[filter_name] <= filter_param[1])].label.values
         else:
-            c_min, c_max, c_min_dist = bead_size_parem
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1,
-                                   minDist=c_min_dist,
-                                   minRadius=c_min,
-                                   maxRadius=c_max,
-                                   param1=param1,
-                                   param2=param2)
-        return circles[0]
+            if slice_type == 'up':
+                lbls_out = properties[properties[filter_name]
+                                      > filter_param].label.values
+            elif slice_type == 'down':
+                lbls_out = properties[properties[filter_name]
+                                      < filter_param].label.values
+        return lbls_out
+
+    @staticmethod
+    def min_max(value, min_max):
+        """Return min and max values from input value.
+        Parameters
+        ----------
+        value : float, int
+            Value to get min and max value from.
+        min_max : float, list
+            Percentage of min and max.
+            If set by single value, e.g. +/- 0.25: min 75% / 125% of set value.
+            If set by list, e.g. [0.75, 1.25]: min 75% / max 125% of set value.
+        """
+        if min_max is list:
+            r_min = value * min_max[0]
+            r_max = value * min_max[1]
+        else:
+            r_min = value * (1 - min_max)
+            r_max = value * (1 + min_max)
+        return r_min, r_max
+
+    @staticmethod
+    def eccentricity(a, b):
+        """Return eccentricity by major axes.
+        Parameters:
+        a : float
+            Size major axis a.
+        b : float
+            Size major axis b.
+        """
+        major = max([a, b])
+        minor = min([a, b])
+        return sqrt(1 - (minor**2 / major**2))
