@@ -33,7 +33,7 @@ import xarray as xd
 import cv2
 from scipy import ndimage as ndi
 import photutils
-from photutils import source_properties, properties_table
+from photutils import source_properties
 from sklearn.metrics.pairwise import pairwise_distances
 import skimage
 from skimage.morphology import watershed, dilation, erosion
@@ -296,6 +296,11 @@ class FindBeadsImaging(object):
         """Return labeled mask of the local background arourd the bead."""
         return self._data_return("bkg")
 
+    @property
+    def image_roi(self):
+        """Return used image roi with cross overlay."""
+        return self._data_return("image_roi")
+
     # Properties - Output values
     @property
     def bead_num(self):
@@ -409,7 +414,7 @@ class FindBeadsImaging(object):
                                 maxRadius=img.shape[0],
                                 param1=param1,
                                 param2=param2)
-        if len(dims) > 1 or len(dims) == 0:
+        if len(dims) != 1:
             return None
         cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
         mask = cls.sector_mask(img.shape, [cx, cy], circle_size)
@@ -524,7 +529,7 @@ class FindBeadsImaging(object):
         if not properties:
             return None
         if version.parse(photutils.__version__) < version.parse("0.4.0"):
-            tbl = properties_table(properties)
+            tbl = photutils.properties_table(properties)
             warnings.warn(
                 "mrbles: Please upgrade photutils to latest version.")
         else:
@@ -875,6 +880,7 @@ class SpectralUnmixing(FrozenClass):
     """
 
     def __init__(self, ref_data, names=None):
+        """Instantiate SpectralUnmixing."""
         if isinstance(ref_data, Spectra):
             self._ref_object = ref_data
             self._ref_data = ref_data.ndata
@@ -885,13 +891,12 @@ class SpectralUnmixing(FrozenClass):
                 self._names = range(len(self._ref_data[0, :]))
         else:
             raise TypeError(
-                "Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")
+                "Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")  # NOQA
         self._dataframe = None
         # self._freeze()
 
     def __repr__(self):
-        """Returns Pandas dataframe representation.
-        """
+        """Return Pandas dataframe representation."""
         return repr([self._dataframe])
 
     def __getitem__(self, index):
@@ -937,7 +942,7 @@ class SpectralUnmixing(FrozenClass):
 
     @property
     def ndata(self):
-        """Return NumPy array data"""
+        """Return NumPy array data."""
         return self._dataframe.values
 
     # Private functions
@@ -1232,7 +1237,7 @@ class Classify(object):
 
     @property
     def stds(self):
-        """Return Choleski based SD"""
+        """Return Choleski based SD."""
         return np.linalg.cholesky(self._gmix.covariances_)
 
     @property
@@ -1261,8 +1266,10 @@ class Classify(object):
         elps = []
         unit_sphere = self.unit_sphere(resolution)
         for n in range(self._nclusters):
-            C = (nsigma * np.dot(self.stds, np.reshape(unit_sphere,
-                 (unit_sphere.shape[0], unit_sphere[1].size))))
+            C = (nsigma * np.dot(self.stds,
+                                 np.reshape(unit_sphere,
+                                            (unit_sphere.shape[0],
+                                             unit_sphere[1].size))))
             C += np.matlib.repmat(np.reshape(self.means[n], (3, 1)), 1,
                                   unit_sphere[0].size)
             elps.append(np.reshape(C, unit_sphere.shape))
