@@ -200,7 +200,6 @@ class Images(DataOutput):
                      for key, file_set in file_sets.items()]
         self._dataframe = xd.concat(dict_data,
                                     dim=pd.Index(file_sets.keys(), name='set'))
-        #self._dataframe.rename({'set': file_sets.keys()})
 
     def _find_images(self, folders, files):
         if isinstance(folders, dict):

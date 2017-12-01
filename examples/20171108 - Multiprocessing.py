@@ -31,14 +31,17 @@ print(bead_image_obj.c_names)  # Print channel names
 
 #%%
 folders = {
-    'test1': 'data',
-    'test2': 'data'
+    'files1': 'data',
+    'files2': 'data'
 }
 files = {
     'files1': r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome.tif",
     'files2': r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome.tif"
 }
-files = [ba.ImageSetRead.scan_paths(folders, file) for key, file in files]
+filez = {key1: ba.ImageSetRead.scan_path(folders[key1], file) for key1, file in files.items()}
+
+#%%
+print(filez['files2'])
 
 #%%
 fig_x = 0
@@ -83,3 +86,18 @@ bead_objects.bead_dims.to_csv(r"D:\test.csv")
 
 #%%
 xd.concat([bead_objects.xdata, bead_image_obj.xdata], dim='f')
+
+#%%
+test = ba.pipeline.Images(folders, files)
+test.load()
+
+#%%
+print(test._dataframe)
+xdict = test._dataframe
+
+#%%
+test.crop_x = slice(90,990)
+test.crop_y = slice(90,990)
+test.ndata.shape
+#%%
+xd.concat(xd.Dataset(xdict), dim='set')
