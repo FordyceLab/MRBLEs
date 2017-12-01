@@ -1,4 +1,6 @@
 # !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Depreacted functions and classes a.k.a. The Graveyard"""
 
 

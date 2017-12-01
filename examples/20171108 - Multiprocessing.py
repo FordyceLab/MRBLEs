@@ -24,10 +24,21 @@ BEAD_IMAGE_PATTERN = r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome
 # Search for files matching the patter in the bead image folder
 bead_image_files = ba.ImageSetRead.scan_path(BEAD_IMAGE_FOLDER,
                                              BEAD_IMAGE_PATTERN)
-bead_image_obj = ba.ImageSetRead(bead_image_files)
+bead_image_obj = ba.ImageSetRead(bead_image_files, output='xr')
 bead_image_obj.crop_x = CROPx
 bead_image_obj.crop_y = CROPy
 print(bead_image_obj.c_names)  # Print channel names
+
+#%%
+folders = {
+    'test1': 'data',
+    'test2': 'data'
+}
+files = {
+    'files1': r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome.tif",
+    'files2': r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome.tif"
+}
+files = [ba.ImageSetRead.scan_paths(folders, file) for key, file in files]
 
 #%%
 fig_x = 0
@@ -35,7 +46,10 @@ plt.figure()
 plt.imshow(bead_image_obj[fig_x, 'Brightfield'])
 
 #%%
-bead_image_obj.xdata
+bead_image_obj.crop_x
+
+#%%
+bead_image_obj.data
 
 #%%
 bead_objects.find(bead_image_obj[fig_x, 'Brightfield'])
@@ -53,9 +67,12 @@ for x in range(xdata.sizes['f']):
     plt.imshow(xdata.loc[x, 'image_roi'].values)
 
 #%%
-plt.figure(dpi=150)
-bead_objects.show_image_overlay(bead_image_obj[fig_x, 'Brightfield'],
-                                bead_objects.mask_ring[fig_x],
+bead_objects._bead_size
+
+#%%
+plt.figure(dpi=113)
+bead_objects.show_image_overlay(bead_image_obj[0, 'Brightfield'],
+                                bead_objects.mask('ring')[0],
                                 alpha=0.4)
 
 #%%
@@ -65,3 +82,4 @@ bead_objects.bead_dims.to_csv(r"D:\test.csv")
 #bead_objects.bead_labels
 
 #%%
+xd.concat([bead_objects.xdata, bead_image_obj.xdata], dim='f')

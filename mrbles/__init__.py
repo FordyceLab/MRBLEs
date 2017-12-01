@@ -67,7 +67,7 @@ from .core import *  # TODO Must change to specific before public
 from . import data
 from .data import *  # TODO Must change to specific before public
 from . import inspect
-from . import simp
+from . import pipeline
 from . import kinetics
 
 # Function compatibility between Python 2.x and 3.x
