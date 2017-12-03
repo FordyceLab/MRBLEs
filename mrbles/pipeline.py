@@ -255,8 +255,6 @@ class Find(DataOutput):
                  border_clear=True, circle_size=None):
         """Initialize."""
         self._bead_size = bead_size
-        self._boder_clear = True
-        self._circle_size = circle_size
         self._bead_objects = FindBeadsImaging(
             bead_size, border_clear=border_clear, circle_size=circle_size)
         self._dataframe = None
@@ -282,6 +280,7 @@ class Find(DataOutput):
         >>> find_object.settings.area_min = 20
         >>> find_object.settings.area_max = 350
         >>> find_object.settings.eccen_max = 0.65
+        >>> find_object.settings.circle_size = 350
 
         """
         return self._bead_objects
