@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # [Future imports]
-from __future__ import print_function, division
+from __future__ import division, print_function
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : simp.py
@@ -13,22 +13,23 @@ from __future__ import print_function, division
 
 # [Modules]
 # General Python
-import sys
 import os
 import re
+import sys
 from math import sqrt
-# Data Structure
+
+# Other
 import numpy as np
 import pandas as pd
-import xarray as xd
 import weightedstats as ws
-# Image Processing
-from scipy import ndimage as ndi
-# Graphs
+import xarray as xr
 from matplotlib import pyplot as plt
-# Project
+from scipy import ndimage as ndi
+
+# Intra-Package dependencies
 from mrbles.core import FindBeadsImaging
-from mrbles.data import Spectra, ImageSetRead, DataOutput
+from mrbles.data import DataOutput, ImageSetRead, Spectra
+
 
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
@@ -191,7 +192,7 @@ class Images(DataOutput):
             return False
         dict_data = [ImageSetRead(file_set).xdata
                      for key, file_set in file_sets.items()]
-        self._dataframe = xd.concat(dict_data,
+        self._dataframe = xr.concat(dict_data,
                                     dim=pd.Index(file_sets.keys(), name='set'))
 
     # Private methods
@@ -225,7 +226,7 @@ class Images(DataOutput):
         """
         image_files = []
         r = re.compile(pattern)
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             file_list = [os.path.join(root, x) for x in files if r.match(x)]
             if file_list:
                 image_files.append(file_list)
@@ -250,12 +251,14 @@ class Find(DataOutput):
 
     """
 
-    def __init__(self, bead_size, border_clear=True, circle_size=None):
+    def __init__(self, bead_size,
+                 border_clear=True, circle_size=None):
         """Initialize."""
         self._bead_size = bead_size
         self._boder_clear = True
+        self._circle_size = circle_size
         self._bead_objects = FindBeadsImaging(
-            bead_size, border_clear=border_clear)
+            bead_size, border_clear=border_clear, circle_size=circle_size)
         self._dataframe = None
         self._bead_dims = None
 
