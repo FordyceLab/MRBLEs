@@ -89,6 +89,8 @@ class FindBeadsImaging(DataOutput):
     border_clear : boolean
         Beads touching border or ROI will be removed.
         Defaults to True.
+    circle_size : int
+        Set circle size for auto find circular ROI.
 
     Attributes
     ----------
@@ -192,8 +194,10 @@ class FindBeadsImaging(DataOutput):
 
     def _find(self, image):
         if self.circle_size is not None:
-            image, roi_mask = self.circle_roi(image, self.circle_size)
-        bin_img = self._img2bin(image)
+            img, roi_mask = self.circle_roi(image, self.circle_size)
+        else:
+            img = self._img2ubyte(image)
+        bin_img = self._img2bin(img)
         mask_inside, _ = self._find_inside(bin_img)
         if np.unique(mask_inside).size <= 1:
             blank_img = np.zeros_like(bin_img)
@@ -223,7 +227,8 @@ class FindBeadsImaging(DataOutput):
         bead_dims_overlay = bead_dims.loc[:, ('x_centroid',
                                               'y_centroid',
                                               'radius')]
-        overlay_image = self.cross_overlay(image,
+
+        overlay_image = self.cross_overlay(img,
                                            bead_dims_overlay,
                                            color=False)
         masks = xd.DataArray(data=np.array([mask_bead,
@@ -232,8 +237,8 @@ class FindBeadsImaging(DataOutput):
                                             mask_outside,
                                             mask_bkg,
                                             overlay_image]),
-                             dims=['m', 'y', 'x'],
-                             coords={'m': ['whole',
+                             dims=['c', 'y', 'x'],
+                             coords={'c': ['whole',
                                            'ring',
                                            'inside',
                                            'outside',
@@ -286,7 +291,7 @@ class FindBeadsImaging(DataOutput):
     @property
     def mask_types(self):
         """Return list of mask types."""
-        return self._dataframe.m.values.tolist()
+        return self._dataframe.c.values.tolist()
 
     # Properties - Output values
     @property
@@ -377,20 +382,20 @@ class FindBeadsImaging(DataOutput):
         img = cls._img2ubyte(image)
         # Default Hough settings
         if hough_settings is None:
-            dp = 2
-            param1 = 10
-            param2 = 7
+            hough_dp = 2
+            hough_param1 = 10
+            hough_param2 = 7
         else:
-            dp = hough_settings[0]
-            param1 = hough_settings[1]
-            param2 = hough_settings[2]
+            hough_dp = hough_settings[0]
+            hough_param1 = hough_settings[1]
+            hough_param2 = hough_settings[2]
         dims = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT,
-                                dp=dp,
+                                dp=hough_dp,
                                 minDist=img.shape[0],
                                 minRadius=circle_size,
                                 maxRadius=img.shape[0],
-                                param1=param1,
-                                param2=param2)
+                                param1=hough_param1,
+                                param2=hough_param2)
         if len(dims) != 1:
             return None
         cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
@@ -512,13 +517,13 @@ class FindBeadsImaging(DataOutput):
         else:
             tbl = properties.to_table()  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=int)
-        x = tbl['xcentroid']
-        y = tbl['ycentroid']
-        r = tbl['equivalent_radius']
-        area = tbl['area']
+        reg_x = tbl['xcentroid']
+        reg_y = tbl['ycentroid']
+        reg_r = tbl['equivalent_radius']
+        reg_area = tbl['area']
         perimeter = tbl['perimeter']
         eccentricity = tbl['eccentricity']
-        pdata = np.array([lbl.astype(int), x, y, r, area,
+        pdata = np.array([lbl.astype(int), reg_x, reg_y, reg_r, reg_area,
                           perimeter, eccentricity]).T
         dims = pd.DataFrame(data=pdata,
                             columns=['label',

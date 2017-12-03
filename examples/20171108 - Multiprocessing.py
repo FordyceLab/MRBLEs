@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 % matplotlib tk
 
 #%%
-bead_objects = ba.FindBeadsImaging(bead_size=18, border_clear=True, circle_size=340)
+bead_objects = ba.FindBeadsImaging(bead_size=18, border_clear=True, circle_size=360)
 # Channel(s) settings
 ASSAY_CHANNELS = ['Cy5_5%']  # Must be list!
 
@@ -28,6 +28,12 @@ bead_image_obj = ba.ImageSetRead(bead_image_files, output='xr')
 bead_image_obj.crop_x = CROPx
 bead_image_obj.crop_y = CROPy
 print(bead_image_obj.c_names)  # Print channel names
+
+#%%
+fig_x = 1
+test_find = ba.pipeline.Find(bead_size=18, border_clear=True, circle_size=360)
+x_comb = test_find.find(bead_image_obj[:, 'Brightfield'], bead_image_obj.data)
+
 
 #%%
 folders = {
@@ -61,6 +67,8 @@ plt.figure()
 plt.imshow(xdata[0])
 
 #%%
+bead_objects.crop_x = CROPx
+bead_objects.crop_y = CROPy
 bead_objects.find(bead_image_obj[:, 'Brightfield'])
 xdata = bead_objects.xdata
 
@@ -70,7 +78,7 @@ for x in range(xdata.sizes['f']):
     plt.imshow(xdata.loc[x, 'image_roi'].values)
 
 #%%
-bead_objects._bead_size
+bead_objects.xdata
 
 #%%
 plt.figure(dpi=113)
@@ -85,7 +93,20 @@ bead_objects.bead_dims.to_csv(r"D:\test.csv")
 #bead_objects.bead_labels
 
 #%%
-xd.concat([bead_objects.xdata, bead_image_obj.xdata], dim='f')
+test_con = bead_image_obj.data.combine_first(bead_objects.data).astype(float)
+
+#%%
+plt.figure()
+plt.imshow(test_con.loc[0, 'ring'])
+
+#%%
+bead_objects.data.loc[0, 'ring']
+
+#%%
+plt.figure(dpi=113)
+bead_objects.show_image_overlay(test_con.loc[0, 'image_roi'],
+                                test_con.loc[0, 'ring'],
+                                alpha=0.4)
 
 #%%
 test = ba.pipeline.Images(folders, files)
@@ -100,4 +121,4 @@ test.crop_x = slice(90,990)
 test.crop_y = slice(90,990)
 test.ndata.shape
 #%%
-xd.concat(xd.Dataset(xdict), dim='set')
+xd.concat()

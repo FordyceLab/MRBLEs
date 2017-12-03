@@ -14,6 +14,8 @@ from __future__ import print_function, division
 # [Modules]
 # General Python
 import sys
+import os
+import re
 from math import sqrt
 # Data Structure
 import numpy as np
@@ -30,22 +32,12 @@ from mrbles.data import Spectra, ImageSetRead, DataOutput
 
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
+    from future.standard_library import install_aliases  # NOQA
     from __builtin__ import *  # NOQA
     install_aliases()
 
 
 # Classes
-
-class Extract(object):
-    """
-    """
-    pass
-
-    def __init__(self):
-        pass
-
-
 
 class ReferenceSpectra(object):
     """Reference Spectra class.
@@ -186,13 +178,14 @@ class Images(DataOutput):
     """Load images."""
 
     def __init__(self, folders, files, output='xr'):
+        """Intialize Load object."""
         self.folders = folders
         self.files = files
         self.output = output
         self._dataframe = None
 
     def load(self):
-        """Initilize loading of images."""
+        """Load images in memory."""
         file_sets = self._find_images(self.folders, self.files)
         if file_sets is None:
             return False
@@ -201,63 +194,108 @@ class Images(DataOutput):
         self._dataframe = xd.concat(dict_data,
                                     dim=pd.Index(file_sets.keys(), name='set'))
 
-    def _find_images(self, folders, files):
+    # Private methods
+    @classmethod
+    def _find_images(cls, folders, files):
         if isinstance(folders, dict):
-            files = {key: ImageSetRead.scan_path(folders[key], pattern)
+            files = {key: cls.scan_path(folders[key], pattern)
                      for key, pattern in files.items()}
         elif isinstance(folders, str):
-            files = {key: ImageSetRead.scan_path(folders, pattern)
+            files = {key: cls.scan_path(folders, pattern)
                      for key, pattern in files.items()}
         else:
             return None
         return files
 
+    # Static methods
+    @staticmethod
+    def scan_path(path, pattern="*.tif"):
+        """Scan folder recursively for files matching the pattern.
 
-class Find(object):
-    """Find MRBLEs in brightfield images."""
+        Parameters
+        ----------
+        path : string
+            Folder path as string, e.g. r'C:/folder/file.tif'.
 
-    def __init__(self, bead_size, border_clear=True):
+        pattern : string
+            File extenstion of general file pattern as search string,
+            e.g. '20160728_MOL_*'
+            Defaults to '*.tif'.
+
+        """
+        image_files = []
+        r = re.compile(pattern)
+        for root, dirs, files in os.walk(path):
+            file_list = [os.path.join(root, x) for x in files if r.match(x)]
+            if file_list:
+                image_files.append(file_list)
+        return np.hstack(image_files).tolist()
+
+
+class Find(DataOutput):
+    """Find MRBLEs in brightfield images.
+
+    Super-Class wrapper for mrbles.core.FindBeadsImaging.
+    Please see this class documentation for more information.
+
+    Parameters
+    ----------
+    bead_size : int
+        Approximate width of beads (circles) in pixels.
+    border_clear : boolean
+        Beads touching border or ROI will be removed.
+        Defaults to True.
+    circle_size : int
+        Set circle size for auto find circular ROI.
+
+    """
+
+    def __init__(self, bead_size, border_clear=True, circle_size=None):
         """Initialize."""
+        self._bead_size = bead_size
+        self._boder_clear = True
         self._bead_objects = FindBeadsImaging(
             bead_size, border_clear=border_clear)
-        self.masks = None
-        self.bead_data = None
+        self._dataframe = None
+        self._bead_dims = None
 
-    def find(self, object_images):
+    def find(self, object_images, combine_data=None):
         """Execute finding images."""
-        if isinstance(object_images, xd.DataArray):
-            self.masks, self.bead_data = self.get_masks(
-                object_images.values, self._bead_objects)
-        else:
-            self.masks, self.bead_data = self.get_masks(
-                object_images, self._bead_objects)
+        self._bead_objects.find(object_images)
+        self._dataframe = self._bead_objects.data
+        self._bead_dims = self._bead_objects.bead_dims
+        if combine_data is not None:
+            return self._combine_in_place(combine_data, self._dataframe)
 
-    # def _multi(self, files):
-    #    if isinstance(files, )
+    @property
+    def settings(self):
+        """Return FindBeadsImaging object for settings purposes.
+
+        See FindBeadsImaging documentation for detailed settings.
+
+        Examples
+        --------
+        >>> find_object = Find(bead_size=18)
+        >>> find_object.settings.area_min = 20
+        >>> find_object.settings.area_max = 350
+        >>> find_object.settings.eccen_max = 0.65
+
+        """
+        return self._bead_objects
 
     @staticmethod
-    def get_masks(object_images, bead_finder):
-        masks = []
-        circles_dim = []
-        for idx, image in enumerate(object_images):
-            bead_finder.find(image)
-            masks.append(xd.DataArray([bead_finder.mask_bead,
-                                       bead_finder.mask_inside,
-                                       bead_finder.mask_ring,
-                                       bead_finder.mask_outside,
-                                       bead_finder.mask_bkg],
-                                      dims=['c', 'y', 'x'],
-                                      coords={'c': ['mask_full', 'mask_inside', 'mask_ring', 'mask_outside', 'mask_bkg']}))
-            dim = pd.DataFrame(bead_finder.bead_dims_bead)
-            dim.insert(0, 'image', idx)
-            circles_dim.append(dim)
-        bead_data = pd.concat(circles_dim, ignore_index=True)[
-            circles_dim[0].columns]
-        masks = xd.concat(masks, 'f')
-        return masks, bead_data
+    def _combine_in_place(data_array_1, data_array_2):
+        combined_data = data_array_1.combine_first(data_array_2).astype(float)
+        return combined_data
 
-    def combine(self, data):
-        return xd.concat([self.masks, data], 'c')
+
+class Extract(object):
+    """
+    """
+    pass
+
+    def __init__(self):
+        pass
 
 
 class Decode(object):

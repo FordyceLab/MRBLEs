@@ -90,6 +90,7 @@ class DataOutput(object):
 
     def __init_(self):
         super(DataOutput, self).__init__()
+        self._dataframe
         self._crop_x = None
         self._crop_y = None
 
@@ -170,7 +171,8 @@ class DataOutput(object):
             return slice(values[0], values[1])
         else:
             raise ValueError(
-                "Use slice(value, value) or [value, value] for range! Input: %s" % values)
+                "Use slice(value, value) or [value, value] for range! Input:"
+                "%s" % values)
 
 
 class ChannelDescriptor(object):
@@ -226,6 +228,7 @@ class Spectra(PropEdit, FrozenClass, DataOutput):
     """
 
     def __init__(self, data=None, spectra=None, channels=None, output='nd'):
+        """Create Spectra data object."""
         super(Spectra, self).__init__()
         self._dataframe = pd.DataFrame(data, columns=spectra, index=channels)
         self.output = output
@@ -383,24 +386,28 @@ class Spectra(PropEdit, FrozenClass, DataOutput):
 
     # Data file output/input functions
     def to_csv(self, filepath):
+        """Write CSV file with reference values."""
         if self._dataframe is not None:
             self._dataframe.to_csv(filepath)
         else:
             print("No spectra to export!")
 
     def to_excel(self, filepath):
+        """Write excel file with reference values."""
         if self._dataframe is not None:
             self._dataframe.to_excel(filepath)
         else:
             print("No spectra to export!")
 
     def read_csv(self, filepath):
+        """Read CSV file with reference values."""
         if self._dataframe is not None:
             self._dataframe = pd.read_csv(filepath, 'rb')
         else:
             print("No spectra to export!")
 
     def read_excel(self, filepath, sheetname=0):
+        """Read Excel file with reference values."""
         if self._dataframe is not None:
             self._dataframe = pd.read_excel(
                 open(filepath, 'rb'), sheetname=sheetname)
@@ -409,6 +416,7 @@ class Spectra(PropEdit, FrozenClass, DataOutput):
 
     # Plot functions
     def plot(self, show=False):
+        """Plot refrence spectra."""
         self._dataframe.plot(title="Spectra", rot=90)
         if show is True:
             plt.show()
@@ -466,7 +474,7 @@ class ImageSetRead(DataOutput):
 
     def __getitem__(self, index):
         """Get method, see method 'c_get'."""
-        return self.c_get(index)
+        return self.data.loc[index]
 
     # Main image load function
     @classmethod
@@ -527,32 +535,6 @@ class ImageSetRead(DataOutput):
         """Return channel number."""
         return self.c_names.get_loc(name)
 
-    def c_get(self, index, output=None):
-        """Return data by chanel name and/or number.
-
-        Parameters
-        ----------
-        index : str/int
-           Number or string of channel name.
-        output : string, optional
-            Sets output method. Options: 'ndarray', NumPy array, or 'pandas',
-            Pandas dataframe.
-            Defaults to setting in instantiation, see class description.
-
-        Returns
-        -------
-        data : NumPy array/xarray DataArray
-            Returns the data as NumPy array or xarray DataArray, depending on
-            output method set by parameter 'output' or default method, if
-            output not set.
-
-        """
-        #if output is None:
-        #    output = self.output
-        #data_crop = self._check_crop()
-        data = self._data_out(self._dataframe.loc[index])
-        return data
-
     # File properties and methods
     @property
     def f_size(self):
@@ -607,7 +589,7 @@ class ImageSetRead(DataOutput):
 
         Default in milliseconds (ms), check object.t_unit for time unit.
         """
-        xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value
+        xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value  # NOQA
         xml_tree = minidom.parseString(xml_string)
         t_deltas = [float(xm.attributes['DeltaT'].value)
                     for xm in xml_tree.getElementsByTagName('Plane')]
@@ -616,7 +598,7 @@ class ImageSetRead(DataOutput):
     @property
     def t_unit(self):
         """Return time unit."""
-        xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value
+        xml_string = self._metadata['series'][0].pages[0].tags['image_description'].value  # NOQA
         xml_tree = minidom.parseString(xml_string)
         xm = xml_tree.getElementsByTagName('Plane')
         t_unit = str(xm[0].attributes['DeltaTUnit'].value)
@@ -705,8 +687,8 @@ class ImageSetRead(DataOutput):
                 dims = [letter.lower()
                         for letter in metadata['series'][0]['axes']]
                 warnings.warn(
-                    "Scikit-Image latest update has changed method to retrieve \
-                     metadata. Please upgrade to the latest Scikit-Image package.")
+                    "Scikit-Image latest update has changed method to retrieve"
+                    "metadata. Please upgrade to latest Scikit-Image package.")
             if len(metadata['series']) > 1 and (series is 'all'):
                 dims.insert(0, 'p')
                 data = np.squeeze(data)
@@ -720,7 +702,7 @@ class ImageSetRead(DataOutput):
 
     @staticmethod
     def _get_metadata(image_object):
-        if image_object.is_micromanager == True:
+        if image_object.is_micromanager is True:
             metadata = image_object.micromanager_metadata
             metadata['series'] = image_object.series
             return metadata
