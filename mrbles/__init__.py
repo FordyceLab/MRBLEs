@@ -62,13 +62,14 @@ __all__ = ['core', 'data']
 
 # [Module Imports]
 import sys
-from . import core
-from .core import *  # TODO Must change to specific before public
-from . import data
-from .data import *  # TODO Must change to specific before public
-from . import inspect
-from . import pipeline
-from . import kinetics
+from mrbles import core
+from mrbles.core import *  # TODO Must change to specific before public
+from mrbles import data
+from mrbles.data import ImageSetRead, Spectra
+from mrbles import inspect
+from mrbles import pipeline
+from mrbles.pipeline import *
+from mrbles import kinetics
 
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):

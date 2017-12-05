@@ -88,11 +88,23 @@ class FrozenClass(object):
 class DataOutput(object):
     """Data output methods."""
 
-    def __init_(self):
+    def __init__(self, data=None, output='xr'):
         super(DataOutput, self).__init__()
-        self._dataframe
+        if data is None:
+            self._dataframe = None
+        else:
+            self._dataframe = data
+        self.output = output
         self._crop_x = None
         self._crop_y = None
+
+    def __repr__(self):
+        """Return xarray dataframe representation."""
+        return repr([self._dataframe])
+
+    def __getitem__(self, index):
+        """Get method."""
+        return self.data.loc[index]
 
     @property
     def data(self):
@@ -101,7 +113,10 @@ class DataOutput(object):
         As set by default output argument:
         Xarray DataArray ('xr') or NumPy ndarray ('np').
         """
-        data_crop = self._check_crop(self._dataframe)
+        if isinstance(self._dataframe, pd.DataFrame):
+            data_crop = self._dataframe
+        else:
+            data_crop = self._check_crop(self._dataframe)
         data_out = self._data_out(data_crop)
         return data_out
 
@@ -143,7 +158,7 @@ class DataOutput(object):
         """Check data output method setting for Numpy or Pandas."""
         if (self.output == "pd") or (self.output == "xr"):
             return func
-        elif self.output == "nd":
+        elif self.output == "np":
             return func.values
         else:
             raise ValueError("Unspecified output method: '%s'." % self.output)
@@ -194,7 +209,7 @@ class ChannelDescriptor(object):
 # Classes
 
 
-class Spectra(PropEdit, FrozenClass, DataOutput):
+class Spectra(PropEdit, DataOutput):
     """Data structure for reference spectra.
 
     Class can be instantiated without data. See functions.
@@ -227,12 +242,11 @@ class Spectra(PropEdit, FrozenClass, DataOutput):
 
     """
 
-    def __init__(self, data=None, spectra=None, channels=None, output='nd'):
+    def __init__(self, data=None, spectra=None, channels=None, output='np'):
         """Create Spectra data object."""
         super(Spectra, self).__init__()
         self._dataframe = pd.DataFrame(data, columns=spectra, index=channels)
         self.output = output
-        self._freeze()
 
     def __repr__(self):
         """Return Pandas dataframe representation."""
@@ -402,7 +416,7 @@ class Spectra(PropEdit, FrozenClass, DataOutput):
     def read_csv(self, filepath):
         """Read CSV file with reference values."""
         if self._dataframe is not None:
-            self._dataframe = pd.read_csv(filepath, 'rb')
+            self._dataframe = pd.read_csv(filepath)
         else:
             print("No spectra to export!")
 
@@ -461,7 +475,7 @@ class ImageSetRead(DataOutput):
 
     """
 
-    def __init__(self, file_path, series=0, output='nd'):
+    def __init__(self, file_path, series=0, output='xr'):
         """Initialize file load object."""
         super(ImageSetRead, self).__init__()
         self._dataframe, self._metadata, self._files = \
@@ -473,7 +487,7 @@ class ImageSetRead(DataOutput):
         return repr([self._dataframe])
 
     def __getitem__(self, index):
-        """Get method, see method 'c_get'."""
+        """Get method."""
         return self.data.loc[index]
 
     # Main image load function

@@ -33,7 +33,7 @@ import photutils
 import skimage as sk
 import skimage.morphology
 import skimage.segmentation
-import xarray as xd
+import xarray as xr
 from matplotlib import pyplot as plt
 from packaging import version
 from scipy import ndimage as ndi
@@ -41,6 +41,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.mixture import GaussianMixture
 
 # Intra-Package dependencies
+import mrbles
 from mrbles.data import DataOutput, Spectra  # NOQA
 
 # Function compatibility between Python 2.x and 3.x
@@ -132,7 +133,7 @@ class FindBeadsImaging(DataOutput):
 
     def __getitem__(self, index):
         """Get method."""
-        return self._data_out(self._dataframe)
+        return self.data.loc[index]
 
     # Properties - Settings
     @property
@@ -183,7 +184,7 @@ class FindBeadsImaging(DataOutput):
                 mp_worker.join()
             r_m = [i[0] for i in result]
             r_d = [i[1] for i in result]
-            result_masks = xd.concat(r_m, dim='f')
+            result_masks = xr.concat(r_m, dim='f')
             result_dims = pd.concat(r_d,
                                     keys=list(range(len(r_d))),
                                     names=['f', 'bead_no'])
@@ -206,6 +207,9 @@ class FindBeadsImaging(DataOutput):
             mask_outside = blank_img
             mask_inside = blank_img
             mask_bkg = blank_img
+            bead_dims = None
+            bead_dims_overlay = blank_img
+            overlay_image = blank_img
         else:
             mask_bead, mask_bead_neg = self._find_watershed(mask_inside,
                                                             bin_img)
@@ -223,15 +227,14 @@ class FindBeadsImaging(DataOutput):
             if self.circle_size is not None:
                 mask_bkg[~roi_mask] = 0
                 mask_bkg[mask_bkg < 0] = 0
-        bead_dims = self.get_dimensions(mask_bead)
-        bead_dims_overlay = bead_dims.loc[:, ('x_centroid',
-                                              'y_centroid',
-                                              'radius')]
-
-        overlay_image = self.cross_overlay(img,
-                                           bead_dims_overlay,
-                                           color=False)
-        masks = xd.DataArray(data=np.array([mask_bead,
+            bead_dims = self.get_dimensions(mask_bead)
+            bead_dims_overlay = bead_dims.loc[:, ('x_centroid',
+                                                  'y_centroid',
+                                                  'radius')]
+            overlay_image = self.cross_overlay(img,
+                                               bead_dims_overlay,
+                                               color=False)
+        masks = xr.DataArray(data=np.array([mask_bead,
                                             mask_ring,
                                             mask_inside,
                                             mask_outside,
@@ -578,7 +581,7 @@ class FindBeadsImaging(DataOutput):
         plt.imshow(image_blend, cmap=cmap2, interpolation='none', alpha=alpha)
 
     @staticmethod
-    @accepts((np.ndarray, xd.DataArray))
+    @accepts((np.ndarray, xr.DataArray))
     def _img2ubyte(image):
         """Convert image to ubuyte (uint8) and rescale to min/max.
 
@@ -586,7 +589,7 @@ class FindBeadsImaging(DataOutput):
             Image to be converted and rescaled to ubuyte.
 
         """
-        if type(image) is (xd.DataArray):
+        if type(image) is (xr.DataArray):
             image = image.values
         img_dtype = image.dtype
         if img_dtype is np.dtype('uint8'):
@@ -861,19 +864,22 @@ class SpectralUnmixing(DataOutput):
 
     """
 
-    def __init__(self, ref_data, output='nd'):
+    def __init__(self, ref_data, output='xr'):
         """Instantiate SpectralUnmixing."""
+        super(SpectralUnmixing, self).__init__()
+        self._ref_object = ref_data
         if isinstance(ref_data, Spectra):
-            self._ref_object = ref_data
             self._ref_data = ref_data.ndata
             self._names = ref_data.spec_names
-        elif isinstance(ref_data, np.ndarray):
-            self._ref_data = ref_data
-            if self._names is None:
-                self._names = range(len(self._ref_data[0, :]))
+        elif isinstance(ref_data, pd.DataFrame):
+            self._ref_data = ref_data.values
+            self._names = list(ref_data.keys())
+        elif isinstance(ref_data, mrbles.References):
+            self._ref_data = ref_data.pdata.values
+            self._names = list(ref_data.pdata.keys())
         else:
             raise TypeError(
-                "Wrong type. Only Bead-Analysis Spectra or Numpy ndarray types.")  # NOQA
+                "Wrong type. Only mrbles Spectra, References, or Pandas DataFrame types.")  # NOQA
         self._ouput = output
         self._ref_size = self._ref_data[0, :].size
         self._dataframe = None
@@ -882,12 +888,12 @@ class SpectralUnmixing(DataOutput):
         self._x_size = None
 
     def __repr__(self):
-        """Return Pandas dataframe representation."""
+        """Return Xarray dataframe representation."""
         return repr([self._dataframe])
 
     def __getitem__(self, index):
         """Get method."""
-        return self._data_out(self._dataframe)
+        return self.data.loc[index]
 
     def unmix(self, images):
         """Unmix images based on initiated reference data.
@@ -907,6 +913,8 @@ class SpectralUnmixing(DataOutput):
             (Y x X).
 
         """
+        if isinstance(images, xr.DataArray):
+            images = images.values
         if self._ref_data.shape[0] != images.shape[0]:
             print("Number of channels not equal. Ref: ",
                   self._ref_data.shape[0], " Image: ", images.shape[0])
@@ -916,7 +924,7 @@ class SpectralUnmixing(DataOutput):
         unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
         unmix_result = self._rebuilt(unmix_flat)
         # TO-DO Change to proper insert
-        self._dataframe = xd.DataArray(unmix_result,
+        self._dataframe = xr.DataArray(unmix_result,
                                        dims=['c', 'y', 'x'],
                                        coords={'c': self._names})
 

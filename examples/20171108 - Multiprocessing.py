@@ -19,7 +19,7 @@ CROPy = slice(10, 990)
 
 # Setting bead image folder and image patterns. This will select all images following the pattern.
 BEAD_IMAGE_FOLDER = r"data"
-BEAD_IMAGE_PATTERN = r"peptide_biotin_streptavidin_([0-9][0-9])_MMStack_Pos0.ome.tif"
+BEAD_IMAGE_PATTERN =
 
 # Search for files matching the patter in the bead image folder
 bead_image_files = ba.ImageSetRead.scan_path(BEAD_IMAGE_FOLDER,
