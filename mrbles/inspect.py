@@ -291,7 +291,8 @@ class GenerateCodes(object):
     def get_levels(std0, slope, nsigma):
         """Predict the number of levels of a coding color.
 
-        The coding levens are based on s0, the standard deviation (SD) at intensity 0, and the slope between intensity and SD.
+        The coding levels are based on s0, the standard deviation (SD) at
+        intensity 0, and the slope between intensity and SD.
 
         Parameters
         ----------
@@ -308,6 +309,7 @@ class GenerateCodes(object):
         -------
         levels : list of float
             Returns list of codes values for a given coding color.
+
         """
         nslope = nsigma * slope
         levels = [0]
