@@ -125,10 +125,12 @@ class GenerateCodes(object):
         self._result = None
 
     def __repr__(self):
+        """Return levels."""
         return repr([self.levels])
 
     @property
     def colors(self):
+        """Return color names."""
         return self._colors
 
     @colors.setter
@@ -137,18 +139,12 @@ class GenerateCodes(object):
 
     @property
     def axis(self):
+        """Return number of axis (colors)."""
         return len(self._colors)
 
     @property
-    def nsigma(self):
-        return self._nsigma
-
-    @nsigma.setter
-    def nsigma(self, value):
-        self._nsigma = value
-
-    @property
     def levels(self):
+        """Return number of levels."""
         return np.array(self._levels()).T
 
     def _levels(self, nsigma=None):
@@ -161,10 +157,13 @@ class GenerateCodes(object):
                                           nsigma))
         return levels
 
+    @staticmethod
     def recursive_looper(iterators, pos=0):
-        """ Implements the same functionality as nested for loops, but is
-            more dynamic. iterators can either be a list of methods which
-            return iterables, a list of iterables, or a combination of both.
+        """Recursive looper.
+
+        Implements the same functionality as nested for loops, but is more
+        dynamic. iterators can either be a list of methods which return
+        iterables, a list of iterables, or a combination of both.
         """
         nextLoop, v = None, []
         try:
@@ -183,16 +182,20 @@ class GenerateCodes(object):
 
     @property
     def result(self):
+        """Return resulting ratios."""
         if self._result is not None:
             return pd.DataFrame(self._result, columns=self._colors)
         else:
             return None
 
     def to_csv(self, filename):
+        """Export to CSV."""
         self.result.to_csv(filename, sep=',', encoding='utf-8')
 
     # Experimental
-    def to_csv_rep(self, filename, repeats, labels=['CeTb', 'Dy', 'Sm', 'Tm'], pos=True):
+    def to_csv_rep(self, filename, repeats,
+                   labels=['CeTb', 'Dy', 'Sm', 'Tm'], pos=True):
+        """Export to CSV, with repeated ratios for bead synthesis."""
         if pos is True:
             labels.append('pos')
         data = pd.DataFrame(columns=labels)
@@ -223,7 +226,8 @@ class GenerateCodes(object):
             Defaults to initial nsigma.
 
         depends : any, experimental, optional
-            Used for Tm (must de 3rd in array) dependence on Dy (must 1st in array).
+            Used for Tm (3rd in array) dependence on Dy (1st array).
+
         """
         if nsigma is None:
             nsigma = self._nsigma
@@ -274,6 +278,7 @@ class GenerateCodes(object):
         max_iter : int, optional
             Maximum iteration steps.
             Defaults to 1000.
+
         """
         if nsimga_start is None:
             nsimga_start = self._nsigma
@@ -389,12 +394,14 @@ class PeptideScramble(object):
     -------
     seq : string
         Returns string of shuffled amino acid sequence.
+
     """
 
     def __init__(self, seq):
         self.seq = seq
 
     def random(self, seq=None):
+        """Return randomized amino acid sequence."""
         if seq is None:
             seq = self.seq
         seq_list = list(seq)
