@@ -194,7 +194,7 @@ class TableDataFrame(object):
 
     def __init__(self, data=None, *args, **kwargs):
         super(TableDataFrame, self).__init__()
-        kwargs.setdefault('flag_filt', None)
+        kwargs.setdefault('flag_filt', False)
         kwargs.setdefault('flag_name', 'flag')
         self.__dict__.update(kwargs)
         self._dataframe = data
@@ -213,9 +213,14 @@ class TableDataFrame(object):
         data = self._check_flag(self._dataframe)
         return data
 
+    @property
+    def pdata(self):
+        """Return unflagged Pandas dataframe."""
+        return self._dataframe
+
     def _check_flag(self, data):
-        if self.flag_name in data.columns and self.flag_filt is not None:
-            flag_out_data = data[data.flag == False]  # noqa
+        if self.flag_name in data.columns and self.flag_filt is True:
+            flag_out_data = data[data[self.flag_name] == False]  # noqa
         else:
             flag_out_data = data
         return flag_out_data

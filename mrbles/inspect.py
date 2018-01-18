@@ -312,7 +312,7 @@ class GenerateCodes(object):
         nslope = nsigma * slope
         levels = [0]
         while levels[-1] <= 1:
-            levels.append((levels[-1] * (1 + nslope) + 2 * nsigma * std0) / (1 - nc))
+            levels.append((levels[-1] * (1 + nslope) + 2 * nsigma * std0) / (1 - nslope))
         levels.pop()
         return levels
 

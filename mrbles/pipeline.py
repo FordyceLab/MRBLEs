@@ -30,6 +30,7 @@ from random import randint
 import numpy as np
 import scipy as sp
 from scipy import ndimage as ndi
+from sklearn.metrics import silhouette_score
 import pandas as pd
 import weightedstats as ws
 import xarray as xr
@@ -432,7 +433,7 @@ class Find(ImageDataFrame):
         for plt_num in range(1, fig_num + 1):
             rand_fig = randint(0, img_num)
             plt.subplot(1, fig_num, plt_num)
-            plt.imshow(data[rand_fig])
+            plt.imshow(data.loc[rand_fig])
             plt.title('Figure #%s' % rand_fig)
 
     def _find_multi_set(self, object_image_sets):
@@ -528,6 +529,8 @@ class Extract(TableDataFrame):
         else:
             self._func = function
         self._dataframe = None
+        self.flag_name = 'flag'
+        self.flag_filt = True
 
     def get(self, images, masks):
         """Extract data from images using masks.
@@ -551,11 +554,6 @@ class Extract(TableDataFrame):
         >>> per_mrble_data.data
 
         """
-        # if images.ndim == 4:
-        #     f_list = get_set_names(images, set_dim=images.dims[0])
-        #     data = [self._get_data_images(images.loc[f], masks.loc[f])
-        #             for f in f_list]
-        #     self._dataframe = pd.concat(data, keys=f_list)
         if isinstance(images, xr.DataArray):
             if images.ndim == 4:
                 f_list = get_set_names(images, set_dim=images.dims[0])
@@ -576,6 +574,7 @@ class Extract(TableDataFrame):
                         for f in f_list]
                 data_append.append(pd.concat(data, keys=f_list))
             self._dataframe = pd.concat(data_append, keys=s_list)
+        self._dataframe['flag'] = False
 
     def _get_data_images(self, images, masks):
         data = {
@@ -696,14 +695,30 @@ class Decode(TableDataFrame):
 
             See ICP and Classify documentation for detailed settings."""
 
-    def decode(self, data):
+    def decode(self, data, combine=None):
         """Decode MRBLEs."""
         if self._decode_channels is not None:
             pass
         self._icp.fit(data)
-        icp_data = self._icp.fit.transform(data)
+        icp_data = self._icp.transform()
         self._gmm.decode(icp_data)
+        self._gmm_qc(data)
         self._dataframe = self._gmm.output
+        self._dataframe = self._dataframe.combine_first(icp_data)
+        if combine is not None:
+            index = combine.index
+            self._dataframe = pd.concat([combine.reset_index(drop=True),
+                                         self._dataframe.reset_index(drop=True)],
+                                        axis=1)
+            self._dataframe.index = index
+
+    def _gmm_qc(self, data):
+        print("Number of unique codes found:", self._gmm.found)
+        print("Missing codes:", self._gmm.missing)
+        s_score = silhouette_score(data, self._gmm.output.code)
+        print("Silhouette Coefficient:", s_score)
+        print("AIC:", self._gmm._gmix.aic(data))
+        print("BIC:", self._gmm._gmix.bic(data))
 
 
 class Analyze(TableDataFrame):
@@ -727,7 +742,7 @@ class Analyze(TableDataFrame):
     """
 
     def __init__(self, functions=None, bkg_data=None, norm_data=None,
-                 flag_out=True):
+                 flag_out=True, seq_list=None):
         """Set up statistics functions and set normalizartion data."""
         super(Analyze, self).__init__()
         if functions is None:
@@ -742,6 +757,7 @@ class Analyze(TableDataFrame):
             }
             self.bkg_data = bkg_data
             self.norm_data = norm_data
+            self.seq_list = seq_list
             self.flag_out = flag_out
             self._dataframe = None
             self._data_per_bead = None
@@ -773,8 +789,20 @@ class Analyze(TableDataFrame):
         for code in codes:
             for channel in channels:
                 result[code] = self._iter_functions(
-                    self.functions, data.loc[data.code == code, channel])
+                    self.functions, data.loc[(data.code == code), channel])
         dataframe = pd.DataFrame.from_dict(result, orient='index')
+        dataframe.index.rename('code', inplace=True)
+        if self.seq_list is not None:
+            for code in codes:
+                if isinstance(self.seq_list, pd.DataFrame):
+                    dataframe.loc[code, 'set.sequence'] = \
+                        self.seq_list.sequence.iloc[code]
+                    dataframe.loc[code, 'set.code'] = \
+                        self.seq_list.code.iloc[code]
+                else:
+                    dataframe.loc[code, 'set.sequence'] = \
+                        self.seq_list[code]
+            dataframe['set.code'] = dataframe['set.code'].astype(int)
         return dataframe
 
     def _multi(self, data):
@@ -783,6 +811,7 @@ class Analyze(TableDataFrame):
             self._single(data.loc[level]) for level in levels
         ]
         dataframe = pd.concat(result, keys=levels)
+        dataframe.index.rename(('set', 'code'), inplace=True)
         return dataframe
 
     def _get_stats_per_code(self, data, codes):

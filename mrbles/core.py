@@ -1082,6 +1082,7 @@ class ICP(object):
     def transform(self, data=None):
         """Apply transformation matrix to data."""
         if (self._pdata is not None) and data is None:
+            self._pdata.reset_index(drop=True, inplace=True)
             tdata = np.dot(self._pdata.values, self.matrix) + self.offset
             result = pd.DataFrame()
             for num, val in enumerate(self._pdata.index):
