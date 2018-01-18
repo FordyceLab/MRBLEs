@@ -41,8 +41,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.mixture import GaussianMixture
 
 # Intra-Package dependencies
-import mrbles
-from mrbles.data import DataOutput, Spectra  # NOQA
+from mrbles.data import ImageDataFrame, TableDataFrame  # NOQA
 
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
@@ -57,7 +56,7 @@ if sys.version_info < (3, 0):
 # Decorators
 
 
-def accepts(*types):
+def accepts(*types):  # NOQA
     """Check input parameters for data types."""
     def _check_accepts(func):
         assert len(types) == func.__code__.co_argcount
@@ -78,7 +77,7 @@ def accepts(*types):
 # Classes
 
 
-class FindBeadsImaging(DataOutput):
+class FindBeadsImaging(ImageDataFrame):
     """Find and identify beads and their regions using imaging.
 
     Parallel computing version.
@@ -109,13 +108,12 @@ class FindBeadsImaging(DataOutput):
     """
 
     def __init__(self, bead_size,
-                 border_clear=True, circle_size=None, output='xr'):
+                 border_clear=True, circle_size=None):
         """Find and identify beads and their regions using imaging."""
         super(FindBeadsImaging, self).__init__()
         self._bead_size = bead_size
         self.border_clear = border_clear
         self.circle_size = circle_size
-        self.output = output
         # Default values for filtering
         self._area_min = 0.25 * self.circle_area(bead_size)
         self._area_max = 1.5 * self.circle_area(bead_size)
@@ -127,13 +125,13 @@ class FindBeadsImaging(DataOutput):
         self._dataframe = None
         self._bead_dims = None
 
-    def __repr__(self):
-        """Return Xarray dataframe representation."""
-        return repr([self._dataframe])
+    # def __repr__(self):
+    #     """Return Xarray dataframe representation."""
+    #     return repr([self._dataframe])
 
-    def __getitem__(self, index):
-        """Get method."""
-        return self.data.loc[index]
+    # def __getitem__(self, index):
+    #     """Get method."""
+    #     return self.data.loc[index]
 
     # Properties - Settings
     @property
@@ -241,12 +239,12 @@ class FindBeadsImaging(DataOutput):
                                             mask_bkg,
                                             overlay_image]),
                              dims=['c', 'y', 'x'],
-                             coords={'c': ['whole',
-                                           'ring',
-                                           'inside',
-                                           'outside',
-                                           'bkg',
-                                           'image_roi']})
+                             coords={'c': ['mask_full',
+                                           'mask_ring',
+                                           'mask_inside',
+                                           'mask_outside',
+                                           'mask_bkg',
+                                           'mask_check']})
         return [masks, bead_dims]
 
     def _find_inside(self, bin_img):
@@ -283,9 +281,10 @@ class FindBeadsImaging(DataOutput):
     # Functions
     def _data_return(self, value):
         if self._dataframe.ndim > 3:
-            return self._dataframe.loc[:, value].values
+            data = self._dataframe.loc[:, value].values
         else:
-            return self._dataframe.loc[value].values
+            data = self._dataframe.loc[value].values
+        return data
 
     def mask(self, mask_type):
         """Return labeled mask of the specified mask type."""
@@ -300,12 +299,12 @@ class FindBeadsImaging(DataOutput):
     @property
     def bead_num(self):
         """Return number of beads labeled mask."""
-        return self.get_unique_count(self._data_return("whole"))
+        return self.get_unique_count(self._data_return("mask_full"))
 
     @property
     def bead_labels(self):
         """Return all positive labels of labeled mask."""
-        return self.get_unique_values(self._data_return("whole"))
+        return self.get_unique_values(self._data_return("mask_full"))
 
     @property
     def bead_dims(self):
@@ -399,10 +398,11 @@ class FindBeadsImaging(DataOutput):
                                 maxRadius=img.shape[0],
                                 param1=hough_param1,
                                 param2=hough_param2)
+        print(dims)
         if len(dims) != 1:
             return None
-        cy, cx, radius = np.round(np.ravel(dims[0])).astype(np.int)
-        mask = cls.sector_mask(img.shape, [cx, cy], circle_size)
+        circle_y, circle_x, _ = np.round(np.ravel(dims[0])).astype(np.int)
+        mask = cls.sector_mask(img.shape, [circle_x, circle_y], circle_size)
         mask_img = img.copy()
         mask_img[~mask] = 0
         return mask_img, mask
@@ -589,7 +589,7 @@ class FindBeadsImaging(DataOutput):
             Image to be converted and rescaled to ubuyte.
 
         """
-        if type(image) is (xr.DataArray):
+        if isinstance(image, xr.DataArray):
             image = image.values
         img_dtype = image.dtype
         if img_dtype is np.dtype('uint8'):
@@ -844,7 +844,7 @@ class FindBeadsCircle(object):
                                          in_place=True)
 
 
-class SpectralUnmixing(DataOutput):
+class SpectralUnmixing(ImageDataFrame):
     """Spectrally unmix images using reference spectra.
 
     Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images
@@ -853,34 +853,25 @@ class SpectralUnmixing(DataOutput):
 
     parameters
     ----------
-    ref_data : list, ndarray, bead_analysis.data.Spectra
+    ref_data : list, ndarray, Pandas DataFrame, mrbles.data.References
         Reference spectra for each dye channel as Numpy Array: N x M, where N
         are the spectral channels and M the dye channels.
-    image_data : list, ndarray
-        Spectral images as NumPy array: N x M x P, where N are the spectral
-        channels and M x P the image pixels (Y x X)
-    names : list
-        List of channel names. When using Spectra object, names are imlied.
 
     """
 
-    def __init__(self, ref_data, output='xr'):
+    def __init__(self, ref_data):
         """Instantiate SpectralUnmixing."""
         super(SpectralUnmixing, self).__init__()
         self._ref_object = ref_data
-        if isinstance(ref_data, Spectra):
-            self._ref_data = ref_data.ndata
-            self._names = ref_data.spec_names
-        elif isinstance(ref_data, pd.DataFrame):
+        if isinstance(ref_data, pd.DataFrame):
             self._ref_data = ref_data.values
             self._names = list(ref_data.keys())
-        elif isinstance(ref_data, mrbles.References):
-            self._ref_data = ref_data.pdata.values
-            self._names = list(ref_data.pdata.keys())
+        elif issubclass(type(ref_data), TableDataFrame):
+            self._ref_data = ref_data.data.values
+            self._names = list(ref_data.data.keys())
         else:
             raise TypeError(
-                "Wrong type. Only mrbles Spectra, References, or Pandas DataFrame types.")  # NOQA
-        self._ouput = output
+                "Wrong type. Only mrbles References, or Pandas DataFrame types.")  # NOQA
         self._ref_size = self._ref_data[0, :].size
         self._dataframe = None
         self._c_size = None
@@ -904,10 +895,7 @@ class SpectralUnmixing(DataOutput):
 
         Parameters
         ----------
-        ref_data : NumPy array
-            Reference spectra for each dye channel as Numpy Array: N x M,
-            where N are the spectral channels and M the dye channels.
-        image_data : NumPy array
+        image_data : NumPy array, Xarry DataArray, mrbles.Images
             Spectral images as NumPy array: N x M x P,
             where N are the spectral channels and M x P the image pixels
             (Y x X).
@@ -915,6 +903,13 @@ class SpectralUnmixing(DataOutput):
         """
         if isinstance(images, xr.DataArray):
             images = images.values
+        if images.ndim > 3:
+            data = [self._unmix(image) for image in images]
+            self._dataframe = xr.concat(data, dim='f')
+        else:
+            self._dataframe = self._unmix(images)
+
+    def _unmix(self, images):
         if self._ref_data.shape[0] != images.shape[0]:
             print("Number of channels not equal. Ref: ",
                   self._ref_data.shape[0], " Image: ", images.shape[0])
@@ -923,10 +918,10 @@ class SpectralUnmixing(DataOutput):
         img_flat = self._flatten(images)
         unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
         unmix_result = self._rebuilt(unmix_flat)
-        # TO-DO Change to proper insert
-        self._dataframe = xr.DataArray(unmix_result,
-                                       dims=['c', 'y', 'x'],
-                                       coords={'c': self._names})
+        dataframe = xr.DataArray(unmix_result,
+                                 dims=['c', 'y', 'x'],
+                                 coords={'c': self._names})
+        return dataframe
 
     # Private functions
     def _sizes(self, images):
@@ -998,7 +993,7 @@ class ICP(object):
 
     """
 
-    def __init__(self,
+    def __init__(self, target=None,
                  matrix_method='std',
                  offset=None,
                  max_iter=100,
@@ -1007,6 +1002,7 @@ class ICP(object):
                  train=False,
                  echo=True):
         """Instantiate Iterative Closest Point (ICP) object."""
+        self.target = target
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
@@ -1014,7 +1010,6 @@ class ICP(object):
         self.offset = offset
         self._train = train
         self._echo = echo
-
         self._pdata = None
 
     def _set_matrix_method(self, matrix_method):
@@ -1096,17 +1091,17 @@ class ICP(object):
             result = np.dot(data, self.matrix) + self.offset
         return result
 
-    def fit(self, data, target):
+    def fit(self, data, target=None):
         """Fit Iterative Closest Point."""
-        if type(data) is pd.DataFrame:
+        if isinstance(data, pd.DataFrame):
             self._pdata = data
             data = data.values
-
+        if target is None:
+            target = self.target
         if (self.offset is None) or (self._train is False):
             self.offset = self._set_offset(data, target)
         else:
             warnings.warn("Training mode: ON")
-
         if (self.matrix is None) or (self._train is False):
             self.matrix = self._set_matrix(data, target)
         else:
@@ -1176,12 +1171,14 @@ class Classify(object):
 
     """
 
+    # TODO Change to **kwargs structure
     def __init__(self, target,
-                 tol=1e-5, min_covar=1e-7, sigma=1e-5, train=False):
+                 sigma=1e-5, train=False, **kwargs):
         """Instantiate Classification object."""
         self._target = target
-        self._tol = tol
-        self._min_covar = min_covar
+        kwargs.setdefault('tol', 1e-5)
+        kwargs.setdefault('min_covar', 1e-5)
+        self.__dict__.update(kwargs)
         self._sigma = sigma
         self._train = train
 
@@ -1190,6 +1187,10 @@ class Classify(object):
 
         self._confs = None
         self._log_prob = None
+
+        self._data = None
+        self._predict = None
+        self._log_proba = None
 
         self._init = True
         self._setup_gmix()
@@ -1201,8 +1202,8 @@ class Classify(object):
     def _setup_gmix(self):
         if (self._train is False) or (self._init is True):
             self._gmix = GaussianMixture(covariance_type='full',
-                                         tol=self._tol,
-                                         reg_covar=self._min_covar,
+                                         tol=self.tol,
+                                         reg_covar=self.min_covar,
                                          n_components=self._nclusters,
                                          means_init=self._target,
                                          weights_init=self.init_weights,
@@ -1268,7 +1269,7 @@ class Classify(object):
     def output(self):
         """Return codes, confidence interval and log propability."""
         data = pd.DataFrame(columns=['code', 'confidence', 'log_prob'])
-        if type(self._data) is pd.DataFrame:
+        if isinstance(self._data, pd.DataFrame):
             for num, val in enumerate(self._data.index):
                 data.loc[val, ('code')] = self._predict[num]
                 data.loc[val, ('confidence')] = self.confs[num]

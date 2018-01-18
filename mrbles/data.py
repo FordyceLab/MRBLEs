@@ -27,7 +27,7 @@ import re
 # Data Structures
 import numpy as np
 import pandas as pd
-import xarray as xd
+import xarray as xr
 from xml.dom import minidom
 # File import
 from skimage.external import tifffile as tff
@@ -89,7 +89,6 @@ class DataOutput(object):
     """Data output methods."""
 
     def __init__(self, data=None, output='xr'):
-        super(DataOutput, self).__init__()
         if data is None:
             self._dataframe = None
         else:
@@ -100,7 +99,7 @@ class DataOutput(object):
 
     def __repr__(self):
         """Return xarray dataframe representation."""
-        return repr([self._dataframe])
+        return repr(self._dataframe)
 
     def __getitem__(self, index):
         """Get method."""
@@ -190,6 +189,116 @@ class DataOutput(object):
                 "%s" % values)
 
 
+class TableDataFrame(object):
+    """Pandas based dataframe object for table data."""
+
+    def __init__(self, data=None, *args, **kwargs):
+        super(TableDataFrame, self).__init__()
+        kwargs.setdefault('flag_filt', None)
+        kwargs.setdefault('flag_name', 'flag')
+        self.__dict__.update(kwargs)
+        self._dataframe = data
+
+    def __repr__(self):
+        """Return dataframe representation."""
+        return repr(self.data)
+
+    def __getitem__(self, index):
+        """Get method."""
+        self.data.loc[index]
+
+    @property
+    def data(self):
+        """Return Pandas dataframe object."""
+        data = self._check_flag(self._dataframe)
+        return data
+
+    def _check_flag(self, data):
+        if self.flag_name in data.columns and self.flag_filt is not None:
+            flag_out_data = data[data.flag == False]  # noqa
+        else:
+            flag_out_data = data
+        return flag_out_data
+
+
+class ImageDataFrame(object):
+    """Xarray based dataframe object for images."""
+
+    def __init__(self, data=None):
+        super(ImageDataFrame, self).__init__()
+        self._dataframe = data
+        self._crop_x = slice(None, None, None)
+        self._crop_y = slice(None, None, None)
+
+    def __repr__(self):
+        """Return dataframe representation."""
+        return repr(self.data)
+
+    def __getitem__(self, index):
+        """Get method."""
+        if isinstance(index, str):
+            if isinstance(self.data, dict):
+                data = self.data[index]
+            else:
+                data = self.data.loc[index]
+        elif isinstance(index, slice):
+            data = self.data
+        elif index[0] == slice(None, None, None):
+            data = {key: data.loc[index[1:]]
+                    for key, data in self.data.items()}
+        else:
+            data = self.data[index[0]].loc[index[1:]]
+        return data
+
+    @property
+    def data(self):
+        """Return cropped Xarray dataframe."""
+        return self._check_crop(self._dataframe)
+
+    @property
+    def xdata(self):
+        """Return uncropped Xarray dataframe."""
+        return self._dataframe
+
+    # Crop properties
+    @property
+    def crop_x(self):
+        """Crop x slice."""
+        return self._crop_x
+
+    @crop_x.setter
+    def crop_x(self, value):
+        self._crop_x = self._set_slice(value)
+
+    @property
+    def crop_y(self):
+        """Crop Y slice."""
+        return self._crop_y
+
+    @crop_y.setter
+    def crop_y(self, value):
+        self._crop_y = self._set_slice(value)
+
+    # Crop methods
+    def _check_crop(self, data):
+        if isinstance(data, dict):
+            data_crop = {key: value.loc[dict(x=self._crop_x, y=self._crop_y)]
+                         for key, value in data.items()}
+        elif isinstance(data, xr.DataArray):
+            data_crop = data.loc[dict(x=self._crop_x, y=self._crop_y)]
+        else:
+            data_crop = None
+        return data_crop
+
+    @staticmethod
+    def _set_slice(values):
+        if isinstance(values, slice) or values is None:
+            slice_values = values
+        elif isinstance(values, list):
+            slice_values = slice(values[0], values[1])
+        return slice_values
+
+
 class ChannelDescriptor(object):
     """Channel descriptor."""
 
@@ -209,7 +318,7 @@ class ChannelDescriptor(object):
 # Classes
 
 
-class Spectra(PropEdit, DataOutput):
+class Spectra(PropEdit, TableDataFrame):
     """Data structure for reference spectra.
 
     Class can be instantiated without data. See functions.
@@ -436,7 +545,7 @@ class Spectra(PropEdit, DataOutput):
             plt.show()
 
 
-class ImageSetRead(DataOutput):
+class ImageSetRead(ImageDataFrame):
     """Image set data object that loads image set from file(s).
 
     Parameters
@@ -515,7 +624,7 @@ class ImageSetRead(DataOutput):
         >>> ImageSetRead.load(image_files)
 
         """
-        if type(file_path) is str:
+        if isinstance(file_path, str):
             file_path = [file_path]
         with tff.TiffSequence(file_path, pattern='XYCZT') as ts, \
                 tff.TiffFile(file_path[0]) as tf:
@@ -675,7 +784,7 @@ class ImageSetRead(DataOutput):
             Defaults to '*.tif'.
 
         """
-        if type(paths) is str:
+        if isinstance()(paths, str):
             image_files = cls.scan_path(paths, pattern=pattern)
         elif len(paths) > 1:
             image_files = [cls.scan_path(path, pattern=pattern)
@@ -689,7 +798,7 @@ class ImageSetRead(DataOutput):
     def _convert_to_xd(data, metadata, file_path, series):
         """Convert data and metadata to xarray DataArray."""
         if data.ndim == 2:
-            panel_data = xd.DataArray(data, dims=['y', 'x'])
+            panel_data = xr.DataArray(data, dims=['y', 'x'])
         else:
             # Added check if using newer version of Scikit-Image
             try:
@@ -710,7 +819,7 @@ class ImageSetRead(DataOutput):
                 dims[dims.index('i')] = 'c'
             if len(file_path) > 1:
                 dims.insert(0, 'f')
-            panel_data = xd.DataArray(data, dims=dims, coords={
+            panel_data = xr.DataArray(data, dims=dims, coords={
                                       'c': metadata['summary']['ChNames']})
         return panel_data
 

@@ -28,6 +28,7 @@ bead_image_obj = ba.ImageSetRead(bead_image_files, output='xr')
 bead_image_obj.crop_x = CROPx
 bead_image_obj.crop_y = CROPy
 print(bead_image_obj.c_names)  # Print channel names
+bead_image_obj._dataframe.rename()
 
 #%%
 fig_x = 1
