@@ -825,7 +825,8 @@ class ImageSetRead(ImageDataFrame):
             if len(file_path) > 1:
                 dims.insert(0, 'f')
             panel_data = xr.DataArray(data, dims=dims, coords={
-                                      'c': metadata['summary']['ChNames']})
+                                      'c': metadata['summary']['ChNames']},
+                                      encoding={'dtype': np.uint16})
         return panel_data
 
     @staticmethod

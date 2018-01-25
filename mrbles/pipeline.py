@@ -23,6 +23,7 @@ from __future__ import division, print_function
 import os
 import re
 import sys
+import gc
 from math import sqrt
 from random import randint
 
@@ -70,12 +71,12 @@ def combine_in_place(data_array_1, data_array_2):
         data_array_2 = data_array_2.data
     if isinstance(data_array_1, dict):
         combined_data = {
-            key: data_array_1[key].combine_first(data_array_2[key]).astype(float)  # NOQA
+            key: data_array_1[key].combine_first(data_array_2[key])
             for key, _ in data_array_1.items()
         }
     else:
-        combined_data = data_array_1.combine_first(data_array_2).astype(float)
-    return combined_data
+        combined_data = data_array_1.combine_first(data_array_2)
+    return ImageDataFrame(combined_data)
 
 
 def flatten_dict(dict_data, prefix='.'):
@@ -146,14 +147,15 @@ class References(TableDataFrame):
     """Create reference spectra."""
 
     def __init__(self, folders, files, object_channel, reference_channels,
-                 bead_size=18, dark_noise=99, background='bkg', bkg_roi=None):
+                 bead_size=16, dark_noise=99, background='bkg', clean_up=True):
         """Init."""
         super(References, self).__init__()
         self.object_channel = object_channel
         self.reference_channels = reference_channels
         self.dark_noise = dark_noise
         self.background = background
-        self.bkg_roi = bkg_roi
+        self.clean_up = clean_up
+        self.bkg_roi = [slice(None), slice(None)]
         self._images = Images(folders, files)
         self._find = Find(bead_size=bead_size,
                           border_clear=True,
@@ -178,48 +180,51 @@ class References(TableDataFrame):
 
     def load(self):
         """Process."""
-        self._images.crop_x = self.crop_x
-        self._images.crop_y = self.crop_y
         self._images.load()
-        self._find.find(self._images[:, self.object_channel])
-        # spectra = get_set_names(self._images.data)
-        # if isinstance(self._images.data, dict):
         spectra = list(self._images.data.keys())
-        # first_key = next(iter(self._images.data))
+        bkg_images = self._images[self.background, self.reference_channels,
+                                  self.bkg_roi[0], self.bkg_roi[1]]
+        self._bkg_image = self._images[self.background, self.object_channel,
+                                       self.bkg_roi[0], self.bkg_roi[1]]
+        spec_images = ImageDataFrame(self._images.data)
+        spec_images._dataframe.pop(self.background, None)
+        spec_images.crop_x = self.crop_x
+        spec_images.crop_y = self.crop_y
+        self._find.find(spec_images[:, self.object_channel])
         ref_channels = self._images[
             spectra[0], self.reference_channels].c.values
-        # else:
-        #     ref_channels = self._images[:, self.reference_channels].c.values
         data = [self.get_spectrum(self.dark_noise,
-                                  self._images[x_set, self.reference_channels],
+                                  spec_images[x_set, self.reference_channels],
                                   self._find[x_set, 'mask_inside'])
-                for x_set in spectra if x_set not in self.background]
+                for x_set in spectra if x_set != self.background]
         if self.background in spectra:
             spectra.remove(self.background)
             spectra.append(self.background)
-            data.append(self._get_back())
+            data.append(self._get_back(bkg_images))
         self._dataframe = pd.DataFrame(data=np.array(data).T,
                                        columns=spectra,
                                        index=ref_channels)
         self._dataframe.index.name = 'channels'
+        if self.clean_up is True:
+            self._clean_up()
 
-    def _get_back(self):
-        mask = np.ones((self._images[self.background].y.size,
-                        self._images[self.background].x.size))
-        if self.bkg_roi is None:
-            bkg_images = self._images[self.background,
-                                      self.reference_channels]
-        else:
-            bkg_images = self._images[self.background,
-                                      self.reference_channels,
-                                      self.bkg_roi[0],
-                                      self.bkg_roi[1]]
+    def _clean_up(self):
+        del self._images
+        del self._find
+        gc.collect()
+
+    def _get_back(self, bkg_images):
+        mask = np.ones((bkg_images.y.size,
+                        bkg_images.x.size))
         bkg_data = self.get_spectrum(0, bkg_images, mask)
         return bkg_data
 
-    def plot(self):
+    def plot(self, dpi=75):
         """Plot Reference spectra."""
         self._dataframe.plot()
+        plt.figure(dpi=dpi)
+        plt.title('Background slice')
+        plt.imshow(self._bkg_image)
 
     @staticmethod
     def get_spectrum(dark_noise, channels, mask):
@@ -277,9 +282,25 @@ class Images(ImageDataFrame):
         """Load images in memory."""
         if self.files is None:
             return False
-        dict_data = {key: ImageSetRead(file_set).xdata
-                     for key, file_set in self.files.items()}
-        self._dataframe = dict_data
+        self._dataframe = {key: ImageSetRead(file_set).xdata
+                           for key, file_set in self.files.items()}
+
+    def add_images(self, images):
+        """Add images to dataframe."""
+        if isinstance(self._dataframe, dict):
+            if isinstance(images, dict):
+                self._dataframe = {
+                    key: self.data[key].combine_first(images[key])
+                    for key in self.data.keys()
+                }
+            else:
+                self._dataframe = {
+                    key: self.data[key].combine_first(images)
+                    for key in self.data.keys()
+                }
+        else:
+            self._dataframe = self._dataframe.combine_first(images)
+        gc.collect()
 
     def rename_channel(self, old_name, new_name):
         """Rename channel name."""
@@ -292,7 +313,10 @@ class Images(ImageDataFrame):
                                                              old_name,
                                                              new_name)
         else:
-            self.rename_coord(self._dataframe, 'c', old_name, new_name)
+            self._dataframe = self.rename_coord(self._dataframe,
+                                                'c',
+                                                old_name,
+                                                new_name)
 
     @staticmethod
     def rename_coord(dataframe, dim, old_name, new_name):
@@ -379,6 +403,10 @@ class Find(ImageDataFrame):
         else:
             self._dataframe, self._bead_dims = \
                 self._return_data(object_images)
+        print("Mean bead radius: %0.2f" % (self.bead_dims.radius.mean() * 2))
+        for key, value in self.beads_per_set.items():
+            print("Number of beads in set %s: %i" % (key, value))
+        print("Total number of beads: %i" % self.beads_total)
         if combine_data is not None:
             dataframe = combine_in_place(combine_data, self._dataframe)
             data_object = ImageDataFrame(data=dataframe)
@@ -494,6 +522,7 @@ class Ratio(ImageDataFrame):
             dataframe = combine_in_place(combine_data, self._dataframe)
             data_object = ImageDataFrame(data=dataframe)
             return data_object
+        gc.collect()
 
     def _find_multi_set(self, image_sets, reference):
         sets = list(image_sets.keys())
@@ -665,6 +694,13 @@ class Extract(TableDataFrame):
                     (ref_data < (ref_mean + ref_factor * ref_sd)))
         filter_all = (mask_bkg & mask_ref)
         self._dataframe['flag'] = ~filter_all
+        num_out = len(self._dataframe[self._dataframe.flag == True])
+        num_remain = len(self._dataframe[self._dataframe.flag == False])
+        num_total = len(self._dataframe)
+        num_percentage = ((num_out / num_total) * 100)
+        print("Pre-filter: %i" % num_total)
+        print("Post-filter: %i" % num_remain)
+        print("Filtered: %i (%0.1f%%)" % (num_out, num_percentage))
 
 
 class Decode(TableDataFrame):
@@ -786,6 +822,7 @@ class Analyze(TableDataFrame):
         channels.remove('flag')
         codes = np.unique(data.code.values).astype(int)
         result = {}
+        #data_reset = data.reset_index()
         for code in codes:
             for channel in channels:
                 result[code] = self._iter_functions(
@@ -825,8 +862,9 @@ class Analyze(TableDataFrame):
 
     @staticmethod
     def _iter_functions(functions, data):
+        data_na_omit = data.values[~np.isnan(data.values)]
         result = {
-            key: func(data) for (key, func) in functions.items()
+            key: func(data_na_omit) for (key, func) in functions.items()
         }
         return result
 

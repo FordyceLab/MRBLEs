@@ -24,6 +24,7 @@ import multiprocessing as mp
 import sys
 import types
 import warnings
+import gc
 from math import ceil, sqrt
 # Other
 import cv2
@@ -108,12 +109,13 @@ class FindBeadsImaging(ImageDataFrame):
     """
 
     def __init__(self, bead_size,
-                 border_clear=True, circle_size=None):
+                 border_clear=True, circle_size=None, parallelize=True):
         """Find and identify beads and their regions using imaging."""
         super(FindBeadsImaging, self).__init__()
         self._bead_size = bead_size
         self.border_clear = border_clear
         self.circle_size = circle_size
+        self.parallelize = parallelize
         # Default values for filtering
         self._area_min = 0.25 * self.circle_area(bead_size)
         self._area_max = 1.5 * self.circle_area(bead_size)
@@ -124,14 +126,6 @@ class FindBeadsImaging(ImageDataFrame):
         # Data set
         self._dataframe = None
         self._bead_dims = None
-
-    # def __repr__(self):
-    #     """Return Xarray dataframe representation."""
-    #     return repr([self._dataframe])
-
-    # def __getitem__(self, index):
-    #     """Get method."""
-    #     return self.data.loc[index]
 
     # Properties - Settings
     @property
@@ -173,23 +167,21 @@ class FindBeadsImaging(ImageDataFrame):
     def find(self, image):
         """Execute finding beads image(s)."""
         if image.ndim == 3:
-            if sys.version_info < (3, 0):
-                result = map(self._find, image)
-            else:
+            if (sys.version_info >= (3, 0)) and (self.parallelize is True):
                 mp_worker = mp.Pool()
                 result = mp_worker.map(self._find, image)
                 mp_worker.close()
                 mp_worker.join()
+            else:
+                result = list(map(self._find, image))
             r_m = [i[0] for i in result]
             r_d = [i[1] for i in result]
-            result_masks = xr.concat(r_m, dim='f')
-            result_dims = pd.concat(r_d,
-                                    keys=list(range(len(r_d))),
-                                    names=['f', 'bead_no'])
+            self._dataframe = xr.concat(r_m, dim='f')
+            self._bead_dims = pd.concat(r_d,
+                                        keys=list(range(len(r_d))),
+                                        names=['f', 'bead_no'])
         else:
-            result_masks, result_dims = self._find(image)
-        self._dataframe = result_masks
-        self._bead_dims = result_dims
+            self._dataframe, self._bead_dims = self._find(image)
 
     def _find(self, image):
         if self.circle_size is not None:
@@ -244,7 +236,8 @@ class FindBeadsImaging(ImageDataFrame):
                                            'mask_inside',
                                            'mask_outside',
                                            'mask_bkg',
-                                           'mask_check']})
+                                           'mask_check']},
+                             encoding={'dtype': np.uint16})
         return [masks, bead_dims]
 
     def _find_inside(self, bin_img):
@@ -398,7 +391,6 @@ class FindBeadsImaging(ImageDataFrame):
                                 maxRadius=img.shape[0],
                                 param1=hough_param1,
                                 param2=hough_param2)
-        print(dims)
         if len(dims) != 1:
             return None
         circle_y, circle_x, _ = np.round(np.ravel(dims[0])).astype(np.int)
@@ -916,7 +908,7 @@ class SpectralUnmixing(ImageDataFrame):
             raise IndexError
         self._sizes(images)
         img_flat = self._flatten(images)
-        unmix_flat = np.linalg.lstsq(self._ref_data, img_flat)[0]
+        unmix_flat = np.linalg.lstsq(self._ref_data, img_flat, rcond=None)[0]
         unmix_result = self._rebuilt(unmix_flat)
         dataframe = xr.DataArray(unmix_result,
                                  dims=['c', 'y', 'x'],
@@ -1134,7 +1126,7 @@ class ICP(object):
             # Least squaress
             d = np.c_[data[min_dist_filt], np.ones(
                 len(data[min_dist_filt, 0]))]
-            m = np.linalg.lstsq(d, matched_levels)[0]
+            m = np.linalg.lstsq(d, matched_levels, rcond=None)[0]
 
             # Store new tranformation matrix and offset vector
             self.matrix = m[0:-1, :]
