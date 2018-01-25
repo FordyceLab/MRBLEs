@@ -24,7 +24,6 @@ import multiprocessing as mp
 import sys
 import types
 import warnings
-import gc
 from math import ceil, sqrt
 # Other
 import cv2
@@ -42,8 +41,9 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.mixture import GaussianMixture
 
 # Intra-Package dependencies
-from mrbles.data import ImageDataFrame, TableDataFrame  # NOQA
+from mrbles.data import ImageDataFrame  # NOQA
 
+# Function compatibility issues
 # Function compatibility between Python 2.x and 3.x
 if sys.version_info < (3, 0):
     from future.standard_library import install_aliases  # NOQA
@@ -52,6 +52,15 @@ if sys.version_info < (3, 0):
 
     warnings.warn(
         "mrbles: Please use Python >3.6 for multiprocessing.")
+# NumPy compatibility issue
+if version.parse(np.__version__) < version.parse("1.14.0"):
+    warnings.warn('mrbles: Please upgrade module NumPy >1.14.0!')
+    RCOND = -1
+else:
+    RCOND = None
+# Photultis compatibility issue
+if version.parse(photutils.__version__) < version.parse("0.4.0"):
+    warnings.warn("mrbles: Please upgrade module photutils >0.4.0!.")
 
 
 # Decorators
@@ -70,9 +79,6 @@ def accepts(*types):  # NOQA
         _new_func.func_name = func.__name__
         return _new_func
     return _check_accepts
-
-
-# Descriptor classes
 
 
 # Classes
@@ -229,7 +235,8 @@ class FindBeadsImaging(ImageDataFrame):
                                             mask_inside,
                                             mask_outside,
                                             mask_bkg,
-                                            overlay_image]),
+                                            overlay_image],
+                                           dtype=np.uint16),
                              dims=['c', 'y', 'x'],
                              coords={'c': ['mask_full',
                                            'mask_ring',
@@ -507,8 +514,6 @@ class FindBeadsImaging(ImageDataFrame):
             return None
         if version.parse(photutils.__version__) < version.parse("0.4.0"):
             tbl = photutils.properties_table(properties)
-            warnings.warn(
-                "mrbles: Please upgrade photutils to latest version.")
         else:
             tbl = properties.to_table()  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=int)
@@ -547,6 +552,9 @@ class FindBeadsImaging(ImageDataFrame):
             img[line_y, int(round(center_x))] = (20, 20, 220)
         if color is False:
             img = skimage.color.rgb2gray(img)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                img = skimage.img_as_uint(img)
         return img
 
     @staticmethod
@@ -858,12 +866,12 @@ class SpectralUnmixing(ImageDataFrame):
         if isinstance(ref_data, pd.DataFrame):
             self._ref_data = ref_data.values
             self._names = list(ref_data.keys())
-        elif issubclass(type(ref_data), TableDataFrame):
+        elif hasattr(ref_data, 'data'):
             self._ref_data = ref_data.data.values
             self._names = list(ref_data.data.keys())
         else:
             raise TypeError(
-                "Wrong type. Only mrbles References, or Pandas DataFrame types.")  # NOQA
+                "Wrong type. Only mrbles dataframes, or Pandas DataFrame types.")  # NOQA
         self._ref_size = self._ref_data[0, :].size
         self._dataframe = None
         self._c_size = None
@@ -908,7 +916,7 @@ class SpectralUnmixing(ImageDataFrame):
             raise IndexError
         self._sizes(images)
         img_flat = self._flatten(images)
-        unmix_flat = np.linalg.lstsq(self._ref_data, img_flat, rcond=None)[0]
+        unmix_flat = np.linalg.lstsq(self._ref_data, img_flat, rcond=RCOND)[0]
         unmix_result = self._rebuilt(unmix_flat)
         dataframe = xr.DataArray(unmix_result,
                                  dims=['c', 'y', 'x'],
@@ -1126,7 +1134,7 @@ class ICP(object):
             # Least squaress
             d = np.c_[data[min_dist_filt], np.ones(
                 len(data[min_dist_filt, 0]))]
-            m = np.linalg.lstsq(d, matched_levels, rcond=None)[0]
+            m = np.linalg.lstsq(d, matched_levels, rcond=RCOND)[0]
 
             # Store new tranformation matrix and offset vector
             self.matrix = m[0:-1, :]

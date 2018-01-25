@@ -55,7 +55,10 @@ if sys.version_info < (3, 0):
 def get_set_names(data_set, set_dim='set'):
     """Return list of sets."""
     if isinstance(data_set, pd.DataFrame):
-        sets_list = list(data_set.groupby(set_dim).groups.keys())
+        if set_dim in data_set.index.names:
+            sets_list = list(data_set.groupby(set_dim).groups.keys())
+        else:
+            sets_list = None
     elif isinstance(data_set, xr.DataArray):
         sets_list = list(data_set.coords[set_dim].values)
     else:
@@ -65,24 +68,20 @@ def get_set_names(data_set, set_dim='set'):
 
 def combine_in_place(data_array_1, data_array_2):
     """Combine and return."""
-    if not isinstance(data_array_1, (pd.DataFrame, dict)):
-        data_array_1 = data_array_1.data
-    if not isinstance(data_array_2, (pd.DataFrame, dict)):
-        data_array_2 = data_array_2.data
     if isinstance(data_array_1, dict):
         combined_data = {
             key: data_array_1[key].combine_first(data_array_2[key])
-            for key, _ in data_array_1.items()
+            for key in data_array_1.keys()
         }
     else:
         combined_data = data_array_1.combine_first(data_array_2)
-    return ImageDataFrame(combined_data)
+    return combined_data
 
 
 def flatten_dict(dict_data, prefix='.'):
     """Flatten dictionary with givin prefix."""
     def items():
-        # A closure for recursively extracting dict like values
+        """Closure for recursively extracting dict like values."""
         for key, value in dict_data.items():
             if isinstance(value, dict):
                 for sub_key, sub_value in flatten_dict(value).items():
@@ -352,7 +351,7 @@ class Images(ImageDataFrame):
             Folder path as string, e.g. r'C:/folder/file.tif'.
         pattern : string
             File extenstion of general file pattern as search string,
-            e.g. '20160728_MOL_*'
+            e.g. 'peptides_x_([0-9][0-9])_MMStack_Pos0.ome.tif'
             Defaults to '*.tif'.
 
         """
@@ -404,13 +403,12 @@ class Find(ImageDataFrame):
             self._dataframe, self._bead_dims = \
                 self._return_data(object_images)
         print("Mean bead radius: %0.2f" % (self.bead_dims.radius.mean() * 2))
-        for key, value in self.beads_per_set.items():
-            print("Number of beads in set %s: %i" % (key, value))
+        if self.beads_per_set is not None:
+            for key, value in self.beads_per_set.items():
+                print("Number of beads in set %s: %i" % (key, value))
         print("Total number of beads: %i" % self.beads_total)
         if combine_data is not None:
-            dataframe = combine_in_place(combine_data, self._dataframe)
-            data_object = ImageDataFrame(data=dataframe)
-            return data_object
+            self._dataframe = combine_in_place(self._dataframe, combine_data)
 
     @property
     def masks(self):
@@ -430,14 +428,17 @@ class Find(ImageDataFrame):
     @property
     def beads_per_set(self):
         """Return total bead count in set(s)."""
-        bead_no_list = {set_x: self._bead_dims.loc[set_x].shape[0]
-                        for set_x in self.sets}
+        if self.sets is not None:
+            bead_no_list = {set_x: self._bead_dims.loc[set_x].shape[0]
+                            for set_x in self.sets}
+        else:
+            bead_no_list = None
         return bead_no_list
 
     @property
     def sets(self):
         """Return list of sets."""
-        # sets_list = list(self._bead_dims.groupby('set').groups.keys())
+        # sets_list = list(self._bead_dims.groupby().groups.keys())
         return get_set_names(self._bead_dims)
 
     def inspect(self, set_name=None, fig_num=3):
@@ -519,10 +520,7 @@ class Ratio(ImageDataFrame):
         else:
             self._dataframe = self._return_data(image_sets, reference)
         if combine_data is not None:
-            dataframe = combine_in_place(combine_data, self._dataframe)
-            data_object = ImageDataFrame(data=dataframe)
-            return data_object
-        gc.collect()
+            self._dataframe = combine_in_place(self._dataframe, combine_data)
 
     def _find_multi_set(self, image_sets, reference):
         sets = list(image_sets.keys())
@@ -777,52 +775,48 @@ class Analyze(TableDataFrame):
 
     """
 
-    def __init__(self, functions=None, bkg_data=None, norm_data=None,
-                 flag_out=True, seq_list=None):
+    def __init__(self, seq_list=None, flag_filt=True):
         """Set up statistics functions and set normalizartion data."""
         super(Analyze, self).__init__()
-        if functions is None:
-            # Default set of functions
-            self.functions = {
-                'mean': np.mean,
-                'median': np.median,
-                'sd': np.std,
-                'se': sp.stats.sem,
-                'N': len,
-                'CV': sp.stats.variation
-            }
-            self.bkg_data = bkg_data
-            self.norm_data = norm_data
-            self.seq_list = seq_list
-            self.flag_out = flag_out
-            self._dataframe = None
-            self._data_per_bead = None
+        self.seq_list = seq_list
+        self.flag_filt = flag_filt
+        self._dataframe = None
+        self._data_per_bead = None
+        # Default set of functions
+        self.functions = {
+            'mean': np.mean,
+            'median': np.median,
+            'sd': np.std,
+            'se': sp.stats.sem,
+            'N': len,
+            'CV': sp.stats.variation
+        }
 
-    def extract(self, data):
+    def analyze(self, data):
         """Analyze data."""
-        filtered_data = self._flagged(data)
-        if filtered_data.index.nlevels == 3:
-            self._dataframe = self._multi(filtered_data)
+        if data.index.nlevels == 3:
+            self._dataframe = self._multi(data)
         else:
-            self._dataframe = self._single(filtered_data)
+            self._dataframe = self._single(data)
+
+    def background(self):
+        pass
+
+    def normalize(self):
+        pass
 
     @property
     def data_per_bead(self):
         """Return (normalized) data per bead."""
         return self._data_per_bead
 
-    def _flagged(self, data):
-        if self.flag_out is True:
-            data = data[data.flag == False]  # noqa
-        return data
-
     def _single(self, data):
         channels = list(data.columns)
         channels.remove('code')
-        channels.remove('flag')
+        if self.flag_name in channels:
+            channels.remove(self.flag_name)
         codes = np.unique(data.code.values).astype(int)
         result = {}
-        #data_reset = data.reset_index()
         for code in codes:
             for channel in channels:
                 result[code] = self._iter_functions(

@@ -65,7 +65,7 @@ import sys
 from mrbles import core
 from mrbles.core import *  # TODO Must change to specific before public
 from mrbles import data
-from mrbles.data import ImageSetRead, Spectra
+from mrbles.data import ImageSetRead
 from mrbles import inspect
 from mrbles import pipeline
 from mrbles.pipeline import *

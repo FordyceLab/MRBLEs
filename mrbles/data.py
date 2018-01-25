@@ -48,153 +48,154 @@ if sys.version_info < (3, 0):
 # Descriptor classes
 
 
-class PropEdit(object):
-    """Dynamically add attributes as properties.
+# class PropEdit(object):
+#     """Dynamically add attributes as properties.
 
-    Used as a inheritance class.
-    """
+#     Used as a inheritance class.
+#     """
 
-    def _addprop(inst, name, method):
-        cls = type(inst)
-        # if not hasattr(cls, '__perinstance'):
-        #    cls = type(cls.__name__, (cls,), {})
-        #    cls.__perinstance = True
-        #    inst.__class__ = cls
-        setattr(cls, name, method)
+#     def _addprop(inst, name, method):
+#         cls = type(inst)
+#         # if not hasattr(cls, '__perinstance'):
+#         #    cls = type(cls.__name__, (cls,), {})
+#         #    cls.__perinstance = True
+#         #    inst.__class__ = cls
+#         setattr(cls, name, method)
 
-    def _removeprop(inst, name):
-        cls = type(inst)
-        delattr(cls, name)
-
-
-class FrozenClass(object):
-    """Freeze class."""
-
-    __isfrozen = False
-
-    def __setattr__(self, key, value):
-        """Create attribute."""
-        if self.__isfrozen and not hasattr(self, key):
-            raise TypeError("%r is a frozen class" % self)
-        object.__setattr__(self, key, value)
-
-    def _freeze(self):
-        self.__isfrozen = True
-
-    def _thaw(self):
-        self.__isfrozen = False
+#     def _removeprop(inst, name):
+#         cls = type(inst)
+#         delattr(cls, name)
 
 
-class DataOutput(object):
-    """Data output methods."""
+# class FrozenClass(object):
+#     """Freeze class."""
 
-    def __init__(self, data=None, output='xr'):
-        if data is None:
-            self._dataframe = None
-        else:
-            self._dataframe = data
-        self.output = output
-        self._crop_x = None
-        self._crop_y = None
+#     __isfrozen = False
 
-    def __repr__(self):
-        """Return xarray dataframe representation."""
-        return repr(self._dataframe)
+#     def __setattr__(self, key, value):
+#         """Create attribute."""
+#         if self.__isfrozen and not hasattr(self, key):
+#             raise TypeError("%r is a frozen class" % self)
+#         object.__setattr__(self, key, value)
 
-    def __getitem__(self, index):
-        """Get method."""
-        return self.data.loc[index]
+#     def _freeze(self):
+#         self.__isfrozen = True
 
-    @property
-    def data(self):
-        """Return cropped) data.
+#     def _thaw(self):
+#         self.__isfrozen = False
 
-        As set by default output argument:
-        Xarray DataArray ('xr') or NumPy ndarray ('np').
-        """
-        if isinstance(self._dataframe, pd.DataFrame):
-            data_crop = self._dataframe
-        else:
-            data_crop = self._check_crop(self._dataframe)
-        data_out = self._data_out(data_crop)
-        return data_out
 
-    @property
-    def xdata(self):
-        """Return uncropped Xarray data."""
-        return self._dataframe
+# class DataOutput(object):
+#     """Data output methods."""
 
-    @property
-    def pdata(self):
-        """Return uncropped Pandas data."""
-        return self._dataframe
+#     def __init__(self, data=None, output='xr'):
+#         if data is None:
+#             self._dataframe = None
+#         else:
+#             self._dataframe = data
+#         self.output = output
+#         self._crop_x = None
+#         self._crop_y = None
 
-    @property
-    def ndata(self):
-        """Return uncropped NumPy data."""
-        return self._dataframe.values
+#     def __repr__(self):
+#         """Return xarray dataframe representation."""
+#         return repr(self._dataframe)
 
-    # Crop properties and methods
-    @property
-    def crop_x(self):
-        """Crop x slice."""
-        return self._crop_x
+#     def __getitem__(self, index):
+#         """Get method."""
+#         return self.data.loc[index]
 
-    @crop_x.setter
-    def crop_x(self, value):
-        self._crop_x = self._set_slice(value)
+#     @property
+#     def data(self):
+#         """Return cropped) data.
 
-    @property
-    def crop_y(self):
-        """Crop Y slice."""
-        return self._crop_y
+#         As set by default output argument:
+#         Xarray DataArray ('xr') or NumPy ndarray ('np').
+#         """
+#         if isinstance(self._dataframe, pd.DataFrame):
+#             data_crop = self._dataframe
+#         else:
+#             data_crop = self._check_crop(self._dataframe)
+#         data_out = self._data_out(data_crop)
+#         return data_out
 
-    @crop_y.setter
-    def crop_y(self, value):
-        self._crop_y = self._set_slice(value)
+#     @property
+#     def xdata(self):
+#         """Return uncropped Xarray data."""
+#         return self._dataframe
 
-    def _data_out(self, func):
-        """Check data output method setting for Numpy or Pandas."""
-        if (self.output == "pd") or (self.output == "xr"):
-            return func
-        elif self.output == "np":
-            return func.values
-        else:
-            raise ValueError("Unspecified output method: '%s'." % self.output)
+#     @property
+#     def pdata(self):
+#         """Return uncropped Pandas data."""
+#         return self._dataframe
 
-    def _check_crop(self, data):
-        if not hasattr(self, '_crop_x'):
-            self._crop_x = None
-        if not hasattr(self, '_crop_y'):
-            self._crop_y = None
-        if self._crop_x is not None and self._crop_y is not None:
-            data_crop = data.loc[dict(x=self._crop_x, y=self._crop_y)]
-        elif self._crop_x is not None:
-            data_crop = data.loc[dict(x=self._crop_x)]
-        elif self._crop_y is not None:
-            data_crop = data.loc[dict(y=self._crop_y)]
-        else:
-            data_crop = data
-        return data_crop
+#     @property
+#     def ndata(self):
+#         """Return uncropped NumPy data."""
+#         return self._dataframe.values
 
-    @staticmethod
-    def _set_slice(values):
-        if type(values) is slice or values is None:
-            return values
-        elif type(values) is list:
-            return slice(values[0], values[1])
-        else:
-            raise ValueError(
-                "Use slice(value, value) or [value, value] for range! Input:"
-                "%s" % values)
+#     # Crop properties and methods
+#     @property
+#     def crop_x(self):
+#         """Crop x slice."""
+#         return self._crop_x
+
+#     @crop_x.setter
+#     def crop_x(self, value):
+#         self._crop_x = self._set_slice(value)
+
+#     @property
+#     def crop_y(self):
+#         """Crop Y slice."""
+#         return self._crop_y
+
+#     @crop_y.setter
+#     def crop_y(self, value):
+#         self._crop_y = self._set_slice(value)
+
+#     def _data_out(self, func):
+#         """Check data output method setting for Numpy or Pandas."""
+#         if (self.output == "pd") or (self.output == "xr"):
+#             return func
+#         elif self.output == "np":
+#             return func.values
+#         else:
+#             raise ValueError("Unspecified output method: '%s'." % self.output)
+
+#     def _check_crop(self, data):
+#         if not hasattr(self, '_crop_x'):
+#             self._crop_x = None
+#         if not hasattr(self, '_crop_y'):
+#             self._crop_y = None
+#         if self._crop_x is not None and self._crop_y is not None:
+#             data_crop = data.loc[dict(x=self._crop_x, y=self._crop_y)]
+#         elif self._crop_x is not None:
+#             data_crop = data.loc[dict(x=self._crop_x)]
+#         elif self._crop_y is not None:
+#             data_crop = data.loc[dict(y=self._crop_y)]
+#         else:
+#             data_crop = data
+#         return data_crop
+
+#     @staticmethod
+#     def _set_slice(values):
+#         if type(values) is slice or values is None:
+#             return values
+#         elif type(values) is list:
+#             return slice(values[0], values[1])
+#         else:
+#             raise ValueError(
+#                 "Use slice(value, value) or [value, value] for range! Input:"
+#                 "%s" % values)
 
 
 class TableDataFrame(object):
     """Pandas based dataframe object for table data."""
 
-    def __init__(self, data=None, *args, **kwargs):
+    def __init__(self, data=None, flag_filt=False, *args, **kwargs):
+        """Instantiate table data strcuture."""
         super(TableDataFrame, self).__init__()
-        kwargs.setdefault('flag_filt', False)
+        self.flag_filt = flag_filt
         kwargs.setdefault('flag_name', 'flag')
         self.__dict__.update(kwargs)
         self._dataframe = data
@@ -230,6 +231,7 @@ class ImageDataFrame(object):
     """Xarray based dataframe object for images."""
 
     def __init__(self, data=None):
+        """Instantiate image data strcuture."""
         super(ImageDataFrame, self).__init__()
         self._dataframe = data
         self._crop_x = slice(None, None, None)
@@ -304,250 +306,250 @@ class ImageDataFrame(object):
         return slice_values
 
 
-class ChannelDescriptor(object):
-    """Channel descriptor."""
+# class ChannelDescriptor(object):
+#     """Channel descriptor."""
 
-    def __init__(self, name):
-        """Initilize name of channel."""
-        self.name = name
+#     def __init__(self, name):
+#         """Initilize name of channel."""
+#         self.name = name
 
-    def __get__(self, obj, objtype):
-        """Get value."""
-        return obj.spec_get(self.name)
+#     def __get__(self, obj, objtype):
+#         """Get value."""
+#         return obj.spec_get(self.name)
 
-    def __set__(self, obj, val):
-        """Set value."""
-        obj._dataframe[self.name] = val
+#     def __set__(self, obj, val):
+#         """Set value."""
+#         obj._dataframe[self.name] = val
 
 
 # Classes
 
 
-class Spectra(PropEdit, TableDataFrame):
-    """Data structure for reference spectra.
+# class Spectra(PropEdit, TableDataFrame):
+#     """Data structure for reference spectra.
 
-    Class can be instantiated without data. See functions.
+#     Class can be instantiated without data. See functions.
 
-    Parameters
-    ----------
-    data : ndarray
-        Spectra data points per channel. Array must have same shape as spectra
-        and channels. E.g. 9 channels and 4 spectra, must have (9L, 4L) shape.
-        Defaults to None.
-    spectra : list of strings
-        Spectra names. E.g. ['Dy', 'Tm'].
-        Defaults to None.
-    channels : list of strings
-        Channel names. E.g. ['Ex292-Em435', 'Ex292-Em465', 'Ex292-Em580'].
-        Defaults to None.
-    output : str, optional
-        Sets default output method. Options: 'nd' for NumPy ndarray or 'pd'
-        for Pandas Dataframe/Panel4D.
-        Defaults to 'ndarray'.
+#     Parameters
+#     ----------
+#     data : ndarray
+#         Spectra data points per channel. Array must have same shape as spectra
+#         and channels. E.g. 9 channels and 4 spectra, must have (9L, 4L) shape.
+#         Defaults to None.
+#     spectra : list of strings
+#         Spectra names. E.g. ['Dy', 'Tm'].
+#         Defaults to None.
+#     channels : list of strings
+#         Channel names. E.g. ['Ex292-Em435', 'Ex292-Em465', 'Ex292-Em580'].
+#         Defaults to None.
+#     output : str, optional
+#         Sets default output method. Options: 'nd' for NumPy ndarray or 'pd'
+#         for Pandas Dataframe/Panel4D.
+#         Defaults to 'ndarray'.
 
-    Functions
-    ---------
-    spec_add : function
-        Add spectrum to object.
-    spec_get : function
-        Get spectrum by name or number from object.
-    spec_del : function
-        Delete spectrum from object.
+#     Functions
+#     ---------
+#     spec_add : function
+#         Add spectrum to object.
+#     spec_get : function
+#         Get spectrum by name or number from object.
+#     spec_del : function
+#         Delete spectrum from object.
 
-    """
+#     """
 
-    def __init__(self, data=None, spectra=None, channels=None, output='np'):
-        """Create Spectra data object."""
-        super(Spectra, self).__init__()
-        self._dataframe = pd.DataFrame(data, columns=spectra, index=channels)
-        self.output = output
+#     def __init__(self, data=None, spectra=None, channels=None, output='np'):
+#         """Create Spectra data object."""
+#         super(Spectra, self).__init__()
+#         self._dataframe = pd.DataFrame(data, columns=spectra, index=channels)
+#         self.output = output
 
-    def __repr__(self):
-        """Return Pandas dataframe representation."""
-        return repr([self._dataframe])
+#     def __repr__(self):
+#         """Return Pandas dataframe representation."""
+#         return repr([self._dataframe])
 
-    def __setitem__(self, index, value):
-        """Set method, see method 'spec_set'."""
-        self.spec_add(index, value)
+#     def __setitem__(self, index, value):
+#         """Set method, see method 'spec_set'."""
+#         self.spec_add(index, value)
 
-    def __getitem__(self, index):
-        """Get method, see method 'spec_get'."""
-        return self.spec_get(index)
+#     def __getitem__(self, index):
+#         """Get method, see method 'spec_get'."""
+#         return self.spec_get(index)
 
-    # Spectrum methods and properties
-    @property
-    def spec_names(self):
-        """Return spectra names."""
-        return self._dataframe.columns.tolist()
+#     # Spectrum methods and properties
+#     @property
+#     def spec_names(self):
+#         """Return spectra names."""
+#         return self._dataframe.columns.tolist()
 
-    @property
-    def spec_size(self):
-        """Return spectra count."""
-        return len(self.spec_names)
+#     @property
+#     def spec_size(self):
+#         """Return spectra count."""
+#         return len(self.spec_names)
 
-    def spec_index(self, name):
-        """Return spectrum by index."""
-        return self._dataframe.columns.get_loc(name)
+#     def spec_index(self, name):
+#         """Return spectrum by index."""
+#         return self._dataframe.columns.get_loc(name)
 
-    def spec_get(self, index, output=None):
-        """Return spectrum data by name or number.
+#     def spec_get(self, index, output=None):
+#         """Return spectrum data by name or number.
 
-        Parameters
-        ----------
-        index : str/int
-           Number or string of spectrum.
-        output : string, optional
-            Sets output method. Options: 'nd', NumPy array, or 'pd', Pandas
-            dataframe.
-            Defaults to setting in instantiation, see class description.
+#         Parameters
+#         ----------
+#         index : str/int
+#            Number or string of spectrum.
+#         output : string, optional
+#             Sets output method. Options: 'nd', NumPy array, or 'pd', Pandas
+#             dataframe.
+#             Defaults to setting in instantiation, see class description.
 
-        Returns
-        -------
-        data : NumPy array/Pandas dataframe
-            Returns the data as NumPy array or Pandas dataframe, depending on
-            output method set by parameter 'output' or default method, if
-            output not set.
+#         Returns
+#         -------
+#         data : NumPy array/Pandas dataframe
+#             Returns the data as NumPy array or Pandas dataframe, depending on
+#             output method set by parameter 'output' or default method, if
+#             output not set.
 
-        Examples
-        --------
-        >>> spectra_object.spec_get('Eu')
-        array([ 0.01129608,  0.00995838,  0.01085018,  0.02348395,  0.00653983,
-        0.00460761,  0.55960166,  0.32401902,  0.04964328])
-        >>> spectra_object.spec_get(0)
-        array([ 0.01129608,  0.00995838,  0.01085018,  0.02348395,  0.00653983,
-        0.00460761,  0.55960166,  0.32401902,  0.04964328])
-        >>> spectra_object.spec_get('Eu', output='pd')
-        Ex292-Em435    0.011296
-        Ex292-Em474    0.009958
-        Ex292-Em527    0.010850
-        Ex292-Em536    0.023484
-        Ex292-Em546    0.006540
-        Ex292-Em572    0.004608
-        Ex292-Em620    0.559602
-        Ex292-Em630    0.324019
-        Ex292-Em650    0.049643
-        Name: Eu, dtype: float64
+#         Examples
+#         --------
+#         >>> spectra_object.spec_get('Eu')
+#         array([ 0.01129608,  0.00995838,  0.01085018,  0.02348395,  0.00653983,
+#         0.00460761,  0.55960166,  0.32401902,  0.04964328])
+#         >>> spectra_object.spec_get(0)
+#         array([ 0.01129608,  0.00995838,  0.01085018,  0.02348395,  0.00653983,
+#         0.00460761,  0.55960166,  0.32401902,  0.04964328])
+#         >>> spectra_object.spec_get('Eu', output='pd')
+#         Ex292-Em435    0.011296
+#         Ex292-Em474    0.009958
+#         Ex292-Em527    0.010850
+#         Ex292-Em536    0.023484
+#         Ex292-Em546    0.006540
+#         Ex292-Em572    0.004608
+#         Ex292-Em620    0.559602
+#         Ex292-Em630    0.324019
+#         Ex292-Em650    0.049643
+#         Name: Eu, dtype: float64
 
-        """
-        if type(index) is int:
-            index = self.spec_names[index]
-        data = self._dataframe[index]
-        if output is None:
-            output = self.output
-        return self._data_out(data, output)
+#         """
+#         if type(index) is int:
+#             index = self.spec_names[index]
+#         data = self._dataframe[index]
+#         if output is None:
+#             output = self.output
+#         return self._data_out(data, output)
 
-    def spec_add(self, index, data=None, channels=None):
-        """Add spectrum."""
-        # Check if spectrum name is set and add as attribute
-        if index not in self.spec_names and type(index) is not int:
-            self._addprop(index, ChannelDescriptor(index))
-        # Set channels
-        if self.c_size == 0 and channels is not None:
-            self._dataframe[index] = None
-            for ch in channels:
-                self.c_add(ch)
-        if not np.array_equal(np.array(self.c_names), np.array(channels)):
-            warnings.warn("Channel names not the same or channels unchecked!")
-        # Set data to index
-        if type(index) is int:
-            index = self.spec_names[index]
-        self._dataframe[index] = data
+#     def spec_add(self, index, data=None, channels=None):
+#         """Add spectrum."""
+#         # Check if spectrum name is set and add as attribute
+#         if index not in self.spec_names and type(index) is not int:
+#             self._addprop(index, ChannelDescriptor(index))
+#         # Set channels
+#         if self.c_size == 0 and channels is not None:
+#             self._dataframe[index] = None
+#             for ch in channels:
+#                 self.c_add(ch)
+#         if not np.array_equal(np.array(self.c_names), np.array(channels)):
+#             warnings.warn("Channel names not the same or channels unchecked!")
+#         # Set data to index
+#         if type(index) is int:
+#             index = self.spec_names[index]
+#         self._dataframe[index] = data
 
-    def spec_del(self, index):
-        """Delete spectrum."""
-        self._dataframe = self._dataframe.drop(index, axis=1)
-        self._removeprop(index)
+#     def spec_del(self, index):
+#         """Delete spectrum."""
+#         self._dataframe = self._dataframe.drop(index, axis=1)
+#         self._removeprop(index)
 
-    # Channel methods and properties
-    @property
-    def c_names(self):
-        """Return label names."""
-        return self._dataframe.index.tolist()
+#     # Channel methods and properties
+#     @property
+#     def c_names(self):
+#         """Return label names."""
+#         return self._dataframe.index.tolist()
 
-    @property
-    def c_size(self):
-        """Return label count."""
-        return len(self.c_names)
+#     @property
+#     def c_size(self):
+#         """Return label count."""
+#         return len(self.c_names)
 
-    def c_index(self, name):
-        """Return label index."""
-        return self._dataframe.index.get_loc(name)
+#     def c_index(self, name):
+#         """Return label index."""
+#         return self._dataframe.index.get_loc(name)
 
-    def c_get(self, index, output=None):
-        """Return label data by name or number.
+#     def c_get(self, index, output=None):
+#         """Return label data by name or number.
 
-        Parameters
-        ----------
-        index : str/int
-           Number or string of channel.
-        output : string, optional
-            Sets output method. Options: 'ndarray', NumPy array, or 'pandas',
-            Pandas dataframe.
-            Defaults to setting in instantiation, see class description.
+#         Parameters
+#         ----------
+#         index : str/int
+#            Number or string of channel.
+#         output : string, optional
+#             Sets output method. Options: 'ndarray', NumPy array, or 'pandas',
+#             Pandas dataframe.
+#             Defaults to setting in instantiation, see class description.
 
-        Returns
-        -------
-        data : NumPy array/Pandas dataframe
-            Returns the data as NumPy array or Pandas dataframe, depending on
-            output method set by parameter 'output' or default method, if
-            output not set.
+#         Returns
+#         -------
+#         data : NumPy array/Pandas dataframe
+#             Returns the data as NumPy array or Pandas dataframe, depending on
+#             output method set by parameter 'output' or default method, if
+#             output not set.
 
-        Examples
-        --------
-        See method 'spec_get'.
+#         Examples
+#         --------
+#         See method 'spec_get'.
 
-        """
-        if type(index) is int:
-            index = self.c_names[index]
-        data = self._dataframe.loc[index]
-        if output is None:
-            output = self.output
-        return self._data_out(data, output)
+#         """
+#         if type(index) is int:
+#             index = self.c_names[index]
+#         data = self._dataframe.loc[index]
+#         if output is None:
+#             output = self.output
+#         return self._data_out(data, output)
 
-    def c_add(self, name, data=None):
-        """Add channel."""
-        self._dataframe.ix[name] = data
+#     def c_add(self, name, data=None):
+#         """Add channel."""
+#         self._dataframe.ix[name] = data
 
-    def c_del(self, name, data=None):
-        """Add channel."""
-        self._dataframe = self._dataframe.drop(name)
+#     def c_del(self, name, data=None):
+#         """Add channel."""
+#         self._dataframe = self._dataframe.drop(name)
 
-    # Data file output/input functions
-    def to_csv(self, filepath):
-        """Write CSV file with reference values."""
-        if self._dataframe is not None:
-            self._dataframe.to_csv(filepath)
-        else:
-            print("No spectra to export!")
+#     # Data file output/input functions
+#     def to_csv(self, filepath):
+#         """Write CSV file with reference values."""
+#         if self._dataframe is not None:
+#             self._dataframe.to_csv(filepath)
+#         else:
+#             print("No spectra to export!")
 
-    def to_excel(self, filepath):
-        """Write excel file with reference values."""
-        if self._dataframe is not None:
-            self._dataframe.to_excel(filepath)
-        else:
-            print("No spectra to export!")
+#     def to_excel(self, filepath):
+#         """Write excel file with reference values."""
+#         if self._dataframe is not None:
+#             self._dataframe.to_excel(filepath)
+#         else:
+#             print("No spectra to export!")
 
-    def read_csv(self, filepath):
-        """Read CSV file with reference values."""
-        if self._dataframe is not None:
-            self._dataframe = pd.read_csv(filepath)
-        else:
-            print("No spectra to export!")
+#     def read_csv(self, filepath):
+#         """Read CSV file with reference values."""
+#         if self._dataframe is not None:
+#             self._dataframe = pd.read_csv(filepath)
+#         else:
+#             print("No spectra to export!")
 
-    def read_excel(self, filepath, sheetname=0):
-        """Read Excel file with reference values."""
-        if self._dataframe is not None:
-            self._dataframe = pd.read_excel(
-                open(filepath, 'rb'), sheetname=sheetname)
-        else:
-            print("No spectra to export!")
+#     def read_excel(self, filepath, sheetname=0):
+#         """Read Excel file with reference values."""
+#         if self._dataframe is not None:
+#             self._dataframe = pd.read_excel(
+#                 open(filepath, 'rb'), sheetname=sheetname)
+#         else:
+#             print("No spectra to export!")
 
-    # Plot functions
-    def plot(self, show=False):
-        """Plot refrence spectra."""
-        self._dataframe.plot(title="Spectra", rot=90)
-        if show is True:
-            plt.show()
+#     # Plot functions
+#     def plot(self, show=False):
+#         """Plot refrence spectra."""
+#         self._dataframe.plot(title="Spectra", rot=90)
+#         if show is True:
+#             plt.show()
 
 
 class ImageSetRead(ImageDataFrame):
