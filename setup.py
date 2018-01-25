@@ -90,7 +90,8 @@ setup(
                       'plotly',
                       'lmfit',
                       'weightedstats',
-                      'xlrd'],
+                      'xlrd',
+                      'packaging'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
