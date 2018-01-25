@@ -109,7 +109,7 @@ setup(
     # },
 
     # Data files are specified in MANIFEST.in file.
-    include_package_data=True,
+    include_package_data=False,
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
