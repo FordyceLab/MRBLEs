@@ -66,16 +66,16 @@ def get_set_names(data_set, set_dim='set'):
     return sets_list
 
 
-def combine_in_place(data_array_1, data_array_2):
-    """Combine and return."""
-    if isinstance(data_array_1, dict):
-        combined_data = {
-            key: data_array_1[key].combine_first(data_array_2[key])
-            for key in data_array_1.keys()
-        }
-    else:
-        combined_data = data_array_1.combine_first(data_array_2)
-    return combined_data
+# def combine_in_place(data_array_1, data_array_2):
+#     """Combine and return."""
+#     if isinstance(data_array_1, dict):
+#         combined_data = {
+#             key: data_array_1[key].combine_first(data_array_2[key])
+#             for key in data_array_1.keys()
+#         }
+#     else:
+#         combined_data = data_array_1.combine_first(data_array_2)
+#     return combined_data
 
 
 def flatten_dict(dict_data, prefix='.'):
@@ -286,19 +286,7 @@ class Images(ImageDataFrame):
 
     def add_images(self, images):
         """Add images to dataframe."""
-        if isinstance(self._dataframe, dict):
-            if isinstance(images, dict):
-                self._dataframe = {
-                    key: self.data[key].combine_first(images[key])
-                    for key in self.data.keys()
-                }
-            else:
-                self._dataframe = {
-                    key: self.data[key].combine_first(images)
-                    for key in self.data.keys()
-                }
-        else:
-            self._dataframe = self._dataframe.combine_first(images)
+        self.combine(images)
         gc.collect()
 
     def rename_channel(self, old_name, new_name):
@@ -408,7 +396,7 @@ class Find(ImageDataFrame):
                 print("Number of beads in set %s: %i" % (key, value))
         print("Total number of beads: %i" % self.beads_total)
         if combine_data is not None:
-            self._dataframe = combine_in_place(self._dataframe, combine_data)
+            self.combine(combine_data)
 
     @property
     def masks(self):
@@ -520,7 +508,7 @@ class Ratio(ImageDataFrame):
         else:
             self._dataframe = self._return_data(image_sets, reference)
         if combine_data is not None:
-            self._dataframe = combine_in_place(self._dataframe, combine_data)
+            self.combine(combine_data)
 
     def _find_multi_set(self, image_sets, reference):
         sets = list(image_sets.keys())
@@ -729,7 +717,7 @@ class Decode(TableDataFrame):
 
             See ICP and Classify documentation for detailed settings."""
 
-    def decode(self, data, combine=None):
+    def decode(self, data, combine_data=None):
         """Decode MRBLEs."""
         if self._decode_channels is not None:
             pass
@@ -739,12 +727,8 @@ class Decode(TableDataFrame):
         self._gmm_qc(data)
         self._dataframe = self._gmm.output
         self._dataframe = self._dataframe.combine_first(icp_data)
-        if combine is not None:
-            index = combine.index
-            self._dataframe = pd.concat([combine.reset_index(drop=True),
-                                         self._dataframe.reset_index(drop=True)],
-                                        axis=1)
-            self._dataframe.index = index
+        if combine_data is not None:
+            self.combine(combine_data)
 
     def _gmm_qc(self, data):
         print("Number of unique codes found:", self._gmm.found)

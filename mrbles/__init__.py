@@ -4,7 +4,6 @@
 """
 MRBLEs Analysis Package
 =======================
-
 This package provides the tools to: (1) find the MRBLEs in a monochrome
 brightfield microscopy image; (2) decode the MRBLEs beads by spectral unmxing,
 using reference spectra, and then spectrally decode the found beads using
@@ -63,9 +62,7 @@ __all__ = ['core', 'data']
 # [Module Imports]
 import sys
 from mrbles import core
-from mrbles.core import *  # TODO Must change to specific before public
 from mrbles import data
-from mrbles.data import ImageSetRead
 from mrbles import inspect
 from mrbles import pipeline
 from mrbles.pipeline import *
