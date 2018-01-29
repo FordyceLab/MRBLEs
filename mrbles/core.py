@@ -993,23 +993,21 @@ class ICP(object):
 
     """
 
-    def __init__(self, target=None,
+    def __init__(self, target,
                  matrix_method='std',
                  offset=None,
                  max_iter=100,
                  tol=1e-4,
-                 outlier_pct=0,
-                 train=False,
-                 echo=True):
+                 outlier_pct=0.01):
         """Instantiate Iterative Closest Point (ICP) object."""
-        self.target = target
+        self._target = target
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
         self.tol = tol
         self.outlierpct = outlier_pct
         self.offset = offset
-        self._train = train
-        self._echo = echo
+        self.train = False
+        self.echo = True
         self._pdata = None
 
     def _set_matrix_method(self, matrix_method):
@@ -1098,12 +1096,12 @@ class ICP(object):
             self._pdata = data
             data = data.values
         if target is None:
-            target = self.target
-        if (self.offset is None) or (self._train is False):
+            target = self._target
+        if (self.offset is None) or (self.train is False):
             self.offset = self._set_offset(data, target)
         else:
             warnings.warn("Training mode: ON")
-        if (self.matrix is None) or (self._train is False):
+        if (self.matrix is None) or (self.train is False):
             self.matrix = self._set_matrix(data, target)
         else:
             warnings.warn("Training mode: ON")
@@ -1177,11 +1175,12 @@ class Classify(object):
                  sigma=1e-5, train=False, **kwargs):
         """Instantiate Classification object."""
         self._target = target
+        kwargs.setdefault('covariance_type', 'full')
         kwargs.setdefault('tol', 1e-5)
-        kwargs.setdefault('min_covar', 1e-5)
+        kwargs.setdefault('reg_covar', 1e-5)
         self.__dict__.update(kwargs)
         self._sigma = sigma
-        self._train = train
+        self.train = train
 
         self._nclusters = len(self._target[:, 0])
         self._naxes = len(self._target[0, :])
@@ -1194,21 +1193,19 @@ class Classify(object):
         self._log_proba = None
 
         self._init = True
-        self._setup_gmix()
+        self._setup_gmix(**kwargs)
 
     def __repr__(self):
         """Return GaussianMixture object."""
         return repr([self._gmix])
 
-    def _setup_gmix(self):
-        if (self._train is False) or (self._init is True):
-            self._gmix = GaussianMixture(covariance_type='full',
-                                         tol=self.tol,
-                                         reg_covar=self.min_covar,
-                                         n_components=self._nclusters,
+    def _setup_gmix(self, **kwargs):
+        if (self.train is False) or (self._init is True):
+            self._gmix = GaussianMixture(n_components=self._nclusters,
                                          means_init=self._target,
                                          weights_init=self.init_weights,
-                                         precisions_init=self.init_covars)
+                                         precisions_init=self.init_covars,
+                                         **kwargs)
             self._init = False
         else:
             warnings.warn("Training mode: ON")

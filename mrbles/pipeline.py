@@ -66,18 +66,6 @@ def get_set_names(data_set, set_dim='set'):
     return sets_list
 
 
-# def combine_in_place(data_array_1, data_array_2):
-#     """Combine and return."""
-#     if isinstance(data_array_1, dict):
-#         combined_data = {
-#             key: data_array_1[key].combine_first(data_array_2[key])
-#             for key in data_array_1.keys()
-#         }
-#     else:
-#         combined_data = data_array_1.combine_first(data_array_2)
-#     return combined_data
-
-
 def flatten_dict(dict_data, prefix='.'):
     """Flatten dictionary with givin prefix."""
     def items():
@@ -426,7 +414,6 @@ class Find(ImageDataFrame):
     @property
     def sets(self):
         """Return list of sets."""
-        # sets_list = list(self._bead_dims.groupby().groups.keys())
         return get_set_names(self._bead_dims)
 
     def inspect(self, set_name=None, fig_num=3):
@@ -492,17 +479,40 @@ class Find(ImageDataFrame):
 
 
 class Ratio(ImageDataFrame):
-    """Generate spectrally unmix ratio images."""
+    """Generate spectrally unmix ratio images.
+
+    Parameters
+    ----------
+    reference_spectra : list, ndarray, References object
+        List, array, or References object of reference spectra for linear
+        spectral unmixing.
+    background : string
+        Background key label.
+        Defaults to 'bkg'.
+
+    """
 
     def __init__(self, reference_spectra, background='bkg'):
-        """Initialize Unmix."""
+        """Initialize reference spectra, unmixing, and background."""
         super(Ratio, self).__init__()
         self.reference_spectra = reference_spectra
         self.background = background
         self.spec_unmix = SpectralUnmixing(reference_spectra)
 
     def get(self, image_sets, reference, combine_data=None):
-        """Get."""
+        """Calculate unmixed and ratio images.
+
+        Parameters
+        ----------
+        image_set : Xarray DataArray, mblres ImageDataFrame
+            These are the images (emission channels) to be unmixed.
+        reference : string
+            Reference key label, e.g. 'Eu', used for ratio images.
+        comb_data : Xarray DataArray, mblres ImageDataFrame
+            These are the images that are combined with 'image_set'.
+            Must be same dimensions and type as 'image_set'.
+
+        """
         if isinstance(image_sets, dict):
             self._dataframe = self._find_multi_set(image_sets, reference)
         else:
@@ -534,17 +544,26 @@ class Ratio(ImageDataFrame):
 
 
 class Extract(TableDataFrame):
-    """Extract data from images using masks."""
+    """Extract data from images using masks.
+
+    Parameters
+    ----------
+    function : function
+        This is the function used to extract data from each bead region. This
+        can be replaced with any 1 parameter function, e.g. np.mean.
+        Defaults to np.median.
+
+    """
 
     def __init__(self, function=None):
-        """Initialize Extract."""
+        """Initialize function and variables."""
         super(Extract, self).__init__()
         if function is None:
             self._func = np.median
         else:
             self._func = function
         self._dataframe = None
-        self.flag_name = 'flag'
+        # self.flag_name = 'flag'
         self.flag_filt = True
 
     def get(self, images, masks):
@@ -552,10 +571,10 @@ class Extract(TableDataFrame):
 
         Parameters
         ----------
-        images : Xarray DataArray or mrbles ImageDataFrame
+        images : Xarray DataArray, mrbles ImageDataFrame
             Images of which to take values from using provided labeled masks.
             Must be same number of dimensions as masks.
-        masks : Xarray DataArray
+        masks : Xarray DataArray, mrbles ImageDataFrame
             Labeled mask of regions to take values from the provided images.
             Must be same number of dimensions as images, even if one dimension
             is only singular. Therefore, use [] around mask selection, even
@@ -589,7 +608,7 @@ class Extract(TableDataFrame):
                         for f in f_list]
                 data_append.append(pd.concat(data, keys=f_list))
             self._dataframe = pd.concat(data_append, keys=s_list)
-        self._dataframe['flag'] = False
+        self._dataframe[self.flag_name] = False
 
     def _get_data_images(self, images, masks):
         data = {
@@ -621,7 +640,7 @@ class Extract(TableDataFrame):
                     str(masks[masks.dims[0]].values):
                     cls._get_data(image, masks, func, idx)
                 }
-        data['mask_lbl'] = idx
+            data['mask_lbl'] = idx
         return data
 
     @classmethod
@@ -679,7 +698,7 @@ class Extract(TableDataFrame):
         mask_ref = ((ref_data > (ref_mean - ref_factor * ref_sd)) &
                     (ref_data < (ref_mean + ref_factor * ref_sd)))
         filter_all = (mask_bkg & mask_ref)
-        self._dataframe['flag'] = ~filter_all
+        self._dataframe[self.flag_name] = ~filter_all
         num_out = len(self._dataframe[self._dataframe.flag == True])
         num_remain = len(self._dataframe[self._dataframe.flag == False])
         num_total = len(self._dataframe)
@@ -698,17 +717,8 @@ class Decode(TableDataFrame):
         self._target = target
         self._decode_channels = decode_channels
         # Instantiate ICP and GMM with default settings
-        self._icp = ICP(target,
-                        matrix_method='std',
-                        max_iter=100,
-                        tol=1e-4,
-                        outlier_pct=0.01,
-                        train=False)
-        self._gmm = Classify(target,
-                             tol=1e-5,
-                             min_covar=1e-7,
-                             sigma=1e-5,
-                             train=False)
+        self._icp = ICP(target)
+        self._gmm = Classify(target)
         self._dataframe = None
         # Setup settings object
         self.settings = Settings([self._icp, self._gmm], ['icp', 'gmm'])

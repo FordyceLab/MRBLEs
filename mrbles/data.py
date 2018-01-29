@@ -49,14 +49,14 @@ if sys.version_info < (3, 0):
 class TableDataFrame(object):
     """Pandas based dataframe object for table data."""
 
-    def __init__(self, data=None, flag_filt=False, **kwargs):
+    def __init__(self, data=None, flag_filt=True, **kwargs):
         """Instantiate table data strcuture."""
         super(TableDataFrame, self).__init__()
         self.flag_filt = flag_filt
         if 'flag_name' in kwargs:
             self.flag_name = kwargs['flag_name']
         else:
-            self.flag_name = None
+            self.flag_name = 'flag'
         self._dataframe = data
 
     def __repr__(self):
