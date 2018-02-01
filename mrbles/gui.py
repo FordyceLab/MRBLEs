@@ -9,7 +9,8 @@ This file stores the GUI classes and functions for the MRBLEs Analysis module.
 """
 
 # [Future imports]
-from __future__ import print_function, division
+from __future__ import (absolute_import, division, print_function)
+from builtins import (str, super, int)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : gui.py
@@ -21,15 +22,15 @@ from __future__ import print_function, division
 # [Modules]
 # General Python
 import sys
-import os
+# import os
 # GUI
 import wx
 
-# Function compatibility between Python 2.x and 3.x
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *  # NOQA
-    install_aliases()
+# # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 
 
 ### Classes

@@ -16,7 +16,8 @@ This file stores the core classes and functions for the MRBLEs Analysis module.
 # date              : 20160308
 
 # [Future imports]
-from __future__ import division, print_function
+from __future__ import (absolute_import, division, print_function)
+from builtins import (super, range, zip, round, int, object)
 
 # [Modules]
 # General Python
@@ -41,15 +42,15 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.mixture import GaussianMixture
 
 # Intra-Package dependencies
-from mrbles.data import ImageDataFrame  # NOQA
+from mrbles.data import ImageDataFrame
 
 # Function compatibility issues
 # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases  # NOQA
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases  # NOQA
-    from __builtin__ import *  # NOQA
-    install_aliases()
-
     warnings.warn(
         "mrbles: Please use Python >3.6 for multiprocessing.")
 # NumPy compatibility issue

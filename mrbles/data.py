@@ -9,7 +9,8 @@ This file stores the data classes and functions for the MRBLEs Analysis module.
 """
 
 # [Future imports]
-from __future__ import print_function, division
+from __future__ import (absolute_import, division, print_function)
+from builtins import (str, super, object)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : data.py
@@ -20,7 +21,7 @@ from __future__ import print_function, division
 
 # [Modules]
 # General Python
-import sys
+# import sys
 import os
 import warnings
 import re
@@ -32,15 +33,15 @@ import xarray as xr
 # File import
 from skimage.external import tifffile as tff
 
-# Function compatibility between Python 2.x and 3.x
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *  # NOQA
-    install_aliases()
+# # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases  # NOQA
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 
-# TODO
-# Check error exceptions
-# Create error checking functions for clustering
+# TODO: Check error exceptions
+# TODO: Create error checking functions for clustering
+# TODO: Replace py 2 3 compatibility stuff
 
 
 # Descriptor classes
@@ -98,7 +99,7 @@ class TableDataFrame(object):
 
     def _check_flag(self, data):
         if self.flag_name in data.columns and self.flag_filt is True:
-            flag_out_data = data[data[self.flag_name] == False]
+            flag_out_data = data[data[self.flag_name] == False]  # NOQA: E712
         else:
             flag_out_data = data
         return flag_out_data
@@ -196,10 +197,12 @@ class ImageDataFrame(object):
 
     @staticmethod
     def _set_slice(values):
-        if isinstance(values, slice) or values is None:
-            slice_values = values
-        elif isinstance(values, list):
+        if isinstance(values, list):
             slice_values = slice(values[0], values[1])
+        elif values is None:
+            slice_values = slice(None)
+        else:
+            slice_values = values
         return slice_values
 
 
@@ -437,21 +440,22 @@ class ImageSetRead(ImageDataFrame):
 
         Parameters
         ----------
-        path : list
+        paths : list
             Folder paths as list, e.g. ['C:/folder/file.tif', ...].
 
         pattern : string
-            File extenstion of general file pattern, e.g. '20160728_MOL_*'
+            File extension of general file pattern, e.g. '20160728_MOL_*'
             Defaults to '*.tif'.
 
         """
-        if isinstance()(paths, str):
+        if isinstance(paths, str):
             image_files = cls.scan_path(paths, pattern=pattern)
         elif len(paths) > 1:
             image_files = [cls.scan_path(path, pattern=pattern)
                            for path in paths]
         else:
             print("Can't resolve base path(s).")
+            image_files = None
         return image_files
 
     # Private methods

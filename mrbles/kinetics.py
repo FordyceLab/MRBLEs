@@ -10,7 +10,8 @@ module.
 """
 
 # [Future imports]
-from __future__ import print_function, division
+from __future__ import (absolute_import, division, print_function)
+from builtins import (range, object)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : kinetics.py
@@ -23,18 +24,18 @@ from __future__ import print_function, division
 
 # [Modules]
 # General Python
-import sys
+# import sys
 from math import sqrt
 # Data Structure
 import numpy as np
 # Data analysis
 import lmfit
 
-# Function compatibility between Python 2.x and 3.x
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *  # NOQA
-    install_aliases()
+# # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 
 
 # Classes

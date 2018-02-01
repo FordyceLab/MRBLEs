@@ -9,7 +9,8 @@ This file stores the inspection classes and functions for the MRBLEs Analysis mo
 """
 
 # [Future imports]
-from __future__ import print_function, division
+from __future__ import (absolute_import, division, print_function)
+from builtins import (super, range, int, object)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : inpect.py
@@ -32,18 +33,18 @@ import cv2
 from matplotlib import pyplot as plt
 import plotly.graph_objs as go
 
-# Function compatibility between Python 2.x and 3.x
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *  # NOQA
-    install_aliases()
+# # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 
 
-### Functions
+# Functions
 
 
-def cirle_overlay(image, dims=None, ring=None):
-    """Cirle Overlay Image.
+def circle_overlay(image, dims=None, ring=None):
+    """Circle Overlay Image.
 
     Overlay image with circles of labeled mask.
     """
@@ -72,7 +73,7 @@ def image_overlay(image, image_blend, alpha=0.2, cmap_image='Greys_r', cmap_blen
     plt.imshow(image_blend, cmap=cmap_blend, interpolation='none', alpha=alpha)
 
 
-## Classes
+# Classes
 class GenerateCodes(object):
     """Generate bead code set.
 

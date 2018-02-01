@@ -5,7 +5,7 @@
 MRBLEs Analysis Package
 =======================
 This package provides the tools to: (1) find the MRBLEs in a monochrome
-brightfield microscopy image; (2) decode the MRBLEs beads by spectral unmxing,
+bright-field microscopy image; (2) decode the MRBLEs beads by spectral unmxing,
 using reference spectra, and then spectrally decode the found beads using
 Iterative Closest Point Matching and Gaussian Mixture Modeling; (3) extract,
 statistical values of interest in additional fluorescence channels using the
@@ -14,7 +14,7 @@ affinity information based on titrations of MRBLEs assays.
 """
 
 # [Future imports]
-from __future__ import print_function, division, absolute_import
+from __future__ import (absolute_import, division, print_function)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : MRBLEs Analysis Package
@@ -32,10 +32,10 @@ __copyright__ = ("Copyright 2015-2018 - "
                  "The Encoded Beads Project - "
                  "ThornLab@UCSF and "
                  "FordyceLab@Stanford")
-# Original author(s) of this Python project, like: ("...",
-__author__ = ("Bjorn Harink")  #                    "name")
-# People who contributed to this Python project, like: ["...",
-__credits__ = ["Kurt Thorn",  #                         "name"]
+# Original author(s) of this Python project:
+__author__ = "Bjorn Harink"
+# People who contributed to this Python project:
+__credits__ = ["Kurt Thorn",
                "Huy Nguyen"]
 # Maintainer contact information
 __maintainer__ = "Bjorn Harink"
@@ -54,24 +54,24 @@ __all__ = ['core', 'data']
 #   Volume    = {x},
 #   Number    = {x},
 #   Pages     = {xx--xx},
-#   abstract  = {MRBLEs analysis sofwtare is...},
+#   abstract  = {MRBLEs analysis software is...},
 #   publisher = {Elsevier},
 #   year      = 2017
 # }"""
 
 # [Module Imports]
-import sys
+# import sys
 from mrbles import core
 from mrbles import data
-from mrbles import inspect
 from mrbles import pipeline
 from mrbles.pipeline import *
+from mrbles import inspect
 from mrbles import kinetics
 
-# Function compatibility between Python 2.x and 3.x
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases
-    from __builtin__ import *  # NOQA
-    install_aliases()
+# # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 
 print(__copyright__)

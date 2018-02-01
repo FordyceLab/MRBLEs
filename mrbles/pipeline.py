@@ -9,7 +9,8 @@ This files contains the pipeline for the MRBLEs analysis.
 """
 
 # [Future imports]
-from __future__ import division, print_function
+from __future__ import (absolute_import, division, print_function)
+from builtins import (str, super, range, int, object)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : simp.py
@@ -22,7 +23,7 @@ from __future__ import division, print_function
 # General Python
 import os
 import re
-import sys
+# import sys
 import gc
 from math import sqrt
 from random import randint
@@ -42,11 +43,11 @@ from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
 
 
-# Function compatibility between Python 2.x and 3.x
-if sys.version_info < (3, 0):
-    from future.standard_library import install_aliases  # NOQA
-    from __builtin__ import *  # NOQA
-    install_aliases()
+# # Function compatibility between Python 2.x and 3.x
+# if sys.version_info < (3, 0):
+#     from future.standard_library import install_aliases  # NOQA
+#     from __builtin__ import *  # NOQA
+#     install_aliases()
 
 
 # General methods
