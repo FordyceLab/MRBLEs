@@ -55,7 +55,7 @@ if version.parse(np.__version__) < version.parse("1.14.0"):
     RCOND = -1
 else:
     RCOND = None
-# Photultis compatibility issue
+# Photutils compatibility issue
 if version.parse(photutils.__version__) < version.parse("0.4.0"):
     warnings.warn("mrbles: Please upgrade module photutils >0.4.0!.")
 
@@ -201,7 +201,6 @@ class FindBeadsImaging(ImageDataFrame):
             mask_inside = blank_img
             mask_bkg = blank_img
             bead_dims = None
-            bead_dims_overlay = blank_img
             overlay_image = blank_img
         else:
             mask_bead, mask_bead_neg = self._find_watershed(mask_inside,
