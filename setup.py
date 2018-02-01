@@ -78,14 +78,15 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy',
+    install_requires=['future'
+                      'numpy>=1.14.0',
                       'scipy',
                       'pandas',
                       'xarray',
                       'opencv-python',
                       'scikit-learn',
                       'scikit-image',
-                      'photutils',
+                      'photutils>=0.4.0',
                       'matplotlib',
                       'plotly',
                       'lmfit',

@@ -15,6 +15,7 @@ affinity information based on titrations of MRBLEs assays.
 
 # [Future imports]
 from __future__ import (absolute_import, division, print_function)
+from future import standard_library
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : MRBLEs Analysis Package
@@ -68,10 +69,5 @@ from mrbles.pipeline import *
 from mrbles import inspect
 from mrbles import kinetics
 
-# # Function compatibility between Python 2.x and 3.x
-# if sys.version_info < (3, 0):
-#     from future.standard_library import install_aliases
-#     from __builtin__ import *  # NOQA
-#     install_aliases()
-
+standard_library.install_aliases()
 print(__copyright__)

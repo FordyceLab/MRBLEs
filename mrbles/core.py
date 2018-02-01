@@ -46,10 +46,6 @@ from mrbles.data import ImageDataFrame
 
 # Function compatibility issues
 # Function compatibility between Python 2.x and 3.x
-# if sys.version_info < (3, 0):
-#     from future.standard_library import install_aliases  # NOQA
-#     from __builtin__ import *  # NOQA
-#     install_aliases()
 if sys.version_info < (3, 0):
     warnings.warn(
         "mrbles: Please use Python >3.6 for multiprocessing.")
@@ -84,7 +80,7 @@ def accepts(*types):  # NOQA
 
 # Classes
 
-
+# TODO: Make compatible with Eu channel bead finding
 class FindBeadsImaging(ImageDataFrame):
     """Find and identify beads and their regions using imaging.
 
@@ -541,7 +537,8 @@ class FindBeadsImaging(ImageDataFrame):
         """Create image with overlay crosses."""
         img = skimage.color.gray2rgb(image)
         if isinstance(dims, pd.DataFrame):
-            dims = np.array(np.round(dims.values), dtype=np.int)
+            dims = np.array(np.round(dims.values.astype(np.float)),
+                            dtype=np.int)
         for center_x, center_y, radius in zip(dims[:, 0],
                                               dims[:, 1],
                                               dims[:, 2]):
@@ -642,6 +639,7 @@ class FindBeadsImaging(ImageDataFrame):
         return sqrt(1 - (minor**2 / major**2))
 
 
+# TODO: re-write in same way as FindBeadsImaging
 class FindBeadsCircle(object):
     """Find and identify bead objects from image.
 
