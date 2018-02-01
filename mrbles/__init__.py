@@ -21,7 +21,7 @@ from future import standard_library
 # title             : MRBLEs Analysis Package
 # description       : Bead Analysis
 # author            : Bjorn Harink
-# credits           : Kurt Thorn, Huy Nguyen
+# credits           : Kurt Thorn, Huy Nguyen, Polly Fordyce
 # date              : 20160308
 
 # [Main header with project metadata] | Only in the main file!
@@ -37,7 +37,8 @@ __copyright__ = ("Copyright 2015-2018 - "
 __author__ = "Bjorn Harink"
 # People who contributed to this Python project:
 __credits__ = ["Kurt Thorn",
-               "Huy Nguyen"]
+               "Huy Nguyen",
+               "Polly Fordyce"]
 # Maintainer contact information
 __maintainer__ = "Bjorn Harink"
 __email__ = "bjorn@harink.info"
