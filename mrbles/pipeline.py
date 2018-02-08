@@ -380,6 +380,7 @@ class Find(ImageDataFrame):
             self._dataframe, self._bead_dims = \
                 self._return_data(object_images)
         print("Mean bead radius: %0.2f" % (self.bead_dims.radius.mean() * 2))
+        print("CV bead radius: %0.2f" % (self.bead_dims.radius.std()/self.bead_dims.radius.std()*100))
         if self.beads_per_set is not None:
             for key, value in self.beads_per_set.items():
                 print("Number of beads in set %s: %i" % (key, value))
@@ -959,6 +960,7 @@ def get_stats(data_array):
 
     Returns
     -------
+    stats_array
 
     """
     data_mean = np.nanmean(data_array)
