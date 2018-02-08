@@ -33,12 +33,6 @@ import xarray as xr
 # File import
 from skimage.external import tifffile as tff
 
-# # Function compatibility between Python 2.x and 3.x
-# if sys.version_info < (3, 0):
-#     from future.standard_library import install_aliases  # NOQA
-#     from __builtin__ import *  # NOQA
-#     install_aliases()
-
 # TODO: Check error exceptions
 # TODO: Create error checking functions for clustering
 # TODO: Replace py 2 3 compatibility stuff
@@ -194,6 +188,19 @@ class ImageDataFrame(object):
         else:
             data_crop = None
         return data_crop
+
+    @staticmethod
+    def flatten_dict(dict_data, prefix='.'):
+        """Flatten dictionary with given prefix."""
+        def items():
+            # A closure for recursively extracting dict like values
+            for key, value in dict_data.items():
+                if isinstance(value, dict):
+                    for sub_key, sub_value in flatten_dict(value).items():
+                        yield key + prefix + sub_key, sub_value
+                else:
+                    yield key, value
+        return dict(items())
 
     @staticmethod
     def _set_slice(values):
