@@ -33,12 +33,6 @@ import cv2
 from matplotlib import pyplot as plt
 import plotly.graph_objs as go
 
-# # Function compatibility between Python 2.x and 3.x
-# if sys.version_info < (3, 0):
-#     from future.standard_library import install_aliases
-#     from __builtin__ import *  # NOQA
-#     install_aliases()
-
 
 # Functions
 

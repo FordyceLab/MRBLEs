@@ -6,6 +6,21 @@ Pipeline Classes and functions
 ==============================
 
 This files contains the pipeline for the MRBLEs analysis.
+
+Classes
+-------
+References
+
+Images
+
+Find
+
+Ratio
+
+Extract
+
+Analyze
+
 """
 
 # [Future imports]
@@ -43,13 +58,6 @@ from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
 
 
-# # Function compatibility between Python 2.x and 3.x
-# if sys.version_info < (3, 0):
-#     from future.standard_library import install_aliases  # NOQA
-#     from __builtin__ import *  # NOQA
-#     install_aliases()
-
-
 # General methods
 
 
@@ -67,17 +75,17 @@ def get_set_names(data_set, set_dim='set'):
     return sets_list
 
 
-def flatten_dict(dict_data, prefix='.'):
-    """Flatten dictionary with givin prefix."""
-    def items():
-        """Closure for recursively extracting dict like values."""
-        for key, value in dict_data.items():
-            if isinstance(value, dict):
-                for sub_key, sub_value in flatten_dict(value).items():
-                    yield key + prefix + sub_key, sub_value
-            else:
-                yield key, value
-    return dict(items())
+# def flatten_dict(dict_data, prefix='.'):
+#     """Flatten dictionary with givin prefix."""
+#     def items():
+#         """Closure for recursively extracting dict like values."""
+#         for key, value in dict_data.items():
+#             if isinstance(value, dict):
+#                 for sub_key, sub_value in flatten_dict(value).items():
+#                     yield key + prefix + sub_key, sub_value
+#             else:
+#                 yield key, value
+#     return dict(items())
 
 
 class Settings(object):
@@ -116,7 +124,7 @@ class Recursive(object):
 
     @staticmethod
     def flatten_dict(dict_data, prefix='.'):
-        """Flatten dictionary with givin prefix."""
+        """Flatten dictionary with given prefix."""
         def items():
             # A closure for recursively extracting dict like values
             for key, value in dict_data.items():
