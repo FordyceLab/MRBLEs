@@ -91,6 +91,28 @@ class TableDataFrame(object):
         else:
             raise ValueError("Not Pandas DataFrame: %s." % type(data))
 
+    @classmethod
+    def flatten_dict(cls, dict_data, prefix='.'):
+        """Flatten dictionary with given prefix."""
+        def items():
+            # A closure for recursively extracting dict like values
+            for key, value in dict_data.items():
+                if isinstance(value, dict):
+                    for sub_key, sub_value in cls.flatten_dict(value).items():
+                        yield key + prefix + sub_key, sub_value
+                else:
+                    yield key, value
+        return dict(items())
+
+    @staticmethod
+    def get_set_names(data_set, set_dim='set'):
+        """Return list of sets."""
+        if set_dim in data_set.index.names:
+            sets_list = list(data_set.groupby(set_dim).groups.keys())
+        else:
+            sets_list = None
+        return sets_list
+
     def _check_flag(self, data):
         if self.flag_name in data.columns and self.flag_filt is True:
             flag_out_data = data[data[self.flag_name] == False]  # NOQA: E712
@@ -190,17 +212,10 @@ class ImageDataFrame(object):
         return data_crop
 
     @staticmethod
-    def flatten_dict(dict_data, prefix='.'):
-        """Flatten dictionary with given prefix."""
-        def items():
-            # A closure for recursively extracting dict like values
-            for key, value in dict_data.items():
-                if isinstance(value, dict):
-                    for sub_key, sub_value in flatten_dict(value).items():
-                        yield key + prefix + sub_key, sub_value
-                else:
-                    yield key, value
-        return dict(items())
+    def get_set_names(data_set, set_dim='c'):
+        """Return list of sets."""
+        sets_list = list(data_set.coords[set_dim].values)
+        return sets_list
 
     @staticmethod
     def _set_slice(values):

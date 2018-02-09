@@ -112,7 +112,7 @@ class FindBeadsImaging(ImageDataFrame):
     """
 
     def __init__(self, bead_size,
-                 border_clear=True, circle_size=None, parallelize=True):
+                 border_clear=True, circle_size=None, parallelize=False):
         """Find and identify beads and their regions using imaging."""
         super(FindBeadsImaging, self).__init__()
         self._bead_size = bead_size

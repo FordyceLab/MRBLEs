@@ -61,33 +61,6 @@ from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
 # General methods
 
 
-def get_set_names(data_set, set_dim='set'):
-    """Return list of sets."""
-    if isinstance(data_set, pd.DataFrame):
-        if set_dim in data_set.index.names:
-            sets_list = list(data_set.groupby(set_dim).groups.keys())
-        else:
-            sets_list = None
-    elif isinstance(data_set, xr.DataArray):
-        sets_list = list(data_set.coords[set_dim].values)
-    else:
-        sets_list = None
-    return sets_list
-
-
-# def flatten_dict(dict_data, prefix='.'):
-#     """Flatten dictionary with givin prefix."""
-#     def items():
-#         """Closure for recursively extracting dict like values."""
-#         for key, value in dict_data.items():
-#             if isinstance(value, dict):
-#                 for sub_key, sub_value in flatten_dict(value).items():
-#                     yield key + prefix + sub_key, sub_value
-#             else:
-#                 yield key, value
-#     return dict(items())
-
-
 class Settings(object):
     """Settings object."""
 
@@ -95,45 +68,6 @@ class Settings(object):
         """Set attributes for given objects."""
         for idx, obj in enumerate(objects):
             setattr(self, object_names[idx], obj)
-
-
-class Recursive(object):
-    """Recursively iterate over image-set."""
-
-    def _dim_check(self, data):
-        if isinstance(data, (pd.DataFrame, xr.DataArray)):
-            dims = int(data.ndim)
-        else:
-            dims = None
-        return dims
-
-    @staticmethod
-    def _get_dim_names(self, data, dim):
-        if isinstance(data, pd.DataFrame):
-            dim_names = list(data.groupby(dim).groups.keys())
-        elif isinstance(data, xr.DataArray):
-            dim_names = list(data.coords[dim].values)
-        else:
-            dim_names = None
-        return dim_names
-
-    @staticmethod
-    def dict2pd(dict_data, sep='.'):
-        """Flatten Python dictionary to Pandas DataFrame."""
-        return pd.io.json.json_normalize(dict_data, sep=sep)
-
-    @staticmethod
-    def flatten_dict(dict_data, prefix='.'):
-        """Flatten dictionary with given prefix."""
-        def items():
-            # A closure for recursively extracting dict like values
-            for key, value in dict_data.items():
-                if isinstance(value, dict):
-                    for sub_key, sub_value in flatten_dict(value).items():
-                        yield key + prefix + sub_key, sub_value
-                else:
-                    yield key, value
-        return dict(items())
 
 
 # Classes
@@ -387,8 +321,12 @@ class Find(ImageDataFrame):
         else:
             self._dataframe, self._bead_dims = \
                 self._return_data(object_images)
-        print("Mean bead radius: %0.2f" % (self.bead_dims.radius.mean() * 2))
-        print("CV bead radius: %0.2f" % (self.bead_dims.radius.std()/self.bead_dims.radius.std()*100))
+        beads_radius_mean = self.bead_dims.radius.mean() * 2
+        print("Bead radius AVG: %0.2f" % (beads_radius_mean))
+        beads_radius_sd = self.bead_dims.radius.std()
+        print("Bead radius SD: %0.2f" % (beads_radius_sd))
+        beads_radius_cv = (beads_radius_sd / beads_radius_mean) * 100
+        print("Bead radius CV: %0.2f%%" % (beads_radius_cv))
         if self.beads_per_set is not None:
             for key, value in self.beads_per_set.items():
                 print("Number of beads in set %s: %i" % (key, value))
@@ -424,7 +362,7 @@ class Find(ImageDataFrame):
     @property
     def sets(self):
         """Return list of sets."""
-        return get_set_names(self._bead_dims)
+        return TableDataFrame.get_set_names(self._bead_dims)
 
     def inspect(self, set_name=None, fig_num=3):
         """Display random images from set for inspection."""
@@ -542,7 +480,7 @@ class Ratio(ImageDataFrame):
     def _return_data(self, images, reference):
         self.spec_unmix.unmix(images)
         unmix_images = self.spec_unmix.data
-        sets = get_set_names(unmix_images, set_dim='c')
+        sets = ImageDataFrame.get_set_names(unmix_images, set_dim='c')
         sets.remove(reference)
         if self.background in sets:
             sets.remove(self.background)
@@ -600,7 +538,8 @@ class Extract(TableDataFrame):
         """
         if isinstance(images, xr.DataArray):
             if images.ndim == 4:
-                f_list = get_set_names(images, set_dim=images.dims[0])
+                f_list = ImageDataFrame.get_set_names(
+                    images, set_dim=images.dims[0])
                 data = [self._get_data_images(images.loc[f], masks.loc[f])
                         for f in f_list]
                 self._dataframe = pd.concat(data, keys=f_list)
@@ -611,8 +550,8 @@ class Extract(TableDataFrame):
             data_append = []
             s_list = list(images.keys())
             for set_x in s_list:
-                f_list = get_set_names(images[set_x],
-                                       set_dim=images[set_x].dims[0])
+                f_list = ImageDataFrame.get_set_names(
+                    images[set_x], set_dim=images[set_x].dims[0])
                 data = [self._get_data_images(images[set_x][f],
                                               masks[set_x][f])
                         for f in f_list]
@@ -626,7 +565,7 @@ class Extract(TableDataFrame):
             self._get_data_masks(image, masks, self._func)
             for image in images
         }
-        data_flatten = flatten_dict(data, prefix='.')
+        data_flatten = self.flatten_dict(data, prefix='.')
         dataframe = pd.DataFrame.from_dict(data_flatten, orient='columns')
         return dataframe
 
@@ -709,8 +648,8 @@ class Extract(TableDataFrame):
                     (ref_data < (ref_mean + ref_factor * ref_sd)))
         filter_all = (mask_bkg & mask_ref)
         self._dataframe[self.flag_name] = ~filter_all
-        num_out = len(self._dataframe[self._dataframe.flag == True])
-        num_remain = len(self._dataframe[self._dataframe.flag == False])
+        num_out = len(self._dataframe[self._dataframe.flag == True])  # NOQA
+        num_remain = len(self._dataframe[self._dataframe.flag == False])  # NOQA
         num_total = len(self._dataframe)
         num_percentage = ((num_out / num_total) * 100)
         print("Pre-filter: %i" % num_total)
@@ -887,15 +826,17 @@ def get_stats_per_code(data, channel,
     channel : string
         This is the channel (or column) to extract statistical values from.
     codes : int, list
-        This value can be set if only a select (list) or one code (int) needs to be processed.
-        If value is not set the unique codes from data, the Pandas DataFrame is used.
+        This value can be set if only a select (list) or one code (int) needs
+        to be processed. If value is not set the unique codes from data, the
+        Pandas DataFrame is used.
         Defaults to None.
 
     Returns
     -------
     bead_set : Pandas DataFrame
         This dataframe contains: AVG, SD, N, CV, SEM, and RSEM for each code.
-        Codes start at 0. Code -1 represents weighted statistical values over all codes.
+        Codes start at 0. Code -1 represents weighted statistical values over
+        all codes.
 
     """
     data_stats = []
@@ -1011,4 +952,10 @@ def get_weighted_stats(data_array):
     data_rsem = data_sem / data_mean
     data_median = ws.weighted_median(np.nan_to_num(
         data_array[:, 0]), weights=np.nan_to_num(data_array[:, 2]))
-    return np.array([data_mean, data_sd, data_n, data_cv, data_sem, data_rsem, data_median])
+    return np.array([data_mean,
+                     data_sd,
+                     data_n,
+                     data_cv,
+                     data_sem,
+                     data_rsem,
+                     data_median])
