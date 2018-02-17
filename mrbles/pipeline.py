@@ -207,6 +207,14 @@ class Images(ImageDataFrame):
         self.file_patterns = file_patterns
         self._dataframe = None
         self.files = self._find_images(self.folders, self.file_patterns)
+        if isinstance(self.files, dict):
+            for key, value in self.files.items():
+                if value is None:
+                    print("No files found in %s with given parameters."
+                          % (key))
+                else:
+                    print("Found %i files in %s"
+                          % (len(value), key))
 
     def load(self):
         """Load images in memory."""
@@ -281,7 +289,11 @@ class Images(ImageDataFrame):
                          for x in files if reg_object.match(x)]
             if file_list:
                 image_files.append(file_list)
-        return np.hstack(image_files).tolist()
+        if not image_files:
+            file_names = None
+        else:
+            file_names = np.hstack(image_files).tolist()
+        return file_names
 
 
 class Find(ImageDataFrame):

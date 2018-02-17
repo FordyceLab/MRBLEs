@@ -171,12 +171,16 @@ class ImageDataFrame(object):
         """
         if isinstance(self.data, dict) & isinstance(images, dict):
             self._dataframe = {
-                key: self.data[key].combine_first(images[key])
+                key: self.data[key].combine_first(
+                    images[key].astype(self.data[key])
+                )
                 for key in self.data.keys()
             }
         elif isinstance(self.data, xr.DataArray) & \
                 isinstance(images, xr.DataArray):
-            self._dataframe = self.data.combine_first(images)
+            self._dataframe = self.data.combine_first(
+                images.astype(self.data)
+            )
         else:
             raise ValueError("Not dict or Xarray DataArray: %s."
                              % type(images))
