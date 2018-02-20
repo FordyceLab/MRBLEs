@@ -394,12 +394,19 @@ class FindBeadsImaging(ImageDataFrame):
                                 maxRadius=img.shape[0],
                                 param1=hough_param1,
                                 param2=hough_param2)
-        if len(dims) != 1:
-            return None
-        circle_y, circle_x, _ = np.round(np.ravel(dims[0])).astype(np.int)
-        mask = cls.sector_mask(img.shape, [circle_x, circle_y], circle_size)
-        mask_img = img.copy()
-        mask_img[~mask] = 0
+        if len(dims[0]) != 1:
+            mask_img = img
+            mask = np.zeros_like(img, dtype=np.uint8)
+            warnings.warn("No circular ROI found. Defaulting to whole image. "
+                          "Please adjust circle_size, not use circle_size, or "
+                          "crop images.")
+        else:
+            circle_y, circle_x, _ = np.round(np.ravel(dims[0])).astype(np.int)
+            mask = cls.sector_mask(img.shape,
+                                   [circle_x, circle_y],
+                                   circle_size)
+            mask_img = img.copy()
+            mask_img[~mask] = 0
         return mask_img, mask
 
     # Static methods
