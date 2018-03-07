@@ -526,7 +526,7 @@ class Extract(TableDataFrame):
         # self.flag_name = 'flag'
         self.flag_filt = True
 
-    def get(self, images, masks):
+    def get(self, images, masks, add_info=None):
         """Extract data from images using masks.
 
         Parameters
@@ -570,6 +570,9 @@ class Extract(TableDataFrame):
                 data_append.append(pd.concat(data, keys=f_list))
             self._dataframe = pd.concat(data_append, keys=s_list)
         self._dataframe[self.flag_name] = False
+        if add_info is not None:
+            self._dataframe = self._add_info(add_info, self._dataframe)
+
 
     def _get_data_images(self, images, masks):
         data = {
@@ -672,11 +675,12 @@ class Extract(TableDataFrame):
 class Decode(TableDataFrame):
     """Decode."""
 
-    def __init__(self, target, decode_channels=None):
+    def __init__(self, target, seq_list=None, decode_channels=None):
         """Initialize Decode."""
         super(Decode, self).__init__()
         self._target = target
         self._decode_channels = decode_channels
+        self.seq_list = seq_list
         # Instantiate ICP and GMM with default settings
         self._icp = ICP(target)
         self._gmm = Classify(target)
@@ -697,6 +701,8 @@ class Decode(TableDataFrame):
         self._gmm.decode(icp_data)
         self._gmm_qc(data)
         self._dataframe = self._gmm.output
+        if self.seq_list is not None:
+            self._dataframe = self._add_info(self.seq_list, self._dataframe)
         self._dataframe = self._dataframe.combine_first(icp_data)
         if combine_data is not None:
             self.combine(combine_data)
@@ -711,9 +717,19 @@ class Decode(TableDataFrame):
 
 
 class Analyze(TableDataFrame):
-    """Analyze data.
+    """Analyze data MRBLE data and retutn per-code statistics.
 
     Parameters
+    ----------
+    seq_list : list, Pandas DataFrame
+        List (one column) or Pandas DataFrame with additional per-code
+        information. In the case of a Pandas DataFrame all provided columns
+        will be added, based on the row number, which corresponds to its code.
+    flag_filt : boolean
+        Sets if the flagged data is automatically filtered out.
+        Defaults to True.
+
+    Atributes
     ----------
     functions : dict
         Dictionary of functions and their corresponding names.
@@ -723,10 +739,6 @@ class Analyze(TableDataFrame):
                   'se': sp.stats.sem,
                   'N': len,
                   'CV': sp.stats.variation}
-    norm_data: Pandas DataFrame or NumPy array.
-        DataFrame containing per bead normalization data.
-        First column must be codes column, subsequent column(s) must be signal.
-        Defaults to None, no normalization.
 
     """
 
@@ -754,10 +766,32 @@ class Analyze(TableDataFrame):
         else:
             self._dataframe = self._single(data)
 
-    def background(self):
+    def background(self, bkg_data):
+        """Subtract background.
+
+        Parameters
+        ----------
+        bkg_data : float/int, string, list, NumPy array, Pandas DataFrame
+            If float/value is used, this value be subtracted. If string is
+            used, column from internal dataframe is used. Otherwise, the data
+            is subtracted, which needs to be the same size as the per-bead
+            data. In the case of Pandas DataFrame, do slice the single exact
+            column. Row number of the data is the code.
+
+        """
         pass
 
-    def normalize(self):
+    def normalize(self, norm_data):
+        """Normalize data.
+
+        Parameters
+        ----------
+        norm_data : string, list, NumPy array, Pandas DataFrame
+            If string is used, column from internal dataframe is used.
+            Otherwise, the data frame. In the case of Pandas DataFrame, do
+            slice the single exact column. Row number of the data is the code.
+
+        """
         pass
 
     @property
@@ -779,16 +813,7 @@ class Analyze(TableDataFrame):
         dataframe = pd.DataFrame.from_dict(result, orient='index')
         dataframe.index.rename('code', inplace=True)
         if self.seq_list is not None:
-            for code in codes:
-                if isinstance(self.seq_list, pd.DataFrame):
-                    dataframe.loc[code, 'set.sequence'] = \
-                        self.seq_list.sequence.iloc[code]
-                    dataframe.loc[code, 'set.code'] = \
-                        self.seq_list.code.iloc[code]
-                else:
-                    dataframe.loc[code, 'set.sequence'] = \
-                        self.seq_list[code]
-            dataframe['set.code'] = dataframe['set.code'].astype(int)
+            dataframe = self._add_info(self.seq_list, dataframe, codes=codes)
         return dataframe
 
     def _multi(self, data):

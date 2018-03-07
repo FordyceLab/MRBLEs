@@ -113,6 +113,32 @@ class TableDataFrame(object):
             sets_list = None
         return sets_list
 
+    @staticmethod
+    def _add_info(info_data, dataframe,
+                  codes=None, prefix='info.', omit_cols=None):
+        if isinstance(info_data, pd.DataFrame):
+            if omit_cols is not None:
+                info_data.drop(columns=omit_cols,
+                               errors='ignore',
+                               inplace=True)
+            info_data_prefix = info_data.add_prefix(prefix)
+            column_names = list(info_data_prefix.columns)
+            col_df = pd.DataFrame(columns=column_names)
+            dataframe = pd.concat([dataframe, col_df])
+            if (codes is None) and ('code' in dataframe.columns):
+                codes = np.unique(dataframe['code'].dropna()).astype(int)
+                for code in codes:
+                    dataframe.loc[dataframe.code == code, column_names] = \
+                        info_data_prefix.iloc[code].values
+            else:
+                for code in codes:
+                    dataframe.loc[code, column_names] = \
+                        info_data_prefix.iloc[code]
+        else:
+            dataframe.loc[code, 'set.sequence'] = \
+                info_data[code]
+        return dataframe
+
     def _check_flag(self, data):
         if self.flag_name in data.columns and self.flag_filt is True:
             flag_out_data = data[data[self.flag_name] == False]  # NOQA: E712

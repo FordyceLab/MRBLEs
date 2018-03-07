@@ -129,6 +129,9 @@ class FindBeadsImaging(ImageDataFrame):
         # Data set
         self._dataframe = None
         self._bead_dims = None
+        # Adaptive Thersholding
+        self.thr_block = 15
+        self.thr_c = 11
 
     # Properties - Settings
     @property
@@ -191,7 +194,7 @@ class FindBeadsImaging(ImageDataFrame):
             img, roi_mask = self.circle_roi(image, self.circle_size)
         else:
             img = self._img2ubyte(image)
-        bin_img = self._img2bin(img)
+        bin_img = self._img2bin(img, self.thr_block, self.thr_c)
         mask_inside, _ = self._find_inside(bin_img)
         if np.unique(mask_inside).size <= 1:
             blank_img = np.zeros_like(bin_img)
