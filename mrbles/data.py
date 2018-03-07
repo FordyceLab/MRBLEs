@@ -170,9 +170,11 @@ class ImageDataFrame(object):
                 data = self.data.loc[index]
         elif isinstance(index, slice):
             data = self.data
-        elif index[0] == slice(None, None, None):
+        elif index[0] == slice(None, None, None) and isinstance(self.data, dict):
             data = {key: data.loc[index[1:]]
                     for key, data in self.data.items()}
+        elif isinstance(self.data, xr.DataArray):
+            data = self.data.loc[index]
         else:
             data = self.data[index[0]].loc[index[1:]]
         return data

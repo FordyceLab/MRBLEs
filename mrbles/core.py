@@ -194,7 +194,7 @@ class FindBeadsImaging(ImageDataFrame):
             img, roi_mask = self.circle_roi(image, self.circle_size)
         else:
             img = self._img2ubyte(image)
-        bin_img = self._img2bin(img, self.thr_block, self.thr_c)
+        bin_img = self.img2bin(img, self.thr_block, self.thr_c)
         mask_inside, _ = self._find_inside(bin_img)
         if np.unique(mask_inside).size <= 1:
             blank_img = np.zeros_like(bin_img)
@@ -223,12 +223,24 @@ class FindBeadsImaging(ImageDataFrame):
                 mask_bkg[~roi_mask] = 0
                 mask_bkg[mask_bkg < 0] = 0
             bead_dims = self.get_dimensions(mask_bead)
-            bead_dims_overlay = bead_dims.loc[:, ('x_centroid',
-                                                  'y_centroid',
-                                                  'radius')]
-            overlay_image = self.cross_overlay(img,
-                                               bead_dims_overlay,
-                                               color=False)
+            # TODO: Make better - Below
+            if bead_dims is None:
+                blank_img = np.zeros_like(bin_img)
+                mask_bead = blank_img
+                mask_ring = blank_img
+                mask_outside = blank_img
+                mask_inside = blank_img
+                mask_bkg = blank_img
+                bead_dims = None
+                overlay_image = blank_img
+            else:
+                bead_dims_overlay = bead_dims.loc[:, ('x_centroid',
+                                                      'y_centroid',
+                                                      'radius')]
+                overlay_image = self.cross_overlay(img,
+                                                   bead_dims_overlay,
+                                                   color=False)
+            # TODO: Make better - Above
         masks = xr.DataArray(data=np.array([mask_bead,
                                             mask_ring,
                                             mask_inside,
@@ -323,7 +335,7 @@ class FindBeadsImaging(ImageDataFrame):
         return mask_outside
 
     @classmethod
-    def _img2bin(cls, image, thr_block=15, thr_c=11):
+    def img2bin(cls, image, thr_block=15, thr_c=11):
         """Convert and adaptive threshold image."""
         img = cls._img2ubyte(image)
         img_thr = cv2.adaptiveThreshold(src=img,

@@ -28,6 +28,7 @@ pylint = "*"
 pydocstyle = "*"
 "pep8" = "*"
 ipykernel = "*"
+rope = "*"
 
 
 [dev-packages]
