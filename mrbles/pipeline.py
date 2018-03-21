@@ -251,16 +251,19 @@ class Images(ImageDataFrame):
 
     def flat_field(self, ff_image_file, channel, affix='_FF'):
         """Flat-Field correction."""
-        flat_field = tff.TiffFile(ff_image_file).asarray()
+        if isinstance(ff_image_file, str):
+            flat_field = tff.TiffFile(ff_image_file).asarray()
+        else:
+            flat_field = ff_image_file
         flat_field = flat_field / flat_field.max()  # Normalize Flat-Field
         if isinstance(self._dataframe, dict):
-            ff_df = {}
+            ff_dict_df = {}
             for key in self._dataframe.keys():
-                for file in self._dataframe[key].f.values:
-                    ff_df[key] = self._dataframe[key].loc[file, [channel]] / flat_field
-                ff_df[key] = self.rename_coord(
-                    ff_df[key], 'c', channel, "%s%s" % (channel, affix))
-        self.combine(ff_df)
+                ff_df = self._dataframe[key].loc[:, [channel]]
+                ff_dict_df[key] = ff_df / flat_field
+                ff_dict_df[key] = self.rename_coord(
+                    ff_dict_df[key], 'c', channel, "%s%s" % (channel, affix))
+        self.combine(ff_dict_df)
 
     @staticmethod
     def rename_coord(dataframe, dim, old_name, new_name):
