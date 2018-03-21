@@ -29,6 +29,12 @@ pydocstyle = "*"
 "pep8" = "*"
 ipykernel = "*"
 rope = "*"
+ipython = "*"
+seaborn = "*"
+imblearn = "*"
+"mpld3" = "*"
+"jinja2" = "*"
+ipywidgets = "*"
 
 
 [dev-packages]

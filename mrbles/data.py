@@ -88,6 +88,8 @@ class TableDataFrame(object):
                                          self.data.reset_index(drop=True)],
                                         axis=1)
             self._dataframe.index = index
+            if 'index' in self._dataframe.index:
+                self._dataframe.drop(index='index')
         else:
             raise ValueError("Not Pandas DataFrame: %s." % type(data))
 
@@ -114,13 +116,8 @@ class TableDataFrame(object):
         return sets_list
 
     @staticmethod
-    def _add_info(info_data, dataframe,
-                  codes=None, prefix='info.', omit_cols=None):
+    def _add_info(info_data, dataframe, codes=None, prefix='info.'):
         if isinstance(info_data, pd.DataFrame):
-            if omit_cols is not None:
-                info_data.drop(columns=omit_cols,
-                               errors='ignore',
-                               inplace=True)
             info_data_prefix = info_data.add_prefix(prefix)
             column_names = list(info_data_prefix.columns)
             col_df = pd.DataFrame(columns=column_names)

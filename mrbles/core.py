@@ -534,14 +534,14 @@ class FindBeadsImaging(ImageDataFrame):
             tbl = photutils.properties_table(properties)
         else:
             tbl = properties.to_table()  # Convert to table
-        lbl = np.array(tbl['min_value'], dtype=int)
+        lbl = np.array(tbl['min_value'], dtype=np.int16)
         reg_x = tbl['xcentroid']
         reg_y = tbl['ycentroid']
         reg_r = tbl['equivalent_radius']
         reg_area = tbl['area']
         perimeter = tbl['perimeter']
         eccentricity = tbl['eccentricity']
-        pdata = np.array([lbl.astype(int), reg_x, reg_y, reg_r, reg_area,
+        pdata = np.array([lbl, reg_x, reg_y, reg_r, reg_area,
                           perimeter, eccentricity]).T
         dims = pd.DataFrame(data=pdata,
                             columns=['label',
@@ -567,8 +567,12 @@ class FindBeadsImaging(ImageDataFrame):
                            int(round(center_y) + round(radius)))
             line_x = slice(int(round(center_x) - round(radius)),
                            int(round(center_x) + round(radius)))
-            img[int(round(center_y)), line_x] = (20, 20, 220)
-            img[line_y, int(round(center_x))] = (20, 20, 220)
+            # width_x = slice(int(round(center_x)) - 1, int(round(center_x)) + 1)
+            # width_y = slice(int(round(center_y)) - 1, int(round(center_x)) + 1)
+            width_x = int(round(center_x))
+            width_y = int(round(center_y))
+            img[width_y, line_x] = (20, 20, 220)
+            img[line_y, width_x] = (20, 20, 220)
         if color is False:
             img = skimage.color.rgb2gray(img)
             with warnings.catch_warnings():
@@ -1020,6 +1024,8 @@ class ICP(object):
                  tol=1e-4,
                  outlier_pct=0.01):
         """Instantiate Iterative Closest Point (ICP) object."""
+        if isinstance(target, pd.DataFrame):
+            target = target.values
         self._target = target
         self.matrix, self.matrix_func = self._set_matrix_method(matrix_method)
         self.max_iter = max_iter
@@ -1194,6 +1200,8 @@ class Classify(object):
     def __init__(self, target,
                  sigma=1e-5, train=False, **kwargs):
         """Instantiate Classification object."""
+        if isinstance(target, pd.DataFrame):
+            target = target.values
         self._target = target
         kwargs.setdefault('covariance_type', 'full')
         kwargs.setdefault('tol', 1e-5)

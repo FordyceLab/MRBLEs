@@ -67,8 +67,8 @@ from mrbles import core
 from mrbles import data
 from mrbles import pipeline
 from mrbles.pipeline import *
-from mrbles import inspect
+from mrbles import report
 from mrbles import kinetics
 
 standard_library.install_aliases()
-print(__copyright__)
+print(__copyright__, " - Version: ", __version__)

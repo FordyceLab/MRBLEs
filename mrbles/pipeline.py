@@ -52,6 +52,7 @@ import pandas as pd
 import weightedstats as ws
 import xarray as xr
 from matplotlib import pyplot as plt
+from skimage.external import tifffile as tff
 
 # Intra-Package dependencies
 from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
@@ -112,8 +113,12 @@ class References(TableDataFrame):
         """Process."""
         self._images.load()
         spectra = list(self._images.data.keys())
-        bkg_images = self._images[self.background, self.reference_channels,
-                                  self.bkg_roi[0], self.bkg_roi[1]]
+        if len(self.bkg_roi) == 3:
+            bkg_images = self._images[self.background, self.bkg_roi[2],
+                                      self.bkg_roi[0], self.bkg_roi[1]]
+        else:
+            bkg_images = self._images[self.background, self.reference_channels,
+                                      self.bkg_roi[0], self.bkg_roi[1]]
         self._bkg_image = self._images[self.background, self.object_channel,
                                        self.bkg_roi[0], self.bkg_roi[1]]
         spec_images = ImageDataFrame(self._images.data)
@@ -244,6 +249,19 @@ class Images(ImageDataFrame):
                                                 old_name,
                                                 new_name)
 
+    def flat_field(self, ff_image_file, channel, affix='_FF'):
+        """Flat-Field correction."""
+        flat_field = tff.TiffFile(ff_image_file).asarray()
+        flat_field = flat_field / flat_field.max()  # Normalize Flat-Field
+        if isinstance(self._dataframe, dict):
+            ff_df = {}
+            for key in self._dataframe.keys():
+                for file in self._dataframe[key].f.values:
+                    ff_df[key] = self._dataframe[key].loc[file, [channel]] / flat_field
+                ff_df[key] = self.rename_coord(
+                    ff_df[key], 'c', channel, "%s%s" % (channel, affix))
+        self.combine(ff_df)
+
     @staticmethod
     def rename_coord(dataframe, dim, old_name, new_name):
         """Rename dimension coordinate in an Xarray DataArray."""
@@ -333,6 +351,7 @@ class Find(ImageDataFrame):
         else:
             self._dataframe, self._bead_dims = \
                 self._return_data(object_images)
+        self._bead_dims.reset_index(inplace=True)
         beads_radius_mean = self.bead_dims.radius.mean() * 2
         print("Bead radius AVG: %0.2f" % (beads_radius_mean))
         beads_radius_sd = self.bead_dims.radius.std()
@@ -526,7 +545,7 @@ class Extract(TableDataFrame):
         # self.flag_name = 'flag'
         self.flag_filt = True
 
-    def get(self, images, masks, add_info=None):
+    def get(self, images, masks, combine_data=None):
         """Extract data from images using masks.
 
         Parameters
@@ -570,9 +589,14 @@ class Extract(TableDataFrame):
                 data_append.append(pd.concat(data, keys=f_list))
             self._dataframe = pd.concat(data_append, keys=s_list)
         self._dataframe[self.flag_name] = False
-        if add_info is not None:
-            self._dataframe = self._add_info(add_info, self._dataframe)
-
+        if len(self._dataframe.index.names) == 3:
+            self._dataframe.index.rename(
+                ['set', 'file', 'bead_index'], inplace=True)
+        else:
+            self._dataframe.index.rename(['f', 'bead_no'], inplace=True)
+        if combine_data is not None:
+            self.combine(combine_data)
+        self._dataframe.reset_index(inplace=True)
 
     def _get_data_images(self, images, masks):
         data = {
@@ -761,7 +785,7 @@ class Analyze(TableDataFrame):
 
     def analyze(self, data):
         """Analyze data."""
-        if data.index.nlevels == 3:
+        if 'set' in data.columns:
             self._dataframe = self._multi(data)
         else:
             self._dataframe = self._single(data)
@@ -817,13 +841,14 @@ class Analyze(TableDataFrame):
         return dataframe
 
     def _multi(self, data):
-        levels = data.index.get_level_values(0).unique()
+        levels = list(np.unique(data.set))
+        #levels.remove('set')
         result = [
-            self._single(data.loc[level]) for level in levels
+            self._single(data.loc[data.set == level]) for level in levels
         ]
         dataframe = pd.concat(result, keys=levels)
         dataframe.index.rename(('set', 'code'), inplace=True)
-        return dataframe
+        return dataframe.reset_index()
 
     def _get_stats_per_code(self, data, codes):
         pass
