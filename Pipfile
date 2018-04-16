@@ -35,6 +35,7 @@ imblearn = "*"
 "mpld3" = "*"
 "jinja2" = "*"
 ipywidgets = "*"
+ipython-autotime = "*"
 
 
 [dev-packages]

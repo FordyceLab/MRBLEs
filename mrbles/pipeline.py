@@ -221,11 +221,11 @@ class Images(ImageDataFrame):
                     print("Found %i files in %s"
                           % (len(value), key))
 
-    def load(self):
+    def load(self, series=0):
         """Load images in memory."""
         if self.files is None:
             return False
-        self._dataframe = {key: ImageSetRead(file_set).xdata
+        self._dataframe = {key: ImageSetRead(file_set, series).xdata
                            for key, file_set in self.files.items()}
 
     def add_images(self, images):
@@ -831,6 +831,8 @@ class Analyze(TableDataFrame):
         channels.remove('code')
         if self.flag_name in channels:
             channels.remove(self.flag_name)
+        if 'set' in channels:
+            channels.remove('set')
         codes = np.unique(data.code.values).astype(int)
         result = {}
         for code in codes:

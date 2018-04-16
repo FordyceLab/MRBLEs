@@ -25,6 +25,8 @@ from builtins import (super, range, int, object)
 import sys
 import itertools
 import random
+import time
+# import multiprocessing as mp
 # Data
 import numpy as np
 import pandas as pd
@@ -32,6 +34,7 @@ import pandas as pd
 import cv2
 # Image display
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import plotly.graph_objs as go
 
 
@@ -66,6 +69,105 @@ def image_overlay(image, image_blend, alpha=0.2, cmap_image='Greys_r', cmap_blen
     """
     plt.imshow(image, cmap=cmap_image)
     plt.imshow(image_blend, cmap=cmap_blend, interpolation='none', alpha=alpha)
+
+def cluster3d_check(bead_set, target, gmix, set_prob=1, channels=None):
+    """Clustering plot
+    """
+    if channels is None:
+        channels = ['rat_dy_icp', 'rat_tm_icp', 'rat_sm_icp']
+    clusters = len(target)
+    colors = np.multiply(bead_set.code.loc[((bead_set.code >= 0) & (
+        bead_set.log_prob > set_prob))].values, np.ceil(255 / clusters))
+
+    bead_ratios_all = go.Scatter3d(
+        name='Bead ratios - Marked',
+        x=bead_set.loc[((bead_set.code.isnull()) | (
+            bead_set.log_prob <= set_prob)), (channels[0])].values,
+        y=bead_set.loc[((bead_set.code.isnull()) | (
+            bead_set.log_prob <= set_prob)), (channels[1])].values,
+        z=bead_set.loc[((bead_set.code.isnull()) | (
+            bead_set.log_prob <= set_prob)), (channels[2])].values,
+        text=bead_set.loc[:, ('lbl')].values,
+        mode='markers',
+        marker=dict(
+            size=3,
+            colorscale='grey',
+            opacity=0.7,
+            symbol='cross'
+        )
+    )
+
+    bead_ratios = go.Scatter3d(
+        name='Bead ratios - Filtered',
+        x=bead_set.loc[((bead_set.code >= 0) & (
+            bead_set.log_prob > set_prob)), ('rat_dy_icp')].values,
+        y=bead_set.loc[((bead_set.code >= 0) & (
+            bead_set.log_prob > set_prob)), ('rat_sm_icp')].values,
+        z=bead_set.loc[((bead_set.code >= 0) & (
+            bead_set.log_prob > set_prob)), ('rat_tm_icp')].values,
+        text=bead_set.loc[(bead_set.code >= 0), ('lbl')].values,
+        mode='markers',
+        marker=dict(
+            size=3,
+            color=colors,
+            colorscale='Rainbow',
+            opacity=0.6
+        )
+    )
+
+    target_ratios = go.Scatter3d(
+        name='Target ratios',
+        x=target[:, 0],
+        y=target[:, 1],
+        z=target[:, 2],
+        text=list(range(1, clusters + 1)),
+        mode='markers',
+        marker=dict(
+            size=4,
+            color='black',
+            opacity=0.5,
+            symbol="diamond"
+        )
+    )
+
+    mean_ratios = go.Scatter3d(
+        name='GMM mean ratios',
+        x=gmix.means[:, 0],
+        y=gmix.means[:, 1],
+        z=gmix.means[:, 2],
+        text=list(range(1, clusters + 1)),
+        mode='markers',
+        marker=dict(
+            size=4,
+            color='red',
+            opacity=0.5,
+            symbol="diamond"
+        )
+    )
+
+    data = [bead_ratios_all, bead_ratios, target_ratios, mean_ratios]
+    layout = go.Layout(
+        showlegend=True,
+        scene=dict(
+            xaxis=dict(
+                title='Dy/Eu'
+            ),
+            yaxis=dict(
+                title='Sm/Eu'
+            ),
+            zaxis=dict(
+                title='Tm/Eu'
+            )
+        ),
+        margin=dict(
+            l=0,
+            r=0,
+            b=0,
+            t=0
+        )
+    )
+    fig = go.Figure(data=data, layout=layout)
+    return fig
 
 
 # Classes
@@ -405,101 +507,157 @@ class PeptideScramble(object):
         return ''.join(seq_list)
 
 
-def cluster3d_check(bead_set, target, gmix, set_prob=1, channels=None):
-    """Clustering plot
+class BeadsReport(object):
+    """Per-MRBLE images report.
+
+    This method generates the selected images per-MRBLE.
+
+    WARNING!
+    --------
+    This method can take a lot of time, since it will generate images
+    per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
+    each, which makes a total of 11,000 images.
+
+    Parameters
+    ----------
+    data : Pandas DataFrame
+        Contains all the dimension, posotional, and intensity data per-MBRLE.
+    images : mrbles.ImageDataFrame, Xarray DataArray
+        Contains
+
+    Methods:
+    --------
+    generate() : method
+
+    Attributes
+    ----------
+    time_sec : float
+        Time required per-image generated in seconds.
+        For instance, 300 beads times 12 images is 3600 images.
     """
-    if channels is None:
-        channels = ['rat_dy_icp', 'rat_tm_icp', 'rat_sm_icp']
-    clusters = len(target)
-    colors = np.multiply(bead_set.code.loc[((bead_set.code >= 0) & (
-        bead_set.log_prob > set_prob))].values, np.ceil(255 / clusters))
 
-    bead_ratios_all = go.Scatter3d(
-        name='Bead ratios - Marked',
-        x=bead_set.loc[((bead_set.code.isnull()) | (
-            bead_set.log_prob <= set_prob)), (channels[0])].values,
-        y=bead_set.loc[((bead_set.code.isnull()) | (
-            bead_set.log_prob <= set_prob)), (channels[1])].values,
-        z=bead_set.loc[((bead_set.code.isnull()) | (
-            bead_set.log_prob <= set_prob)), (channels[2])].values,
-        text=bead_set.loc[:, ('lbl')].values,
-        mode='markers',
-        marker=dict(
-            size=3,
-            colorscale='grey',
-            opacity=0.7,
-            symbol='cross'
+    def __init__(self, data, images, assay_channel,
+                 parallelize=True, time_sec=0.0275):
+        """Init."""
+        self._dataframe = data
+        self._images = images
+        self.parallelize = parallelize
+
+        self.ref_channel = "Eu"
+        self.ref_mask = "mask_inside"
+        self.bkg_channel = "bkg"
+        self.bkg_mask = "mask_inside"
+        self.assay_channel = assay_channel
+        self.assay_mask = "mask_ring"
+        self.npl_channels = ['Eu', 'Dy', 'Tm', 'Sm']
+        self.npl_mask = "mask_inside"
+
+        self.max_assay = self._images.sel(c=self.assay_channel).max()
+        self.max_npl = self._images.sel(c=self.npl_channels).max()
+
+        self.time_sec = time_sec
+
+        self._time_estimate()
+
+    def _time_estimate(self):
+        self.beads_num = self._dataframe.shape[0]
+        self.images_num = self._images.c.shape[0]
+        total_img = self.images_num * self.beads_num
+        total_time = (total_img * self.time_sec) / 60  # Time in minutes
+        print("Total beads: %i" % self.beads_num)
+        print("Total images: %i" % total_img)
+        print("Total estimated time required: %i minutes"
+              % round(total_time))
+
+    def generate(self, filename):
+        """Per-MRBLE images report.
+
+        This method generates the selected images per-MRBLE.
+
+        WARNING!
+        --------
+        This method can take a lot of time, since it will generate images
+        per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
+        each, which makes a total of 12,000 images.
+        """
+        time_0 = time.time()
+        self._per_pdf(filename)
+        time_1 = time.time()
+        time_total = (time_1 - time_0)
+        time_per_image = time_total / (self.beads_num * self.images_num)
+        time_min = time_total / 60
+        time_sec = time_total % 60
+        print("Total time: %i minutes %02d seconds" % (time_min, time_sec))
+        print("Time per-image: %0.5f" % time_per_image)
+        self.time_sec = time_per_image
+
+    def _per_bead_plot(self, idx, image, g_idx, dim, bead_num, img_num):
+        ax_sub = plt.subplot2grid(
+            (bead_num, img_num), (g_idx, idx)
         )
-    )
-
-    bead_ratios = go.Scatter3d(
-        name='Bead ratios - Filtered',
-        x=bead_set.loc[((bead_set.code >= 0) & (
-            bead_set.log_prob > set_prob)), ('rat_dy_icp')].values,
-        y=bead_set.loc[((bead_set.code >= 0) & (
-            bead_set.log_prob > set_prob)), ('rat_sm_icp')].values,
-        z=bead_set.loc[((bead_set.code >= 0) & (
-            bead_set.log_prob > set_prob)), ('rat_tm_icp')].values,
-        text=bead_set.loc[(bead_set.code >= 0), ('lbl')].values,
-        mode='markers',
-        marker=dict(
-            size=3,
-            color=colors,
-            colorscale='Rainbow',
-            opacity=0.6
-        )
-    )
-
-    target_ratios = go.Scatter3d(
-        name='Target ratios',
-        x=target[:, 0],
-        y=target[:, 1],
-        z=target[:, 2],
-        text=list(range(1, clusters + 1)),
-        mode='markers',
-        marker=dict(
-            size=4,
-            color='black',
-            opacity=0.5,
-            symbol="diamond"
-        )
-    )
-
-    mean_ratios = go.Scatter3d(
-        name='GMM mean ratios',
-        x=gmix.means[:, 0],
-        y=gmix.means[:, 1],
-        z=gmix.means[:, 2],
-        text=list(range(1, clusters + 1)),
-        mode='markers',
-        marker=dict(
-            size=4,
-            color='red',
-            opacity=0.5,
-            symbol="diamond"
-        )
-    )
-
-    data = [bead_ratios_all, bead_ratios, target_ratios, mean_ratios]
-    layout = go.Layout(
-        showlegend=True,
-        scene=dict(
-            xaxis=dict(
-                title='Dy/Eu'
-            ),
-            yaxis=dict(
-                title='Sm/Eu'
-            ),
-            zaxis=dict(
-                title='Tm/Eu'
+        if g_idx == 0:
+            ax_sub.title.set_text(str(image.c.values))
+            ax_sub.title.set_size(2.5)
+        if idx == 0:
+            ax_sub.set_ylabel("B#:%i \n F#:%i" % (dim['index'], dim['f']), size=3)
+            ax_sub.set_xlabel("Code#:%i" % (dim['code']), size=3)
+            ax_sub.imshow(image.astype(int))
+        elif str(image.c.values) == "mask_check":
+            ax_sub.imshow(image.astype(int))
+        elif "mask" in str(image.c.values):
+            ax_sub.set_xlabel(
+                "I: %i" % (dim[self.assay_channel + '.' + str(image.c.values)]),
+                size=3
             )
-        ),
-        margin=dict(
-            l=0,
-            r=0,
-            b=0,
-            t=0
-        )
-    )
-    fig = go.Figure(data=data, layout=layout)
-    return fig
+            min_mask = image.values[image.values > 0].min()
+            max_mask = image.values[image.values > 0].max()
+            img = image.astype(np.uint).values
+            ax_sub.imshow(img, vmin=min_mask - 1, vmax=max_mask)
+        elif str(image.c.values) == self.assay_channel:
+            ax_sub.set_xlabel("I: %i" % (dim[self.assay_channel + '.' + self.assay_mask]), size=3)
+            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_assay)
+        elif str(image.c.values) == self.ref_channel:
+            ax_sub.set_xlabel("I: %i" % (dim[self.ref_channel + '.' + self.ref_mask]), size=3)
+            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
+        elif str(image.c.values) == self.bkg_channel:
+            ax_sub.set_xlabel("I: %i" % (dim[self.bkg_channel + '.' + self.bkg_mask]), size=3)
+            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
+        elif any(channel in str(image.c.values) for channel in self.npl_channels):
+            ax_sub.set_xlabel(
+                "R: %0.3f" % (dim[str(image.c.values) + '_ratio' + '.' + self.npl_mask]),
+                size=3
+            )
+            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
+        ax_sub.set_yticklabels([])
+        ax_sub.set_xticklabels([])
+        ax_sub.tick_params(axis=u'both', which=u'both', length=0)
+        ax_sub.xaxis.labelpad = -3
+        ax_sub.patch.set_visible(False)
+
+    def _iter_dims(self, index, dim, figs, bead_num, img_num):
+        d_x, d_y, d_r, d_f = dim['x_centroid'], dim['y_centroid'], dim['radius'], dim['f']
+        x_min, x_max = round(d_x - 2 * d_r), round(d_x + 2 * d_r)
+        y_min, y_max = round(d_y - 2 * d_r), round(d_y + 2 * d_r)
+        [self._per_bead_plot(idx, image, index, dim, bead_num, img_num)
+         for idx, image in enumerate(
+             figs[d_f, :, slice(y_min, y_max), slice(x_min, x_max)])]
+
+    def _per_set_pdf(self, dims_per_step, figs, pdf_object):
+        dims_per_step.reset_index(inplace=True, drop=True)
+        bead_num = dims_per_step.shape[0]
+        img_num = figs.c.shape[0]
+        plt_fig = plt.figure(figsize=(0.3 * img_num, 0.3 * bead_num), dpi=300)
+        plt.axis('off')
+        plt_fig.tight_layout(pad=1, w_pad=0.1, h_pad=2)
+        [self._iter_dims(idx, dim, figs, bead_num, img_num)
+         for idx, dim in dims_per_step.iterrows()]
+        pdf_object.savefig(plt_fig)
+        plt.close()
+
+    def _per_pdf(self, filename, dim_step=33):
+        with PdfPages(filename) as pdf_object:
+            [self._per_set_pdf(self._dataframe[x:(x + dim_step)], self._images, pdf_object)
+             if(x + dim_step < self.beads_num)
+             else self._per_set_pdf(self._dataframe[x:self.beads_num],
+                                    self._images, pdf_object)
+             for x in range(0, self.beads_num, dim_step)]
