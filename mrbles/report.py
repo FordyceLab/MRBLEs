@@ -36,6 +36,7 @@ import cv2
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import plotly.graph_objs as go
+import seaborn as sns
 
 
 # Functions
@@ -537,9 +538,12 @@ class BeadsReport(object):
     """
 
     def __init__(self, data, images, assay_channel,
-                 parallelize=True, time_sec=0.0275):
+                 parallelize=True, time_sec=0.0275, sort=True):
         """Init."""
-        self._dataframe = data
+        if sort is True:
+            self._dataframe = data.sort_values('code').fillna(0)
+        else:
+            self._dataframe = data.fillna(0)
         self._images = images
         self.parallelize = parallelize
 
@@ -661,3 +665,177 @@ class BeadsReport(object):
              else self._per_set_pdf(self._dataframe[x:self.beads_num],
                                     self._images, pdf_object)
              for x in range(0, self.beads_num, dim_step)]
+
+
+class QCReport(object):
+    """MRBLE library Quality Control report."""
+
+    def __init__(self, data):
+        self._per_bead_data = data
+        self.dpi = 300
+
+        self.npl_channels = ['Eu', 'Dy', 'Tm', 'Sm']
+
+    def generate(self, filename):
+        with PdfPages(filename) as pdf_object:
+            self._add_figure([self.bead_size,
+                              self.beads_per_code],
+                             pdf_object)
+            self.npl_plots(pdf_object)
+
+    def _add_figure(self, plots, pdf_object):
+        for plot in plots:
+            plot()
+            pdf_object.savefig(dpi=self.dpi)
+            plt.close()
+
+    def bead_size(self):
+        """Bead size distribution plot."""
+        self._per_bead_data.loc[:, 'diameter'] = self._per_bead_data.radius * 2
+        b_std = self._per_bead_data.diameter.std()
+        b_mean = self._per_bead_data.diameter.mean()
+        x_left = b_mean - (5 * b_std)
+        x_right = b_mean + (5 * b_std)
+        self._per_bead_data.diameter.plot(
+            kind='hist', bins=100, color='lightgray', title="Beads Diameter (Pixels) Mean: %0.2f SD: %0.2f" % (b_mean, b_std)).set_xlim(left=x_left, right=x_right)
+        self._per_bead_data.diameter.plot(kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(bottom=0)
+
+    def beads_per_code(self):
+        """Beads per-code distribution plot."""
+        b_std = self._per_bead_data.groupby(['set', 'code']).size().std()
+        b_mean = self._per_bead_data.groupby(['set', 'code']).size().mean()
+        self._per_bead_data.groupby(['set', 'code']).size().plot(
+            kind='hist', color='lightgray', title="Beads-per-code (N) Mean: %0.2f SD: %0.2f" % (b_mean, b_std))
+        self._per_bead_data.groupby(['set', 'code']).size().plot(kind='kde', secondary_y=True, color='black', alpha=0.7)
+
+    def npl_plots(self, pdf_object):
+        # Pre ICP
+        sns.distplot(self._per_bead_data['Dy_ratio.mask_inside'], hist=True, kde=False, bins=1000)
+        plt.title("Dy ratios - pre-ICP")
+        pdf_object.savefig(dpi=self.dpi)
+        plt.close()
+
+        # Before CI filter
+        g = sns.FacetGrid(self._per_bead_data, col="info.Dy", col_wrap=3, sharey=True)
+        g.fig.suptitle("Sm vs Tm ratios - pre-ICP (No CI filter)")
+        g.fig.subplots_adjust(top=10)
+        g.map(sns.regplot, 'Sm_ratio.mask_inside', 'Tm_ratio.mask_inside', fit_reg=False,
+              scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        pdf_object.savefig(dpi=self.dpi)
+        plt.close()
+
+        # After CI filter
+        g = sns.FacetGrid(self._per_bead_data.query('confidence > 0.95'), col="info.Dy", col_wrap=3, sharey=True)
+        g.fig.suptitle("Sm vs Tm ratios - pre-ICP (CI > 0.95 filter)")
+        g.fig.subplots_adjust(top=10)
+        g.map(sns.regplot, 'Sm_ratio.mask_inside', 'Tm_ratio.mask_inside', fit_reg=False,
+              scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        pdf_object.savefig(dpi=self.dpi)
+        plt.close()
+
+        # Post ICP
+        sns.distplot(self._per_bead_data['Dy_ratio.mask_inside_icp'], hist=True, kde=False, bins=1000)
+        plt.title("Dy ratios - Post-ICP")
+        pdf_object.savefig(dpi=self.dpi)
+        plt.close()
+
+        # Before CI filter
+        g = sns.FacetGrid(self._per_bead_data, col="info.Dy", col_wrap=3, sharey=True)
+        g.fig.suptitle("Sm vs Tm ratios - Post-ICP (No CI filter)")
+        g.fig.subplots_adjust(top=10)
+        g.map(sns.regplot, 'Sm_ratio.mask_inside_icp', 'Tm_ratio.mask_inside_icp', fit_reg=False,
+              scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        pdf_object.savefig(dpi=self.dpi)
+        plt.close()
+
+        # After CI filter
+        g = sns.FacetGrid(self._per_bead_data.query('confidence > 0.95'), col="info.Dy", col_wrap=3, sharey=True)
+        g.fig.suptitle("Sm vs Tm ratios - Post-ICP (CI > 0.95 filter)")
+        g.fig.subplots_adjust(top=10)
+        g.map(sns.regplot, 'Sm_ratio.mask_inside_icp', 'Tm_ratio.mask_inside_icp', fit_reg=False,
+              scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        pdf_object.savefig(dpi=self.dpi)
+        plt.close()
+
+    def assay_contamination(self):
+        npl_num = len(self.npl_channels)
+        plt.figure(dpi=150)
+        self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Dy_ratio.mask_inside_icp',
+                         title='Dy Ratio vs Cy5 (ring)')
+        #plt.savefig('Dy Ratio vs Cy5 (ring) - BKG.png', dpi=300)
+
+        plt.figure(dpi=150)
+        self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Sm_ratio.mask_inside_icp',
+                         title='Sm Ratio vs Cy5 (ring)')
+        #plt.savefig('Sm Ratio vs Cy5 (ring) - BKG.png',dpi=300)
+
+        plt.figure(dpi=300)
+        self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Tm_ratio.mask_inside_icp',
+                         title='Tm Ratio vs Cy5 (ring)')
+        #plt.savefig('Tm Ratio vs Cy5 (ring) - BKG.png', dpi=300)
+
+    def npl_covar_plots(self):
+        colors = ['green', 'blue', 'red']
+        fig, ax = plt.subplots(dpi=100)
+        plt.title('Green: Dy-levels, Blue: DyTm-levels, Red: DySm-levels')
+        n = 0
+        for X1, y1 in zip(Dy_masks_means, Dy_masks_sds):
+            regr = linear_model.LinearRegression()
+            X =X1.reshape(-1,1)
+            y = y1.reshape(-1,1)
+            regr.fit(X, y)
+            slope = regr.coef_[0]
+            intercept = regr.intercept_
+            r2 = sp.stats.pearsonr(X, y)[0]
+            sns.regplot(x=X, y=y, ci=None, ax=ax, scatter=True,
+                        scatter_kws={'alpha': 0.4, 'color': colors[n]},
+                        line_kws={'alpha': 0.6, 'color': colors[n]})
+            plt.annotate('Slope: %0.3f Intercept: %0.3f PR2: %0.2f' % (slope, intercept, r2), xy=(X[1], max(y)))
+            n+=1
+        plt.savefig('Dy-MeanSD.png', dpi=300)
+
+        colors = ['green', 'blue', 'red']
+        fig, ax = plt.subplots(dpi=100);
+        plt.title('Green: Sm-levels, Blue: SmTm-levels, Red: SmDy-levels')
+        n = 0
+        for X1, y1 in zip(Sm_masks_means, Sm_masks_sds):
+            regr = linear_model.LinearRegression()
+            X =X1.reshape(-1,1)
+            y = y1.reshape(-1,1)
+            regr.fit(X, y)
+            slope = regr.coef_[0]
+            intercept = regr.intercept_
+            r2 = sp.stats.pearsonr(X, y)[0]
+            sns.regplot(x=X, y=y, ci=None, ax=ax, scatter=True,
+                        scatter_kws={'alpha': 0.4, 'color':colors[n]},
+                        line_kws={'alpha': 0.6, 'color':colors[n]})
+            plt.annotate('Slope: %0.3f Intercept: %0.3f PR2: %0.2f' % (slope, intercept, r2), xy=(X[1], max(y)))
+            n+=1
+        plt.savefig('Sm-MeanSD.png', dpi=300)
+
+        colors = ['green', 'blue', 'red']
+        fig, ax = plt.subplots(dpi=100)
+        plt.title('Green: Tm-levels, Blue: TmSm-levels, Red: TmDy-levels')
+        n = 0
+        for X1, y1 in zip(Tm_masks_means, Tm_masks_sds):
+            regr = linear_model.LinearRegression()
+            X =X1.reshape(-1,1)
+            y = y1.reshape(-1,1)
+            regr.fit(X, y)
+            slope = regr.coef_[0]
+            intercept = regr.intercept_
+            r2 = sp.stats.pearsonr(X, y)[0]
+            sns.regplot(x=X, y=y, ci=None, ax=ax, scatter=True,
+                        scatter_kws={'alpha':0.4, 'color':colors[n]},
+                        line_kws={'alpha':0.6, 'color':colors[n]})
+            plt.annotate('Slope: %0.3f Intercept: %0.3f PR2: %0.2f'%(slope, intercept, r2), xy=(X[1], max(y)))
+            n+=1
+        plt.savefig('Tm-MeanSD.png', dpi=300)
+
+    def code_stability(self):
+        #g = sns.FacetGrid(data_per_step_all, col="code", col_wrap=4, sharey=False, xlim=(0,128))
+        g = sns.FacetGrid(data_per_step_all.sort_values('code'), col="code", col_wrap=6, sharey=False)
+
+        g.map(sns.regplot, 'sample_size', 'Cy5_min_bkg', data=data_per_step_all,
+            logx=True, ci=95, n_boot=5000,
+            scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})

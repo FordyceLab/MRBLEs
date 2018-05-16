@@ -355,12 +355,13 @@ class Find(ImageDataFrame):
             self._dataframe, self._bead_dims = \
                 self._return_data(object_images)
         self._bead_dims.reset_index(inplace=True)
-        beads_radius_mean = self.bead_dims.radius.mean() * 2
-        print("Bead radius AVG: %0.2f" % (beads_radius_mean))
-        beads_radius_sd = self.bead_dims.radius.std()
-        print("Bead radius SD: %0.2f" % (beads_radius_sd))
-        beads_radius_cv = (beads_radius_sd / beads_radius_mean) * 100
-        print("Bead radius CV: %0.2f%%" % (beads_radius_cv))
+        self._bead_dims['diameter'] = self._bead_dims['radius'] * 2
+        beads_diameter_mean = self.bead_dims.diameter.mean()
+        print("Bead diameter AVG: %0.2f" % (beads_diameter_mean))
+        beads_diameter_sd = self.bead_dims.diameter.std()
+        print("Bead diameter SD: %0.2f" % (beads_diameter_sd))
+        beads_diameter_cv = (beads_diameter_sd / beads_diameter_mean) * 100
+        print("Bead diameter CV: %0.2f%%" % (beads_diameter_cv))
         if self.beads_per_set is not None:
             for key, value in self.beads_per_set.items():
                 print("Number of beads in set %s: %i" % (key, value))
@@ -769,15 +770,17 @@ class Analyze(TableDataFrame):
 
     """
 
-    def __init__(self, seq_list=None, flag_filt=True):
+    def __init__(self, dataframe, seq_list=None, images=None):
         """Set up statistics functions and set normalizartion data."""
         super(Analyze, self).__init__()
         self.seq_list = seq_list
-        self.flag_filt = flag_filt
-        self._dataframe = None
-        self._data_per_bead = None
-        # Default set of functions
-        self.functions = {
+        self._images = images
+        self._data_per_bead = dataframe
+        self._norm_data = None
+
+        # Attributes
+        self.flag_filt = True
+        self.functions = {  # Default set of functions
             'mean': np.mean,
             'median': np.median,
             'sd': np.std,
@@ -785,13 +788,14 @@ class Analyze(TableDataFrame):
             'N': len,
             'CV': sp.stats.variation
         }
+        # Analyze per-code
+        self._dataframe = self._analyze(dataframe)
 
-    def analyze(self, data):
-        """Analyze data."""
+    def _analyze(self, data):
         if 'set' in data.columns:
-            self._dataframe = self._multi(data)
+            return self._multi(data)
         else:
-            self._dataframe = self._single(data)
+            return self._single(data)
 
     def background(self, bkg_data):
         """Subtract background.
@@ -808,18 +812,54 @@ class Analyze(TableDataFrame):
         """
         pass
 
-    def normalize(self, norm_data):
+    def normalize(self, norm_data, scaled=True):
         """Normalize data.
 
         Parameters
         ----------
-        norm_data : string, list, NumPy array, Pandas DataFrame
-            If string is used, column from internal dataframe is used.
-            Otherwise, the data frame. In the case of Pandas DataFrame, do
-            slice the single exact column. Row number of the data is the code.
+        norm_data : Pandas DataFrame
+            Dataframe with the per-bead normalization data. Single set only!
+        scaled : boolean
+            Scale maximum value normalization data to 1.
+            Defaults to True.
 
         """
-        pass
+        per_code = self._single(norm_data)
+        if scaled is True:
+            per_code['mean_scaled'] = per_code['mean'] / per_code['mean'].max()
+            per_code['median_scaled'] = per_code['median'] / per_code['median'].max()
+            per_code['sd_scaled'] = per_code['sd'] / per_code['mean'].max()
+            per_code['se_scaled'] = per_code['sd_scaled'] / np.sqrt(per_code['N'])
+        self._norm_data = per_code
+        set_codes = np.unique(beads_data['code'])
+        for code in set_codes:
+            if scaled is True:
+                norm_mean = per_code.loc[per_code['code'] == code, 'mean_scaled'].values
+                norm_sd = per_code.loc[per_code['code'] == code, 'sd_scaled'].values
+            else:
+                norm_mean = per_code.loc[per_code['code'] == code, 'mean'].values
+                norm_sd = per_code.loc[per_code['code'] == code, 'sd'].values
+
+            data_mean = self._dataframe.loc[self._dataframe['code'] == code, 'mean'].values
+            data_median = self._dataframe.loc[self._dataframe['code'] == code, 'median'].values
+            data_sd = self._dataframe.loc[self._dataframe['code'] == code, 'sd'].values
+            data_n = self._dataframe.loc[self._dataframe['code'] == code, 'N'].values
+
+            mean_norm = (data_mean / norm_mean)
+            median_norm = (data_median / norm_mean)
+            sd_norm = np.abs(mean_norm) * (np.sqrt((data_sd / data_mean) ** 2 + (norm_sd / norm_mean)**2))
+            cv_norm = mean_norm / sd_norm
+            se_norm = sd_norm / np.sqrt(data_n)
+
+            self._dataframe.loc[self._dataframe['code'] == code, 'mean_norm'] = mean_norm
+            self._dataframe.loc[self._dataframe['code'] == code, 'median_norm'] = median_norm
+            self._dataframe.loc[self._dataframe['code'] == code, 'sd_norm'] = sd_norm
+            self._dataframe.loc[self._dataframe['code'] == code, 'cv_norm'] = cv_norm
+            self._dataframe.loc[self._dataframe['code'] == code, 'se_norm'] = se_norm
+
+    @property
+    def norm_data(self):
+        return self._norm_data
 
     @property
     def data_per_bead(self):
@@ -855,9 +895,6 @@ class Analyze(TableDataFrame):
         dataframe.index.rename(('set', 'code'), inplace=True)
         return dataframe.reset_index()
 
-    def _get_stats_per_code(self, data, codes):
-        pass
-
     def _norm_per_code(self):
         pass
 
@@ -871,6 +908,14 @@ class Analyze(TableDataFrame):
             key: func(data_na_omit) for (key, func) in functions.items()
         }
         return result
+
+    def per_mrble_report(self):
+        """Generate per-MRBLE PDF image report."""
+        pass
+
+    def qc_report(self):
+        """Generate Quality Control PDF report."""
+        pass
 
 
 def get_stats_per_channel_and_code(data, channels, codes=None):

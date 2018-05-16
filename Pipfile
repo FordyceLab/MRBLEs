@@ -36,6 +36,8 @@ imblearn = "*"
 "jinja2" = "*"
 ipywidgets = "*"
 ipython-autotime = "*"
+reportlab = "*"
+openpyxl = "*"
 
 
 [dev-packages]
