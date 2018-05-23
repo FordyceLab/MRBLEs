@@ -529,7 +529,7 @@ class BeadsReport(object):
         String or list of strings with set names to be combined.
         Defaults to None.
     codes : int, list of int
-        Integer o rlist of integers with selected codes.
+        Integer or list of integers with selected codes.
         Defaults to None.
 
     Methods:
