@@ -564,10 +564,10 @@ class BeadsReport(object):
         if codes is not None:
             if isinstance(codes, list):
                 self._dataframe = \
-                    self._dataframe[self._dataframe['codes'].isin(sets)]
+                    self._dataframe[self._dataframe['code'].isin(codes)]
             else:
                 self._dataframe = \
-                    self._dataframe[self._dataframe['codes'] == codes]
+                    self._dataframe[self._dataframe['code'] == codes]
         self._images = images
 
         # Speed settings
