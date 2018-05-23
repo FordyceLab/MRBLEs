@@ -524,7 +524,13 @@ class BeadsReport(object):
     data : Pandas DataFrame
         Contains all the dimension, posotional, and intensity data per-MBRLE.
     images : mrbles.ImageDataFrame, Xarray DataArray
-        Contains
+        Contains images.
+    sets : string, list of string
+        String or list of strings with set names to be combined.
+        Defaults to None.
+    codes : int, list of int
+        Integer o rlist of integers with selected codes.
+        Defaults to None.
 
     Methods:
     --------
@@ -535,18 +541,33 @@ class BeadsReport(object):
     time_sec : float
         Time required per-image generated in seconds.
         For instance, 300 beads times 12 images is 3600 images.
+        Defaults to 0.0275
+    parallelize : boolean
+        Wether to use parallelization. Can be slowing down on low-power
+        computers.
+        Defaults to True.
     """
 
     def __init__(self, data, images, assay_channel,
-                 parallelize=True, time_sec=0.0275, sort=True):
+                 sets=None, codes=None, sort=True):
         """Init."""
+        self._dataframe = data.fillna(0)
         if sort is True:
-            self._dataframe = data.sort_values('code').fillna(0)
-        else:
-            self._dataframe = data.fillna(0)
-        self._images = images
-        self.parallelize = parallelize
+            self._dataframe.sort_values('code', inplace=True)
+        if sets is not None:
+            self._dataframe = \
+                self._dataframe[self._dataframe['set'].isin(sets)]
+        if codes is not None:
+            self._dataframe = \
+                self._dataframe[self._dataframe['codes'].isin(sets)]
 
+        self._images = images
+
+        # Speed settings
+        self.parallelize = True
+        self.time_sec = 0.0275
+
+        # Default values
         self.ref_channel = "Eu"
         self.ref_mask = "mask_inside"
         self.bkg_channel = "bkg"
@@ -558,8 +579,6 @@ class BeadsReport(object):
 
         self.max_assay = self._images.sel(c=self.assay_channel).max()
         self.max_npl = self._images.sel(c=self.npl_channels).max()
-
-        self.time_sec = time_sec
 
         self._time_estimate()
 
@@ -585,7 +604,7 @@ class BeadsReport(object):
         each, which makes a total of 12,000 images.
         """
         time_0 = time.time()
-        self._per_pdf(filename)
+        self._per_pdf(filename, sets, codes)
         time_1 = time.time()
         time_total = (time_1 - time_0)
         time_per_image = time_total / (self.beads_num * self.images_num)
