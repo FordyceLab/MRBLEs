@@ -555,12 +555,19 @@ class BeadsReport(object):
         if sort is True:
             self._dataframe.sort_values('code', inplace=True)
         if sets is not None:
-            self._dataframe = \
-                self._dataframe[self._dataframe['set'].isin(sets)]
+            if isinstance(sets, list):
+                self._dataframe = \
+                    self._dataframe[self._dataframe['set'].isin(sets)]
+            else:
+                self._dataframe = \
+                    self._dataframe[self._dataframe['set'] == sets]
         if codes is not None:
-            self._dataframe = \
-                self._dataframe[self._dataframe['codes'].isin(sets)]
-
+            if isinstance(codes, list):
+                self._dataframe = \
+                    self._dataframe[self._dataframe['codes'].isin(sets)]
+            else:
+                self._dataframe = \
+                    self._dataframe[self._dataframe['codes'] == codes]
         self._images = images
 
         # Speed settings
