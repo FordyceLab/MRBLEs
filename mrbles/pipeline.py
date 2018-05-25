@@ -198,28 +198,47 @@ class Images(ImageDataFrame):
     file_patterns : dict
         Dict of multiple file patterns.
         Dict keys must match folders keys, if multiple folders.
-    output : str, optional
-        Sets default output method. Options: 'np' for NumPy ndarray or 'xr'
-        for xarray.
-        Defaults to 'xr'.
+    data : NumPy array
+        Alternative method to loading OME-Tif files.
+        Load a dict of NumPy arrays with dimension order (f, c, y, x):
+        files (f), channels (c), Y-dimension (y), X-dimension (x)
+    channels : list of str
+        List of channel names.
+        Defaults to None. Channels will be numbers.
 
     """
 
-    def __init__(self, folders, file_patterns):
+    def __init__(self, folders=None, file_patterns=None,
+                 data=None, channels=None):
         """Instatiate object and search for images."""
         super(Images, self).__init__()
         self.folders = folders
         self.file_patterns = file_patterns
         self._dataframe = None
-        self.files = self._find_images(self.folders, self.file_patterns)
-        if isinstance(self.files, dict):
-            for key, value in self.files.items():
-                if value is None:
-                    print("No files found in %s with given parameters."
-                          % (key))
-                else:
-                    print("Found %i files in %s"
-                          % (len(value), key))
+        self.files = None
+        if (folders and file_patterns) is not None:
+            self.files = self._find_images(self.folders, self.file_patterns)
+            if isinstance(self.files, dict):
+                for key, value in self.files.items():
+                    if value is None:
+                        print("No files found in %s with given parameters."
+                              % (key))
+                    else:
+                        print("Found %i files in %s"
+                              % (len(value), key))
+        else:
+            self._dataframe = {}
+            if channels is None:
+                coords = list(range(next(iter(data.values())).shape[1]))
+            else:
+                coords = channels
+            if isinstance(data, dict):
+                for data_key, data_array in data.items():
+                    self._dataframe[data_key] = xr.DataArray(
+                        data_array,
+                        dims=['f', 'c', 'y', 'x'],
+                        coords={'c': coords},
+                        encoding={'dtype': np.uint16})
 
     def load(self, series=0):
         """Load images in memory."""
