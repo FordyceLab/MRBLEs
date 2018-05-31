@@ -1155,14 +1155,14 @@ class ICP(object):
             # Match codes and levels
             matched_code = np.argmin(distances, axis=1)
             matched_levels = target[matched_code[min_dist_filt], :]
-            # Least squaress
-            d = np.c_[data[min_dist_filt], np.ones(
+            # Least squares
+            dist = np.c_[data[min_dist_filt], np.ones(
                 len(data[min_dist_filt, 0]))]
-            m = np.linalg.lstsq(d, matched_levels, rcond=RCOND)[0]
+            mat = np.linalg.lstsq(dist, matched_levels, rcond=RCOND)[0]
 
             # Store new tranformation matrix and offset vector
-            self.matrix = m[0:-1, :]
-            self.offset = m[-1, :]
+            self.matrix = mat[0:-1, :]
+            self.offset = mat[-1, :]
 
             # Compare step by step delta
             d_compare = np.sum(np.square(self.matrix - matrix_old))

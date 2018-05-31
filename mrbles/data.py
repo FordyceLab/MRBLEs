@@ -25,6 +25,7 @@ from builtins import (str, super, object)
 import os
 import warnings
 import re
+import ast
 # Data Structures
 from xml.dom import minidom
 import numpy as np
@@ -535,10 +536,18 @@ class ImageSetRead(ImageDataFrame):
                 dims[dims.index('i')] = 'c'
             if len(file_path) > 1:
                 dims.insert(0, 'f')
+            md_channels = metadata['summary']['ChNames']
+            if isinstance(md_channels, list):
+                channels = md_channels
+            elif isinstance(md_channels, str):
+                channels = ast.literal_eval(md_channels)
+                channels = [ch.strip() for ch in channels]
+            else:
+                ValueError("Channels metadata corrupted.")
             panel_data = xr.DataArray(
                 data,
                 dims=dims,
-                coords={'c': metadata['summary']['ChNames']},
+                coords={'c': channels},
                 encoding={'dtype': np.uint16}
             )
         return panel_data
