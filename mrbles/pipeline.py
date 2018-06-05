@@ -920,7 +920,7 @@ class Analyze(TableDataFrame):
 
     def _multi(self, data):
         levels = list(np.unique(data.set))
-        #levels.remove('set')
+        # levels.remove('set')
         result = [
             self._single(data.loc[data.set == level]) for level in levels
         ]
