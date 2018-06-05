@@ -191,11 +191,15 @@ class GenerateCodes(object):
 
     Examples
     --------
-    >>> code_set_gen = GenerateCodes(['Dy', 'Sm', 'Tm'], [0.0039, 0.0055, 0.0029], [0.022, 0.016, 0.049], 6.4)
+    >>> code_set_gen = GenerateCodes(['Dy', 'Sm', 'Tm'],
+                                     [0.0039, 0.0055, 0.0029],
+                                     [0.022, 0.016, 0.049], 6.4)
     >>> code_set_gen.result
                Dy        Sm        Tm
     0    0.000000  0.000000  0.000000
-    >>> code_set_gen = GenerateCodes(['Dy', 'Sm'], [0.0039, 0.0055], [0.022, 0.016], 8.4)
+    >>> code_set_gen = GenerateCodes(['Dy', 'Sm'],
+                                     [0.0039, 0.0055],
+                                     [0.022, 0.016], 8.4)
     >>> code_set_gen.generate()
     Number of codes:  24
     >>> code_set_gen.result
@@ -204,7 +208,7 @@ class GenerateCodes(object):
     1   0.000000  0.106747
     2   0.000000  0.246642
     ......................
-    >>> code_set_gen.iterate(27)
+    >>> code_set_gen.iterate(28)
     ....................
     Number of codes:  26
     Number of codes:  26
@@ -216,7 +220,7 @@ class GenerateCodes(object):
     def __init__(self, colors, s0s, slopes, nsigma):
         if not len(colors) == len(slopes) == len(s0s):
             raise ValueError(
-                "Length colors, nsigmas en slopes not equal: %s." % sys.exit()[1])
+                "Length colors, nsigmas and slopes not equal: %s." % sys.exit()[1])
         self._colors = colors
         self._s0s = s0s
         self._slopes = slopes
@@ -250,7 +254,7 @@ class GenerateCodes(object):
         if nsigma is None:
             nsigma = self._nsigma
         levels = []
-        for idx, value in enumerate(self._colors):
+        for idx, _ in enumerate(self._colors):
             levels.append(self.get_levels(self._s0s[idx],
                                           self._slopes[idx],
                                           nsigma))
@@ -261,21 +265,21 @@ class GenerateCodes(object):
         """Recursive looper.
 
         Implements the same functionality as nested for loops, but is more
-        dynamic. iterators can either be a list of methods which return
+        dynamic. Iterators can either be a list of methods which return
         iterables, a list of iterables, or a combination of both.
         """
-        nextLoop, v = None, []
+        next_loop, v = None, []
         try:
             gen = iter(iterators[pos]())
         except TypeError:
             gen = iter(iterators[pos])
         while True:
             try:
-                yield v + nextLoop.next()
+                yield v + next_loop.next()
             except (StopIteration, AttributeError):
                 v = [gen.next(), ]
                 if pos < len(iterators) - 1:
-                    nextLoop = recursive_looper(iterators, pos + 1)
+                    next_loop = recursive_looper(iterators, pos + 1)
                 else:
                     yield v
 
@@ -293,8 +297,10 @@ class GenerateCodes(object):
 
     # Experimental
     def to_csv_rep(self, filename, repeats,
-                   labels=['CeTb', 'Dy', 'Sm', 'Tm'], pos=True):
+                   labels=None, pos=True):
         """Export to CSV, with repeated ratios for bead synthesis."""
+        if labels is None:
+            labels = ['CeTb', 'Dy', 'Sm', 'Tm']
         if pos is True:
             labels.append('pos')
         data = pd.DataFrame(columns=labels)

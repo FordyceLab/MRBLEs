@@ -354,14 +354,16 @@ class Find(ImageDataFrame):
 
     """
 
-    def __init__(self, bead_size,
+    def __init__(self, bead_size, pixel_size=None,
                  border_clear=True, circle_size=None):
         """Initialize."""
         super(Find, self).__init__()
         self._bead_size = bead_size
+        self.pixel_size = pixel_size
         self._bead_objects = FindBeadsImaging(bead_size=bead_size,
                                               border_clear=border_clear,
                                               circle_size=circle_size)
+
         self._dataframe = None
         self._bead_dims = None
 
@@ -375,11 +377,23 @@ class Find(ImageDataFrame):
                 self._return_data(object_images)
         self._bead_dims.reset_index(inplace=True)
         self._bead_dims['diameter'] = self._bead_dims['radius'] * 2
-        beads_diameter_mean = self.bead_dims.diameter.mean()
-        print("Bead diameter AVG: %0.2f" % (beads_diameter_mean))
-        beads_diameter_sd = self.bead_dims.diameter.std()
-        print("Bead diameter SD: %0.2f" % (beads_diameter_sd))
+        if self.pixel_size is not None:
+            self._bead_dims['radius_conv'] = \
+                self._bead_dims['radius'] * self.pixel_size
+            self._bead_dims['perimeter_conv'] = \
+                self._bead_dims['perimeter'] * self.pixel_size
+            self._bead_dims['diameter_conv'] = \
+                self._bead_dims['diameter'] * self.pixel_size
+            self._bead_dims['area_conv'] = \
+                self._bead_dims['area'] * self.pixel_size**2
+            beads_diameter_mean = self.bead_dims.diameter_conv.mean()
+            beads_diameter_sd = self.bead_dims.diameter_conv.std()
+        else:
+            beads_diameter_mean = self.bead_dims.diameter.mean()
+            beads_diameter_sd = self.bead_dims.diameter.std()
         beads_diameter_cv = (beads_diameter_sd / beads_diameter_mean) * 100
+        print("Bead diameter AVG: %0.2f" % (beads_diameter_mean))
+        print("Bead diameter SD: %0.2f" % (beads_diameter_sd))
         print("Bead diameter CV: %0.2f%%" % (beads_diameter_cv))
         if self.beads_per_set is not None:
             for key, value in self.beads_per_set.items():

@@ -537,6 +537,7 @@ class ImageSetRead(ImageDataFrame):
             if len(file_path) > 1:
                 dims.insert(0, 'f')
             md_channels = metadata['summary']['ChNames']
+            # Micro-Manager re-stack bug fix: returns string instead of list.
             if isinstance(md_channels, list):
                 channels = md_channels
             elif isinstance(md_channels, str):
