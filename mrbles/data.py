@@ -214,7 +214,7 @@ class ImageDataFrame(object):
     # Crop properties
     @property
     def crop_x(self):
-        """Crop x slice."""
+        """Crop X slice. Set with slice()."""
         return self._crop_x
 
     @crop_x.setter
@@ -223,7 +223,7 @@ class ImageDataFrame(object):
 
     @property
     def crop_y(self):
-        """Crop Y slice."""
+        """Crop Y slice. Set with slice()."""
         return self._crop_y
 
     @crop_y.setter

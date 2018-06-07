@@ -73,19 +73,35 @@ class Settings(object):
 
 # Classes
 
-
+# TODO: update docstring
 class References(TableDataFrame):
-    """Create reference spectra."""
+    """Create reference spectra.
+
+    Parameters
+    ----------
+    folders : dict
+    files : dict
+    object_channel : str
+    reference_channels : list
+    bead_size : int
+    dark_noise : int
+    background : str
+
+    Attributes
+    ----------
+    clean_up
+
+    """
 
     def __init__(self, folders, files, object_channel, reference_channels,
-                 bead_size=16, dark_noise=99, background='bkg', clean_up=True):
+                 bead_size=16, dark_noise=99, background='bkg'):
         """Init."""
         super(References, self).__init__()
         self.object_channel = object_channel
         self.reference_channels = reference_channels
         self.dark_noise = dark_noise
         self.background = background
-        self.clean_up = clean_up
+        self.clean_up = True
         self.bkg_roi = [slice(None), slice(None)]
         self._images = Images(folders, files)
         self._find = Find(bead_size=bead_size,
@@ -206,6 +222,24 @@ class Images(ImageDataFrame):
         List of channel names.
         Defaults to None. Channels will be numbers.
 
+    Properties
+    ----------
+    crop_x : slice
+        Used for setting ROI slice in the X dimension.
+    crop_y : slice
+        Used for setting ROI slice in the Y dimension.
+
+    Methods
+    -------
+    load : function
+        Loads images into memory. Only required when providing file names.
+    add_images : function
+        Adds images from another Images class object into this object.
+    rename_channel : function
+        Rename channel names.
+    scan_path : function
+        Scans a givin path for a given pattern, recursively.
+
     """
 
     def __init__(self, folders=None, file_patterns=None,
@@ -258,34 +292,46 @@ class Images(ImageDataFrame):
             for key, data_array in self._dataframe.items():
                 channels = data_array.coords['c'].values
                 if old_name in channels:
-                    self._dataframe[key] = self.rename_coord(data_array,
-                                                             'c',
-                                                             old_name,
-                                                             new_name)
+                    self._dataframe[key] = self._rename_coord(data_array,
+                                                              'c',
+                                                              old_name,
+                                                              new_name)
         else:
-            self._dataframe = self.rename_coord(self._dataframe,
-                                                'c',
-                                                old_name,
-                                                new_name)
+            self._dataframe = self._rename_coord(self._dataframe,
+                                                 'c',
+                                                 old_name,
+                                                 new_name)
 
-    def flat_field(self, ff_image_file, channel, affix='_FF'):
-        """Flat-Field correction."""
-        if isinstance(ff_image_file, str):
-            flat_field = tff.TiffFile(ff_image_file).asarray()
+    def flat_field(self, ff_image, channel, affix='_FF'):
+        """Flat-Field correction.
+
+        Parameters
+        ----------
+        ff_image : str, NumPy array
+            Flat-field image file or NumPy array.
+        channel : str
+            Channel to apply flat-field correction.
+        affix : str
+            Affix for channel name to be appended.
+            Defaults to '_FF'
+
+        """
+        if isinstance(ff_image, str):
+            flat_field = tff.TiffFile(ff_image).asarray()
         else:
-            flat_field = ff_image_file
+            flat_field = ff_image
         flat_field = flat_field / flat_field.max()  # Normalize Flat-Field
         if isinstance(self._dataframe, dict):
             ff_dict_df = {}
             for key in self._dataframe.keys():
                 ff_df = self._dataframe[key].loc[:, [channel]]
                 ff_dict_df[key] = ff_df / flat_field
-                ff_dict_df[key] = self.rename_coord(
+                ff_dict_df[key] = self._rename_coord(
                     ff_dict_df[key], 'c', channel, "%s%s" % (channel, affix))
         self.combine(ff_dict_df)
 
     @staticmethod
-    def rename_coord(dataframe, dim, old_name, new_name):
+    def _rename_coord(dataframe, dim, old_name, new_name):
         """Rename dimension coordinate in an Xarray DataArray."""
         coordinates = dataframe.coords[dim].values
         np.place(coordinates, coordinates == old_name, new_name)
