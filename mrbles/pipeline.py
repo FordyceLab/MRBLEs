@@ -80,28 +80,34 @@ class References(TableDataFrame):
     Parameters
     ----------
     folders : dict
+        Dictionary with keywords (e.g. 'Dy', 'bkg') and folders.
+        Must correspond with files parameter.
     files : dict
+        Dictionary with keywords (e.g. 'Dy', 'bkg') and filenames.
+        Must correspond with folders parameter.
     object_channel : str
+        Channel to be used for finding MRBLEs
     reference_channels : list
+        List of channel names to be used for generating reference spectra.
     bead_size : int
+        Bead diamater set in pixels.
+        Defaults to 16.
     dark_noise : int
+        Dark noise of the camera used for the images.
+        Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).
     background : str
-
-    Attributes
-    ----------
-    clean_up
+        Name of the background spectrum.
+        Dfaults to 'bkg'.
 
     """
 
     def __init__(self, folders, files, object_channel, reference_channels,
                  bead_size=16, dark_noise=99, background='bkg'):
-        """Init."""
         super(References, self).__init__()
         self.object_channel = object_channel
         self.reference_channels = reference_channels
         self.dark_noise = dark_noise
         self.background = background
-        self.clean_up = True
         self.bkg_roi = [slice(None), slice(None)]
         self._images = Images(folders, files)
         self._find = Find(bead_size=bead_size,
@@ -156,8 +162,7 @@ class References(TableDataFrame):
                                        columns=spectra,
                                        index=ref_channels)
         self._dataframe.index.name = 'channels'
-        if self.clean_up is True:
-            self._clean_up()
+        self._clean_up()
 
     def _clean_up(self):
         del self._images
@@ -244,7 +249,6 @@ class Images(ImageDataFrame):
 
     def __init__(self, folders=None, file_patterns=None,
                  data=None, channels=None):
-        """Instatiate object and search for images."""
         super(Images, self).__init__()
         self.folders = folders
         self.file_patterns = file_patterns
@@ -402,7 +406,6 @@ class Find(ImageDataFrame):
 
     def __init__(self, bead_size, pixel_size=None,
                  border_clear=True, circle_size=None):
-        """Initialize."""
         super(Find, self).__init__()
         self._bead_size = bead_size
         self.pixel_size = pixel_size
@@ -555,7 +558,6 @@ class Ratio(ImageDataFrame):
     """
 
     def __init__(self, reference_spectra, background='bkg'):
-        """Initialize reference spectra, unmixing, and background."""
         super(Ratio, self).__init__()
         self.reference_spectra = reference_spectra
         self.background = background
@@ -618,7 +620,6 @@ class Extract(TableDataFrame):
     """
 
     def __init__(self, function=None):
-        """Initialize function and variables."""
         super(Extract, self).__init__()
         if function is None:
             self._func = np.median
@@ -783,7 +784,6 @@ class Decode(TableDataFrame):
     """Decode."""
 
     def __init__(self, target, seq_list=None, decode_channels=None):
-        """Initialize Decode."""
         super(Decode, self).__init__()
         self._target = target
         self._decode_channels = decode_channels
@@ -850,7 +850,6 @@ class Analyze(TableDataFrame):
     """
 
     def __init__(self, dataframe, seq_list=None, images=None):
-        """Set up statistics functions and set normalizartion data."""
         super(Analyze, self).__init__()
         self.seq_list = seq_list
         self._images = images
@@ -997,6 +996,7 @@ class Analyze(TableDataFrame):
         pass
 
 
+# Deprecated
 def get_stats_per_channel_and_code(data, channels, codes=None):
     """Get stats per channel and code."""
     bead_sets = []
