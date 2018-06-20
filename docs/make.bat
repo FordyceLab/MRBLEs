@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=MRBLEsAnalysisPackage
+set SPHINXPROJ=mrbles
 
 if "%1" == "" goto help
 

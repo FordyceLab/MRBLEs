@@ -34,19 +34,30 @@ import xarray as xr
 # File import
 from skimage.external import tifffile as tff
 
-# TODO: Check error exceptions
-# TODO: Create error checking functions for clustering
-# TODO: Replace py 2 3 compatibility stuff
-
 
 # Descriptor classes
 
 
 class TableDataFrame(object):
-    """Pandas based dataframe object for table data."""
+    """Pandas based dataframe object for table data.
+
+    Methods
+    -------
+    combine : function
+        Method to combine data into current object.
+
+    Properties
+    ----------
+    data : Pandas DataFrame
+        Returns (filtered, if 'filter' column is present) Pandas DataFrame.
+    pdata : Pandas DataFrame
+        Returns unfiltered Pandas DataFrame
+    sets : list
+        Returns a list of all set names, if 'set' column is present.
+
+    """
 
     def __init__(self, data=None, flag_filt=True, **kwargs):
-        """Instantiate table data strcuture."""
         super(TableDataFrame, self).__init__()
         self.flag_filt = flag_filt
         if 'flag_name' in kwargs:
@@ -74,6 +85,15 @@ class TableDataFrame(object):
         """Return unflagged Pandas dataframe."""
         return self._dataframe
 
+    @property
+    def sets(self):
+        """Return list of sets."""
+        if 'set' in self._dataframe.columns:
+            sets = self.get_set_names(self._dataframe)
+        else:
+            sets = None
+        return sets
+
     def combine(self, data):
         """Combine data with dataframe.
 
@@ -95,13 +115,13 @@ class TableDataFrame(object):
             raise ValueError("Not Pandas DataFrame: %s." % type(data))
 
     @classmethod
-    def flatten_dict(cls, dict_data, prefix='.'):
+    def _flatten_dict(cls, dict_data, prefix='.'):
         """Flatten dictionary with given prefix."""
         def items():
             # A closure for recursively extracting dict like values
             for key, value in dict_data.items():
                 if isinstance(value, dict):
-                    for sub_key, sub_value in cls.flatten_dict(value).items():
+                    for sub_key, sub_value in cls._flatten_dict(value).items():
                         yield key + prefix + sub_key, sub_value
                 else:
                     yield key, value
@@ -110,11 +130,7 @@ class TableDataFrame(object):
     @staticmethod
     def get_set_names(data_set, set_dim='set'):
         """Return list of sets."""
-        if set_dim in data_set.index.names:
-            sets_list = list(data_set.groupby(set_dim).groups.keys())
-        else:
-            sets_list = None
-        return sets_list
+        return np.unique(data_set[set_dim]).tolist()
 
     @staticmethod
     def _add_info(info_data, dataframe, codes=None, prefix='info.'):
@@ -146,10 +162,29 @@ class TableDataFrame(object):
 
 
 class ImageDataFrame(object):
-    """Xarray based dataframe object for images."""
+    """Xarray based dataframe object for images.
+
+    Methods
+    -------
+    combine : function
+        Method to combine data into current object.
+
+    Properties
+    ----------
+    data : Xarray DataArray
+        Returns (cropped, if crop_x and/or crop_y is set) Xarray DataArray.
+    xdata : Xarray DataArray
+        Returns uncropped Xarray DataArray.
+    sets : list
+        Returns a list of all set names, if 'set' column is present.
+    crop_x : slice
+        Crop X slice. Set with slice().
+    crop_y : slice
+        Crop Y slice. Set with slice().
+
+    """
 
     def __init__(self, data=None):
-        """Instantiate image data strcuture."""
         super(ImageDataFrame, self).__init__()
         self._dataframe = data
         self._crop_x = slice(None, None, None)
@@ -168,7 +203,7 @@ class ImageDataFrame(object):
                 data = self.data.loc[index]
         elif isinstance(index, slice):
             data = self.data
-        elif index[0] == slice(None, None, None) and isinstance(self.data, dict):
+        elif index[0] == slice(None, None, None) and isinstance(self.data, dict):  # NOQA
             data = {key: data.loc[index[1:]]
                     for key, data in self.data.items()}
         elif isinstance(self.data, xr.DataArray):
@@ -186,6 +221,15 @@ class ImageDataFrame(object):
     def xdata(self):
         """Return uncropped Xarray dataframe."""
         return self._dataframe
+
+    @property
+    def sets(self):
+        """Return list of sets."""
+        if isinstance(self._dataframe, dict):
+            sets = self.get_set_names(self._dataframe)
+        else:
+            sets = None
+        return sets
 
     def combine(self, images):
         """Combine iamges with dataframe.
@@ -242,10 +286,9 @@ class ImageDataFrame(object):
         return data_crop
 
     @staticmethod
-    def get_set_names(data_set, set_dim='c'):
+    def get_set_names(data_set):
         """Return list of sets."""
-        sets_list = list(data_set.coords[set_dim].values)
-        return sets_list
+        return list(data_set.keys())
 
     @staticmethod
     def _set_slice(values):
@@ -296,7 +339,7 @@ class ImageSetRead(ImageDataFrame):
     >>> image_files = ['C:/folder/file.tif', 'C:/folder/file.tif']
     >>> image_data_object = ImageSetRead(image_files, output='xd')
     >>> image_data_object['BF', 100:400, 100:400]
-    (301L, 301L)
+        (301L, 301L)
 
     """
 

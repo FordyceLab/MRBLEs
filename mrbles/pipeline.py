@@ -73,9 +73,14 @@ class Settings(object):
 
 # Classes
 
-# TODO: update docstring
+
 class References(TableDataFrame):
     """Create reference spectra.
+
+    There are three methods to load images into the this class:
+    Method 1 - Provide a dictionaries with folders and filenames.
+    Method 2 - Provide a dictionary with numpy arrays.
+    Method 3 - Provide a file with spectra data.
 
     Parameters
     ----------
@@ -95,27 +100,36 @@ class References(TableDataFrame):
     dark_noise : int
         Dark noise of the camera used for the images.
         Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).
+
+    Attributes
+    ----------
     background : str
         Name of the background spectrum.
-        Dfaults to 'bkg'.
+        Defaults to 'bkg'.
+    crop_x : slice
+        Crop X slice. Set with slice().
+    crop_y : slice
+        Crop Y slice. Set with slice().
 
     """
 
     def __init__(self, folders, files, object_channel, reference_channels,
-                 bead_size=16, dark_noise=99, background='bkg'):
+                 bead_size=16, dark_noise=99):
         super(References, self).__init__()
-        self.object_channel = object_channel
-        self.reference_channels = reference_channels
-        self.dark_noise = dark_noise
-        self.background = background
-        self.bkg_roi = [slice(None), slice(None)]
+        self._object_channel = object_channel
+        self._ref_channels = reference_channels
+        self._dark_noise = dark_noise
         self._images = Images(folders, files)
         self._find = Find(bead_size=bead_size,
                           border_clear=True,
                           circle_size=None)
         self._dataframe = None
+        self._bkg_image = None
+        # Attributes
+        self.background = 'bkg'
         self.crop_x = slice(None)
         self.crop_y = slice(None)
+        self.bkg_roi = [slice(None), slice(None)]
         # Settings options
         self.settings = Settings([self._images, self._find], ['icp', 'gmm'])
         self.settings.__doc__ = """Return Images and Find objects for settings purposes.
@@ -132,26 +146,26 @@ class References(TableDataFrame):
         """
 
     def load(self):
-        """Process."""
+        """Process all images and generate reference spectra."""
         self._images.load()
         spectra = list(self._images.data.keys())
         if len(self.bkg_roi) == 3:
             bkg_images = self._images[self.background, self.bkg_roi[2],
                                       self.bkg_roi[0], self.bkg_roi[1]]
         else:
-            bkg_images = self._images[self.background, self.reference_channels,
+            bkg_images = self._images[self.background, self._ref_channels,
                                       self.bkg_roi[0], self.bkg_roi[1]]
-        self._bkg_image = self._images[self.background, self.object_channel,
+        self._bkg_image = self._images[self.background, self._object_channel,
                                        self.bkg_roi[0], self.bkg_roi[1]]
         spec_images = ImageDataFrame(self._images.data)
         spec_images._dataframe.pop(self.background, None)
         spec_images.crop_x = self.crop_x
         spec_images.crop_y = self.crop_y
-        self._find.find(spec_images[:, self.object_channel])
+        self._find.find(spec_images[:, self._object_channel])
         ref_channels = self._images[
-            spectra[0], self.reference_channels].c.values
-        data = [self.get_spectrum(self.dark_noise,
-                                  spec_images[x_set, self.reference_channels],
+            spectra[0], self._ref_channels].c.values
+        data = [self.get_spectrum(self._dark_noise,
+                                  spec_images[x_set, self._ref_channels],
                                   self._find[x_set, 'mask_inside'])
                 for x_set in spectra if x_set != self.background]
         if self.background in spectra:
@@ -180,7 +194,8 @@ class References(TableDataFrame):
         self._dataframe.plot()
         plt.figure(dpi=dpi)
         plt.title('Background slice')
-        plt.imshow(self._bkg_image)
+        if self.background in self._dataframe:
+            plt.imshow(self._bkg_image)
 
     @staticmethod
     def get_spectrum(dark_noise, channels, mask):
@@ -206,15 +221,61 @@ class References(TableDataFrame):
 
 
 class Images(ImageDataFrame):
-    """Load OME-TIF images.
+    """Load images into mrbles dataframe.
 
-    Super-Class wrapper for mrbles.data.ImageSetRead.
+    There are two methods to load images into the mrbles dataframe:
+    Method 1 - Provide dictionaries with folder and filename patterns.
+    Method 2 - Provide a dictionary with numpy arrays.
+
+    This class facilitates loading images into the mrbles.data.ImageDataFrame.
     Please see this class documentation for more information.
+
+    For loading OME-TIFF image it uses mrbles.data.ImageSetRead.
+    Please see this class documentation for more information.
+
+    Method 1 - Example
+    ------------------
+    >>> assay_folder = '../data'
+    >>> assay_folders = {'Set 1': '../data1',
+                         'Set 2': '../data2'}
+    >>> assay_files = {'Set 1': 'image_set1_(0-9)(0-9).ome.tif',
+                       'Set 2': 'image_set2_(0-9)(0-9).ome.tif'}
+    >>> assay_images = mrbles.Images(assay_folder, assay_files)
+        Found 12 files in Set 1
+        Found 11 files in Set 2
+
+    Method 2 - Example
+    ------------------
+    >>> image_arrays = {'Set 1': numpy_array_1,
+                        'Set 2': numpy_array_2}
+    >>> channel_names = ['Brightfield', 'Cy5', 'l-435', 'l-546', 'l-620']
+    >>> assay_images = mrbles.Images(data=image_arrays, channels=channel_names)
+
+    Output - Example
+    ----------------
+    >>> assay_images
+        {'Set 1': <xarray.DataArray (f: 12, c: 5, y: 1024, x: 1024)>
+            array([[[[169., ..., 166.],
+                    ...,
+                    [101., ..., 121.]]]])
+            Coordinates:
+            * c        (c) object 'Brightfield', 'Cy5', 'l-435', 'l-546', ...
+            Dimensions without coordinates: f, y, x,
+        'Set 2': ...
+    >>> assay_images['Set 2', 3, 'Brightfield']
+        <xarray.DataArray (y: 1024, x: 1024)>
+        array([[188., 163., 182., ..., 188., 174., 170.],
+                ...,
+               [144., 141., 142., ..., 162., 162., 154.]])
+        Coordinates:
+            c        <U11 'Brightfield'
+        Dimensions without coordinates: y, x
 
     Parameters
     ----------
     folders : str, dict
         String of single folder or dict of multiple folders.
+        The folder(s) provided will searched recursively.
         Dict keys must match file_patterns dict.
     file_patterns : dict
         Dict of multiple file patterns.
@@ -291,7 +352,16 @@ class Images(ImageDataFrame):
         gc.collect()
 
     def rename_channel(self, old_name, new_name):
-        """Rename channel name."""
+        """Rename channel name.
+
+        Parameters
+        ----------
+        old_name : str
+            Original name of channel.
+        new_name : str
+            New name for old_name channel.
+
+        """
         if isinstance(self._dataframe, dict):
             for key, data_array in self._dataframe.items():
                 channels = data_array.coords['c'].values
@@ -389,6 +459,38 @@ class Images(ImageDataFrame):
 class Find(ImageDataFrame):
     """Find MRBLEs in brightfield images.
 
+    This class provides the method to find MRBLEs and segment regions for each
+    MRBLE in brightfield images, provided by mrbles.Images.
+
+    Mask output: mask_full, mask_ring, mask_inside, mask_outside, mask_bkg, mask_check.
+
+    Examples
+    --------
+    >>> find_mrbles = mrbles.Find(bead_size=18, pixel_size=3.5, border_clear=True, circle_size=350)
+    >>> find_mrbles.settings.parallelize = True
+    >>> find_mrbles.find(assay_images[:, : , 'Brightfield'])
+        Bead diameter AVG: 54.36
+        Bead diameter SD: 2.00
+        Bead diameter CV: 3.68%
+        Total number of beads: 2386
+    >>> find_mrbles
+        {'Set 1': <xarray.DataArray (f: 12, c: 6, y: 1024, x: 1024)>
+            array([[[[0, ..., 0],
+                      ...,
+                     [0, ..., 0]]]], dtype=uint16)
+            Coordinates:
+            * c        (c) <U12 'mask_full' 'mask_ring' 'mask_inside' 'mask_outside' ...
+            Dimensions without coordinates: f, y, x,
+        'Set 2': ...
+    >>> find_mrbles['Set 2', 3, 'mask_ring']
+        <xarray.DataArray (y: 860, x: 860)>
+        array([[0, 0, 0, ..., 0, 0, 0],
+                ...,
+               [0, 0, 0, ..., 0, 0, 0]], dtype=uint16)
+        Coordinates:
+            c        <U12 'mask_ring'
+        Dimensions without coordinates: y, x
+
     Super-Class wrapper for mrbles.core.FindBeadsImaging.
     Please see this class documentation for more information.
 
@@ -396,11 +498,28 @@ class Find(ImageDataFrame):
     ----------
     bead_size : int
         Approximate width of beads (circles) in pixels.
+    pixel_size : float
+        Optional setting for image pixel size. Outputs dimensions using
+        provided conversion value. Adds additional converted to database with
+        affic '_conv'.
+        Defaults to None.
     border_clear : boolean
         Beads touching border or ROI will be removed.
         Defaults to True.
     circle_size : int
         Set circle size for auto find circular ROI.
+
+    Properties
+    ----------
+    bead_dims : Pandas DataFrame
+        Dataframe with individual MRBLE dimensions.
+    beads_total : int
+        Total number of MRBLEs found.
+    beads_per_set : list of int
+        Number of MRBLEs per set.
+    settings : property
+        Property provinding access to settings of mrbles.core.FindBeadsImaging.
+        See property documentation for more information.
 
     """
 
@@ -408,11 +527,10 @@ class Find(ImageDataFrame):
                  border_clear=True, circle_size=None):
         super(Find, self).__init__()
         self._bead_size = bead_size
-        self.pixel_size = pixel_size
+        self._pixel_size = pixel_size
         self._bead_objects = FindBeadsImaging(bead_size=bead_size,
                                               border_clear=border_clear,
                                               circle_size=circle_size)
-
         self._dataframe = None
         self._bead_dims = None
 
@@ -426,35 +544,32 @@ class Find(ImageDataFrame):
                 self._return_data(object_images)
         self._bead_dims.reset_index(inplace=True)
         self._bead_dims['diameter'] = self._bead_dims['radius'] * 2
-        if self.pixel_size is not None:
+        if self._pixel_size is not None:
             self._bead_dims['radius_conv'] = \
-                self._bead_dims['radius'] * self.pixel_size
+                self._bead_dims['radius'] * self._pixel_size
             self._bead_dims['perimeter_conv'] = \
-                self._bead_dims['perimeter'] * self.pixel_size
+                self._bead_dims['perimeter'] * self._pixel_size
             self._bead_dims['diameter_conv'] = \
-                self._bead_dims['diameter'] * self.pixel_size
+                self._bead_dims['diameter'] * self._pixel_size
             self._bead_dims['area_conv'] = \
-                self._bead_dims['area'] * self.pixel_size**2
+                self._bead_dims['area'] * self._pixel_size**2
             beads_diameter_mean = self.bead_dims.diameter_conv.mean()
             beads_diameter_sd = self.bead_dims.diameter_conv.std()
+            converted = " (converted)"
         else:
             beads_diameter_mean = self.bead_dims.diameter.mean()
             beads_diameter_sd = self.bead_dims.diameter.std()
+            converted = ""
         beads_diameter_cv = (beads_diameter_sd / beads_diameter_mean) * 100
-        print("Bead diameter AVG: %0.2f" % (beads_diameter_mean))
-        print("Bead diameter SD: %0.2f" % (beads_diameter_sd))
-        print("Bead diameter CV: %0.2f%%" % (beads_diameter_cv))
+        print("Bead diameter AVG%s: %0.2f" % (converted, beads_diameter_mean))
+        print("Bead diameter SD%s: %0.2f" % (converted, beads_diameter_sd))
+        print("Bead diameter CV%s: %0.2f%%" % (converted, beads_diameter_cv))
         if self.beads_per_set is not None:
             for key, value in self.beads_per_set.items():
                 print("Number of beads in set %s: %i" % (key, value))
         print("Total number of beads: %i" % self.beads_total)
         if combine_data is not None:
             self.combine(combine_data)
-
-    @property
-    def masks(self):
-        """Return masks."""
-        return self.data
 
     @property
     def bead_dims(self):
@@ -470,7 +585,7 @@ class Find(ImageDataFrame):
     def beads_per_set(self):
         """Return total bead count in set(s)."""
         if self.sets is not None:
-            bead_no_list = {set_x: self._bead_dims.loc[set_x].shape[0]
+            bead_no_list = {set_x: self._bead_dims.loc[self._bead_dims['set'] == set_x].shape[0]
                             for set_x in self.sets}
         else:
             bead_no_list = None
@@ -626,7 +741,6 @@ class Extract(TableDataFrame):
         else:
             self._func = function
         self._dataframe = None
-        # self.flag_name = 'flag'
         self.flag_filt = True
 
     def get(self, images, masks, combine_data=None):
@@ -688,7 +802,7 @@ class Extract(TableDataFrame):
             self._get_data_masks(image, masks, self._func)
             for image in images
         }
-        data_flatten = self.flatten_dict(data, prefix='.')
+        data_flatten = self._flatten_dict(data, prefix='.')
         dataframe = pd.DataFrame.from_dict(data_flatten, orient='columns')
         return dataframe
 
