@@ -7,19 +7,8 @@ Pipeline Classes and functions
 
 This files contains the pipeline for the MRBLEs analysis.
 
-Classes
--------
-References
-
-Images
-
-Find
-
-Ratio
-
-Extract
-
-Analyze
+.. figure::  ../images/pipeline-diagram.png
+   :align:   center
 
 """
 
@@ -72,152 +61,6 @@ class Settings(object):
 
 
 # Classes
-
-
-class References(TableDataFrame):
-    """Create reference spectra.
-
-    There are three methods to load images into the this class:
-    Method 1 - Provide a dictionaries with folders and filenames.
-    Method 2 - Provide a dictionary with numpy arrays.
-    Method 3 - Provide a file with spectra data.
-
-    Parameters
-    ----------
-    folders : dict
-        Dictionary with keywords (e.g. 'Dy', 'bkg') and folders.
-        Must correspond with files parameter.
-    files : dict
-        Dictionary with keywords (e.g. 'Dy', 'bkg') and filenames.
-        Must correspond with folders parameter.
-    object_channel : str
-        Channel to be used for finding MRBLEs
-    reference_channels : list
-        List of channel names to be used for generating reference spectra.
-    bead_size : int
-        Bead diamater set in pixels.
-        Defaults to 16.
-    dark_noise : int
-        Dark noise of the camera used for the images.
-        Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).
-
-    Attributes
-    ----------
-    background : str
-        Name of the background spectrum.
-        Defaults to 'bkg'.
-    crop_x : slice
-        Crop X slice. Set with slice().
-    crop_y : slice
-        Crop Y slice. Set with slice().
-
-    """
-
-    def __init__(self, folders, files, object_channel, reference_channels,
-                 bead_size=16, dark_noise=99):
-        super(References, self).__init__()
-        self._object_channel = object_channel
-        self._ref_channels = reference_channels
-        self._dark_noise = dark_noise
-        self._images = Images(folders, files)
-        self._find = Find(bead_size=bead_size,
-                          border_clear=True,
-                          circle_size=None)
-        self._dataframe = None
-        self._bkg_image = None
-        # Attributes
-        self.background = 'bkg'
-        self.crop_x = slice(None)
-        self.crop_y = slice(None)
-        self.bkg_roi = [slice(None), slice(None)]
-        # Settings options
-        self.settings = Settings([self._images, self._find], ['icp', 'gmm'])
-        self.settings.__doc__ = """Return Images and Find objects for settings purposes.
-
-        Attributes
-        ----------
-        images : Images() object
-            Returns Images() object for settings puproses.
-            See class documentation for more information.
-        find : Find() object
-            Returns Find() object for settings puproses.
-            See class documentation for more information.
-
-        """
-
-    def load(self):
-        """Process all images and generate reference spectra."""
-        self._images.load()
-        spectra = list(self._images.data.keys())
-        if len(self.bkg_roi) == 3:
-            bkg_images = self._images[self.background, self.bkg_roi[2],
-                                      self.bkg_roi[0], self.bkg_roi[1]]
-        else:
-            bkg_images = self._images[self.background, self._ref_channels,
-                                      self.bkg_roi[0], self.bkg_roi[1]]
-        self._bkg_image = self._images[self.background, self._object_channel,
-                                       self.bkg_roi[0], self.bkg_roi[1]]
-        spec_images = ImageDataFrame(self._images.data)
-        spec_images._dataframe.pop(self.background, None)
-        spec_images.crop_x = self.crop_x
-        spec_images.crop_y = self.crop_y
-        self._find.find(spec_images[:, self._object_channel])
-        ref_channels = self._images[
-            spectra[0], self._ref_channels].c.values
-        data = [self.get_spectrum(self._dark_noise,
-                                  spec_images[x_set, self._ref_channels],
-                                  self._find[x_set, 'mask_inside'])
-                for x_set in spectra if x_set != self.background]
-        if self.background in spectra:
-            spectra.remove(self.background)
-            spectra.append(self.background)
-            data.append(self._get_back(bkg_images))
-        self._dataframe = pd.DataFrame(data=np.array(data).T,
-                                       columns=spectra,
-                                       index=ref_channels)
-        self._dataframe.index.name = 'channels'
-        self._clean_up()
-
-    def _clean_up(self):
-        del self._images
-        del self._find
-        gc.collect()
-
-    def _get_back(self, bkg_images):
-        mask = np.ones((bkg_images.y.size,
-                        bkg_images.x.size))
-        bkg_data = self.get_spectrum(0, bkg_images, mask)
-        return bkg_data
-
-    def plot(self, dpi=75):
-        """Plot Reference spectra."""
-        self._dataframe.plot()
-        plt.figure(dpi=dpi)
-        plt.title('Background slice')
-        if self.background in self._dataframe:
-            plt.imshow(self._bkg_image)
-
-    @staticmethod
-    def get_spectrum(dark_noise, channels, mask):
-        """Get spectrum from image set using mask.
-
-        The median of the masked area is extracted, the camera dark noise
-        subtracted, and normalized.
-
-        Parameters
-        ----------
-        dark_noise : int
-            Intrinsic dark noise of camera. Image taken when shutter closed.
-        channels : slice, list
-            Slice of channels
-        mask : NumPy array
-            Labeled mask.
-
-        """
-        data = np.array([ndi.median(ch, mask) for ch in channels])
-        data -= dark_noise  # Dark noise subtract
-        data /= data.sum()  # Normalize
-        return data
 
 
 class Images(ImageDataFrame):
@@ -288,23 +131,12 @@ class Images(ImageDataFrame):
         List of channel names.
         Defaults to None. Channels will be numbers.
 
-    Properties
+    Attributes
     ----------
     crop_x : slice
         Used for setting ROI slice in the X dimension.
     crop_y : slice
         Used for setting ROI slice in the Y dimension.
-
-    Methods
-    -------
-    load : function
-        Loads images into memory. Only required when providing file names.
-    add_images : function
-        Adds images from another Images class object into this object.
-    rename_channel : function
-        Rename channel names.
-    scan_path : function
-        Scans a givin path for a given pattern, recursively.
 
     """
 
@@ -509,7 +341,7 @@ class Find(ImageDataFrame):
     circle_size : int
         Set circle size for auto find circular ROI.
 
-    Properties
+    Attributes
     ----------
     bead_dims : Pandas DataFrame
         Dataframe with individual MRBLE dimensions.
@@ -656,6 +488,152 @@ class Find(ImageDataFrame):
 
         """
         return self._bead_objects
+
+
+class References(TableDataFrame):
+    """Create reference spectra.
+
+    There are three methods to load images into the this class:
+    Method 1 - Provide a dictionaries with folders and filenames.
+    Method 2 - Provide a dictionary with numpy arrays.
+    Method 3 - Provide a file with spectra data.
+
+    Parameters
+    ----------
+    folders : dict
+        Dictionary with keywords (e.g. 'Dy', 'bkg') and folders.
+        Must correspond with files parameter.
+    files : dict
+        Dictionary with keywords (e.g. 'Dy', 'bkg') and filenames.
+        Must correspond with folders parameter.
+    object_channel : str
+        Channel to be used for finding MRBLEs
+    reference_channels : list
+        List of channel names to be used for generating reference spectra.
+    bead_size : int
+        Bead diamater set in pixels.
+        Defaults to 16.
+    dark_noise : int
+        Dark noise of the camera used for the images.
+        Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).
+
+    Attributes
+    ----------
+    background : str
+        Name of the background spectrum.
+        Defaults to 'bkg'.
+    crop_x : slice
+        Crop X slice. Set with slice().
+    crop_y : slice
+        Crop Y slice. Set with slice().
+
+    """
+
+    def __init__(self, folders, files, object_channel, reference_channels,
+                 bead_size=16, dark_noise=99):
+        super(References, self).__init__()
+        self._object_channel = object_channel
+        self._ref_channels = reference_channels
+        self._dark_noise = dark_noise
+        self._images = Images(folders, files)
+        self._find = Find(bead_size=bead_size,
+                          border_clear=True,
+                          circle_size=None)
+        self._dataframe = None
+        self._bkg_image = None
+        # Attributes
+        self.background = 'bkg'
+        self.crop_x = slice(None)
+        self.crop_y = slice(None)
+        self.bkg_roi = [slice(None), slice(None)]
+        # Settings options
+        self.settings = Settings([self._images, self._find], ['icp', 'gmm'])
+        self.settings.__doc__ = """Return Images and Find objects for settings purposes.
+
+        Attributes
+        ----------
+        images : Images() object
+            Returns Images() object for settings puproses.
+            See class documentation for more information.
+        find : Find() object
+            Returns Find() object for settings puproses.
+            See class documentation for more information.
+
+        """
+
+    def load(self):
+        """Process all images and generate reference spectra."""
+        self._images.load()
+        spectra = list(self._images.data.keys())
+        if len(self.bkg_roi) == 3:
+            bkg_images = self._images[self.background, self.bkg_roi[2],
+                                      self.bkg_roi[0], self.bkg_roi[1]]
+        else:
+            bkg_images = self._images[self.background, self._ref_channels,
+                                      self.bkg_roi[0], self.bkg_roi[1]]
+        self._bkg_image = self._images[self.background, self._object_channel,
+                                       self.bkg_roi[0], self.bkg_roi[1]]
+        spec_images = ImageDataFrame(self._images.data)
+        spec_images._dataframe.pop(self.background, None)
+        spec_images.crop_x = self.crop_x
+        spec_images.crop_y = self.crop_y
+        self._find.find(spec_images[:, self._object_channel])
+        ref_channels = self._images[
+            spectra[0], self._ref_channels].c.values
+        data = [self.get_spectrum(self._dark_noise,
+                                  spec_images[x_set, self._ref_channels],
+                                  self._find[x_set, 'mask_inside'])
+                for x_set in spectra if x_set != self.background]
+        if self.background in spectra:
+            spectra.remove(self.background)
+            spectra.append(self.background)
+            data.append(self._get_back(bkg_images))
+        self._dataframe = pd.DataFrame(data=np.array(data).T,
+                                       columns=spectra,
+                                       index=ref_channels)
+        self._dataframe.index.name = 'channels'
+        self._clean_up()
+
+    def _clean_up(self):
+        del self._images
+        del self._find
+        gc.collect()
+
+    def _get_back(self, bkg_images):
+        mask = np.ones((bkg_images.y.size,
+                        bkg_images.x.size))
+        bkg_data = self.get_spectrum(0, bkg_images, mask)
+        return bkg_data
+
+    def plot(self, dpi=75):
+        """Plot Reference spectra."""
+        self._dataframe.plot()
+        plt.figure(dpi=dpi)
+        plt.title('Background slice')
+        if self.background in self._dataframe:
+            plt.imshow(self._bkg_image)
+
+    @staticmethod
+    def get_spectrum(dark_noise, channels, mask):
+        """Get spectrum from image set using mask.
+
+        The median of the masked area is extracted, the camera dark noise
+        subtracted, and normalized.
+
+        Parameters
+        ----------
+        dark_noise : int
+            Intrinsic dark noise of camera. Image taken when shutter closed.
+        channels : slice, list
+            Slice of channels
+        mask : NumPy array
+            Labeled mask.
+
+        """
+        data = np.array([ndi.median(ch, mask) for ch in channels])
+        data -= dark_noise  # Dark noise subtract
+        data /= data.sum()  # Normalize
+        return data
 
 
 class Ratio(ImageDataFrame):
@@ -895,7 +873,20 @@ class Extract(TableDataFrame):
 
 
 class Decode(TableDataFrame):
-    """Decode."""
+    """Decode MRBLEs.
+
+    Parameters
+    ----------
+    target : list
+        List of target ratios
+    seq_list : Pandas DataFrame
+        Columns with sequence information.
+        Defaults to None.
+    decode_channels : list
+        Channel names.
+        Defaults to None.
+
+    """
 
     def __init__(self, target, seq_list=None, decode_channels=None):
         super(Decode, self).__init__()
@@ -914,7 +905,17 @@ class Decode(TableDataFrame):
             See ICP and Classify documentation for detailed settings."""
 
     def decode(self, data, combine_data=None):
-        """Decode MRBLEs."""
+        """Decode MRBLEs.
+
+        Parameters
+        ----------
+        data : Pandas DataFrame
+            Data that contains decoding data.
+        combine_data : Pandas DataFrame
+            Data to be combined from previous pipeline steps.
+            Defaults to None.
+
+        """
         if self._decode_channels is not None:
             pass
         self._icp.fit(data)
@@ -950,7 +951,7 @@ class Analyze(TableDataFrame):
         Sets if the flagged data is automatically filtered out.
         Defaults to True.
 
-    Atributes
+    Attributes
     ----------
     functions : dict
         Dictionary of functions and their corresponding names.

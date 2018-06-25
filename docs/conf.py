@@ -27,7 +27,7 @@ author = 'Bjorn Harink'
 # The short X.Y version
 version = '0.10.0'
 # The full version, including alpha/beta/rc tags
-release = '0.10.0'
+# release = '0.10.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -41,6 +41,7 @@ release = '0.10.0'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
@@ -50,9 +51,10 @@ extensions = [
 napoleon_google_docstring = False
 napoleon_use_param = False
 napoleon_use_ivar = True
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -119,7 +121,7 @@ htmlhelp_basename = 'mrblesdoc'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': 'letterpaper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #

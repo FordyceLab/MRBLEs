@@ -20,14 +20,6 @@ mrbles.data module
     :undoc-members:
     :show-inheritance:
 
-mrbles.gui module
------------------
-
-.. automodule:: mrbles.gui
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 mrbles.kinetics module
 ----------------------
 

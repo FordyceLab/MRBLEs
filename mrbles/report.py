@@ -63,7 +63,6 @@ def circle_overlay(image, dims=None, ring=None):
     plt.imshow(img)
     return img
 
-
 def image_overlay(image, image_blend, alpha=0.2, cmap_image='Greys_r', cmap_blend='jet'):
     """Overlay 2 Images.
     Overlay of 2 images using alpha blend.
@@ -172,6 +171,8 @@ def cluster3d_check(bead_set, target, gmix, set_prob=1, channels=None):
 
 
 # Classes
+
+
 class GenerateCodes(object):
     """Generate bead code set.
 

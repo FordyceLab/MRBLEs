@@ -11,8 +11,16 @@ Welcome to mrbles's documentation!
    :caption: Contents:
 
    readme
+   mrbles
 
+.. autosummary::
+   :toctree: _autosummary
 
+   mrbles.core
+   mrbles.data
+   mrbles.kinetics
+   mrbles.pipeline
+   mrbles.report
 
 Indices and tables
 ==================
