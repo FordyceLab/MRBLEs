@@ -44,52 +44,21 @@
 <em class="property">class </em><code class="descclassname">mrbles.data.</code><code class="descname">ImageDataFrame</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageDataFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageDataFrame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Xarray based dataframe object for images.</p>
-<dl class="method">
-<dt>
-<code class="descname">combine : function</code></dt>
-<dd><p>Method to combine data into current object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mrbles.data.ImageDataFrame.Properties">
-<code class="descname">Properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mrbles.data.ImageDataFrame.Properties" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">----------</code></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">data : Xarray DataArray</code></dt>
-<dd><p>Returns (cropped, if crop_x and/or crop_y is set) Xarray DataArray.</p>
-</dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">xdata : Xarray DataArray</code></dt>
-<dd><p>Returns uncropped Xarray DataArray.</p>
-</dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">sets : list</code></dt>
-<dd><p>Returns a list of all set names, if ‘set’ column is present.</p>
-</dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">crop_x : slice</code></dt>
-<dd><p>Crop X slice. Set with slice().</p>
-</dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">crop_y : slice</code></dt>
-<dd><p>Crop Y slice. Set with slice().</p>
-</dd></dl>
-
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#module-mrbles.data" title="mrbles.data"><strong>data</strong></a> (<em>Xarray DataArray</em>) – Returns (cropped, if crop_x and/or crop_y is set) Xarray DataArray.</li>
+<li><a class="reference internal" href="#mrbles.data.ImageDataFrame.xdata" title="mrbles.data.ImageDataFrame.xdata"><strong>xdata</strong></a> (<em>Xarray DataArray</em>) – Returns uncropped Xarray DataArray.</li>
+<li><a class="reference internal" href="#mrbles.data.ImageDataFrame.sets" title="mrbles.data.ImageDataFrame.sets"><strong>sets</strong></a> (<em>list</em>) – Returns a list of all set names, if ‘set’ column is present.</li>
+<li><a class="reference internal" href="#mrbles.data.ImageDataFrame.crop_x" title="mrbles.data.ImageDataFrame.crop_x"><strong>crop_x</strong></a> (<em>slice</em>) – Crop X slice. Set with slice().</li>
+<li><a class="reference internal" href="#mrbles.data.ImageDataFrame.crop_y" title="mrbles.data.ImageDataFrame.crop_y"><strong>crop_y</strong></a> (<em>slice</em>) – Crop Y slice. Set with slice().</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="mrbles.data.ImageDataFrame.combine">
 <code class="descname">combine</code><span class="sig-paren">(</span><em>images</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageDataFrame.combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageDataFrame.combine" title="Permalink to this definition">¶</a></dt>
@@ -361,40 +330,19 @@ Defaults to ‘<a href="#id3"><span class="problematic" id="id4">*</span></a>.ti
 <em class="property">class </em><code class="descclassname">mrbles.data.</code><code class="descname">TableDataFrame</code><span class="sig-paren">(</span><em>data=None</em>, <em>flag_filt=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#TableDataFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.TableDataFrame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Pandas based dataframe object for table data.</p>
-<dl class="method">
-<dt>
-<code class="descname">combine : function</code></dt>
-<dd><p>Method to combine data into current object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mrbles.data.TableDataFrame.Properties">
-<code class="descname">Properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mrbles.data.TableDataFrame.Properties" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">----------</code></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">data : Pandas DataFrame</code></dt>
-<dd><p>Returns (filtered, if ‘filter’ column is present) Pandas DataFrame.</p>
-</dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">pdata : Pandas DataFrame</code></dt>
-<dd><p>Returns unfiltered Pandas DataFrame</p>
-</dd></dl>
-
-<dl class="method">
-<dt>
-<code class="descname">sets : list</code></dt>
-<dd><p>Returns a list of all set names, if ‘set’ column is present.</p>
-</dd></dl>
-
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#module-mrbles.data" title="mrbles.data"><strong>data</strong></a> (<em>Pandas DataFrame</em>) – Returns (filtered, if ‘filter’ column is present) Pandas DataFrame.</li>
+<li><a class="reference internal" href="#mrbles.data.TableDataFrame.pdata" title="mrbles.data.TableDataFrame.pdata"><strong>pdata</strong></a> (<em>Pandas DataFrame</em>) – Returns unfiltered Pandas DataFrame</li>
+<li><a class="reference internal" href="#mrbles.data.ImageDataFrame.sets" title="mrbles.data.ImageDataFrame.sets"><strong>sets</strong></a> (<em>list</em>) – Returns a list of all set names, if ‘set’ column is present.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="mrbles.data.TableDataFrame.combine">
 <code class="descname">combine</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#TableDataFrame.combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.TableDataFrame.combine" title="Permalink to this definition">¶</a></dt>

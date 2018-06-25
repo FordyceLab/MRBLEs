@@ -41,12 +41,7 @@ from skimage.external import tifffile as tff
 class TableDataFrame(object):
     """Pandas based dataframe object for table data.
 
-    Methods
-    -------
-    combine : function
-        Method to combine data into current object.
-
-    Properties
+    Attributes
     ----------
     data : Pandas DataFrame
         Returns (filtered, if 'filter' column is present) Pandas DataFrame.
@@ -164,12 +159,7 @@ class TableDataFrame(object):
 class ImageDataFrame(object):
     """Xarray based dataframe object for images.
 
-    Methods
-    -------
-    combine : function
-        Method to combine data into current object.
-
-    Properties
+    Attributes
     ----------
     data : Xarray DataArray
         Returns (cropped, if crop_x and/or crop_y is set) Xarray DataArray.
