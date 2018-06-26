@@ -632,7 +632,7 @@ class References(TableDataFrame):
         """
         data = np.array([ndi.median(ch, mask) for ch in channels])
         data -= dark_noise  # Dark noise subtract
-        data /= data.sum()  # Normalize
+        data /= data.sum()  # Normalize to 1.
         return data
 
 
@@ -689,13 +689,13 @@ class Ratio(ImageDataFrame):
     def _return_data(self, images, reference):
         self.spec_unmix.unmix(images)
         unmix_images = self.spec_unmix.data
-        sets = ImageDataFrame.get_set_names(unmix_images, set_dim='c')
-        sets.remove(reference)
-        if self.background in sets:
-            sets.remove(self.background)
-        ratio_images = unmix_images.loc[dict(c=sets)] / \
+        channels = ImageDataFrame.get_dim_names(unmix_images, set_dim='c')
+        channels.remove(reference)
+        if self.background in channels:
+            channels.remove(self.background)
+        ratio_images = unmix_images.loc[dict(c=channels)] / \
             unmix_images.loc[dict(c=reference)]
-        ratio_images.coords['c'] = [s + '_ratio' for s in sets]
+        ratio_images.coords['c'] = [s + '_ratio' for s in channels]
         result = xr.concat([unmix_images, ratio_images], dim='c')
         return result
 
@@ -745,7 +745,7 @@ class Extract(TableDataFrame):
         """
         if isinstance(images, xr.DataArray):
             if images.ndim == 4:
-                f_list = ImageDataFrame.get_set_names(
+                f_list = ImageDataFrame.get_dim_names(
                     images, set_dim=images.dims[0])
                 data = [self._get_data_images(images.loc[f], masks.loc[f])
                         for f in f_list]
@@ -757,7 +757,7 @@ class Extract(TableDataFrame):
             data_append = []
             s_list = list(images.keys())
             for set_x in s_list:
-                f_list = ImageDataFrame.get_set_names(
+                f_list = ImageDataFrame.get_dim_names(
                     images[set_x], set_dim=images[set_x].dims[0])
                 data = [self._get_data_images(images[set_x][f],
                                               masks[set_x][f])

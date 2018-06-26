@@ -133,7 +133,7 @@ class TableDataFrame(object):
             info_data_prefix = info_data.add_prefix(prefix)
             column_names = list(info_data_prefix.columns)
             col_df = pd.DataFrame(columns=column_names)
-            dataframe = pd.concat([dataframe, col_df])
+            dataframe = pd.concat([dataframe, col_df], sort=False)
             if (codes is None) and ('code' in dataframe.columns):
                 codes = np.unique(dataframe['code'].dropna()).astype(int)
                 for code in codes:
@@ -279,6 +279,11 @@ class ImageDataFrame(object):
     def get_set_names(data_set):
         """Return list of sets."""
         return list(data_set.keys())
+
+    @staticmethod
+    def get_dim_names(data_set, set_dim='c'):
+        """Return list of dimension names."""
+        return data_set.coords[set_dim].values.tolist()
 
     @staticmethod
     def _set_slice(values):
