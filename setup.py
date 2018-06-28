@@ -21,7 +21,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.10.2',
+    version='0.10.3',
 
     description='MRBLEs decoding and analysis package',
     long_description=LONG_DESCRIPTION,
@@ -81,7 +81,7 @@ setup(
     install_requires=['future',
                       'numpy>=1.14.0',
                       'scipy',
-                      'pandas',
+                      'pandas>=0.23.1',
                       'xarray',
                       'opencv-python',
                       'scikit-learn',
