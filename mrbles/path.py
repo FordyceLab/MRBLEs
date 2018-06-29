@@ -62,7 +62,7 @@ class PathUnmix(TableDataFrame):
         data_sets = {s_name: self._unmix(data_conv[data_conv.set == s_name], z_score)
                      for s_name in sets}
         dataframe = pd.DataFrame.from_dict(data_sets, orient='index', columns=self.references.columns)
-        return dataframe
+        self._dataframe = dataframe
 
     def _unmix(self, data, z_score=True):
         if z_score is True:
