@@ -43,6 +43,9 @@ class PathUnmix(TableDataFrame):
     ----------
     references : Pandas DataFrame
         Dataframe with reference spectra.
+    blast : bool
+        Setting to convert blast E-scores.
+        Defaults to True.
 
     """
 
@@ -54,14 +57,28 @@ class PathUnmix(TableDataFrame):
             self.references = references
 
     def unmix(self, data, signal, z_score=True):
-        """Unmix data."""
+        """Unmix data.
+
+        Parameters
+        ----------
+        data : Pandas DataFrame
+            Data that contains the various sets.
+        signal : str
+            Column with signal data.
+        z_score : bool
+            Convert to Z-score.
+            Defaults to True.
+        """
         data_conv = pd.DataFrame(
-                {'signal': data.groupby(["set", "code"])[signal].median()}
-            ).reset_index()
+            {'signal': data.groupby(["set", "code"])[signal].median()}
+        ).reset_index()
         sets = self.get_set_names(data_conv)
-        data_sets = {s_name: self._unmix(data_conv[data_conv.set == s_name], z_score)
+        data_sets = {s_name: self._unmix(data_conv[data_conv.set == s_name],
+                                         z_score)
                      for s_name in sets}
-        dataframe = pd.DataFrame.from_dict(data_sets, orient='index', columns=self.references.columns)
+        dataframe = pd.DataFrame.from_dict(data_sets,
+                                           orient='index',
+                                           columns=self.references.columns)
         self._dataframe = dataframe
 
     def _unmix(self, data, z_score=True):
@@ -79,9 +96,19 @@ class PathUnmix(TableDataFrame):
         return refs_log
 
     @staticmethod
-    def generate_test_refs(channels, spike_channel=None, signal_max=2 ** 13,
+    def generate_test_refs(channels, spike_channel=None, signal_max=2**16,
                            scale=True):
-        """Generate test reference spectra."""
+        """Generate test reference spectra.
+
+        spike_channel : list
+            List of channel numbers to spike.
+        signal_max : int
+            Maximum value.
+            Defaults to 2**16: 65536.
+        scale : bool
+            Scale to 1.
+            Defaults to True.
+        """
         data = np.zeros((channels))
         for ch in range(channels):
             data[ch] = randrange(0, signal_max)
