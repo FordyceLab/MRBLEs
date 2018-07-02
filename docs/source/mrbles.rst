@@ -28,6 +28,14 @@ mrbles.kinetics module
     :undoc-members:
     :show-inheritance:
 
+mrbles.path module
+------------------
+
+.. automodule:: mrbles.path
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 mrbles.pipeline module
 ----------------------
 

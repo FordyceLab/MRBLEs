@@ -19,6 +19,7 @@ Welcome to mrbles's documentation!
    mrbles.core
    mrbles.data
    mrbles.kinetics
+   mrbles.path
    mrbles.pipeline
    mrbles.report
 
