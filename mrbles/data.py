@@ -502,7 +502,7 @@ class ImageSetRead(ImageDataFrame):
         return ''.join(self._dataframe.dims).upper()
 
     @staticmethod
-    def scan_path(path, pattern="*.tif"):
+    def scan_path(path, pattern=".*.tif"):
         """Scan folder recursively for files matching the pattern.
 
         Parameters
@@ -511,9 +511,9 @@ class ImageSetRead(ImageDataFrame):
             Folder path as string, e.g. r'C:/folder/file.tif'.
 
         pattern : string
-            File extenstion of general file pattern as search string,
-            e.g. '20160728_MOL_*'
-            Defaults to '*.tif'.
+            General file pattern as search string, e.g. '20160728_MOL_*', using
+            regular expressions (regex).
+            Defaults to '.*.tif'.
 
         """
         image_files = []
@@ -525,7 +525,7 @@ class ImageSetRead(ImageDataFrame):
         return np.hstack(image_files).tolist()
 
     @classmethod
-    def scan_paths(cls, paths, pattern=".tif"):
+    def scan_paths(cls, paths, pattern=".*.tif"):
         """Scan folders recursively for files matching the pattern.
 
         Parameters
@@ -534,8 +534,8 @@ class ImageSetRead(ImageDataFrame):
             Folder paths as list, e.g. ['C:/folder/file.tif', ...].
 
         pattern : string
-            File extension of general file pattern, e.g. '20160728_MOL_*'
-            Defaults to '*.tif'.
+            General file pattern as search string, e.g. '20160728_MOL_*', using
+            regular expressions (regex).
 
         """
         if isinstance(paths, str):

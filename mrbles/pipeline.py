@@ -27,6 +27,7 @@ from builtins import (str, super, range, int, object)
 # General Python
 import os
 import re
+import warnings
 # import sys
 import gc
 from math import sqrt
@@ -42,6 +43,10 @@ import weightedstats as ws
 import xarray as xr
 from matplotlib import pyplot as plt
 from skimage.external import tifffile as tff
+
+# Plotting
+import plotly.graph_objs as go
+from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
 
 # Intra-Package dependencies
 from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
@@ -929,13 +934,127 @@ class Decode(TableDataFrame):
         if combine_data is not None:
             self.combine(combine_data)
 
+    # TODO: Add possibility to choose dimensions.
+    def plot_clusters_3D(self, confidence=None):
+        """Plot ratio clusters in 3D.
+
+        Parameters
+        ----------
+        confidence : float
+            Set minimal confidence level.
+        """
+        init_notebook_mode(connected=True)
+        if confidence is not None:
+            bead_set = self._dataframe[self._dataframe.confidence >= confidence]
+        else:
+            bead_set = self._dataframe
+        target = self._target.values
+        colors = np.multiply(
+            bead_set.code.values.astype(int),
+            np.ceil(255 / len(target))
+        )
+        dims_pre_icp = [dim for dim in bead_set.columns
+                        if 'mask_inside' in dim]
+        dims_post_icp = [dim for dim in bead_set.columns
+                         if 'mask_inside_icp' in dim]
+        dims_names = [dim.replace('.mask_inside', '') for dim in dims_pre_icp]
+        if dims_names > 3:
+            warnings.warn("Set has more than 3 dimensions, only first 3 dimensions are used for 3D plot.",
+                          UserWarning)
+        if dims_names < 3:
+            ValueError("Set has less than 3 dimensions.")
+
+        bead_ratios_pre = go.Scatter3d(
+            name='Bead ratios - Pre-ICP',
+            x=bead_set[dims_pre_icp[0]].values,
+            y=bead_set[dims_pre_icp[1]].values,
+            z=bead_set[dims_pre_icp[2]].values,
+            text=bead_set['code'].values + 1,
+            mode='markers',
+            marker=dict(
+                size=3,
+                color=colors,
+                colorscale='Rainbow',
+                opacity=0.6,
+                symbol="circle-open"
+            )
+        )
+
+        bead_ratios_post = go.Scatter3d(
+            name='Bead ratios - Post-ICP',
+            x=bead_set[dims_post_icp[0]].values,
+            y=bead_set[dims_post_icp[1]].values,
+            z=bead_set[dims_post_icp[2]].values,
+            text=bead_set['code'].values + 1,
+            mode='markers',
+            marker=dict(
+                size=3,
+                color=colors,
+                colorscale='Rainbow',
+                opacity=0.6
+            )
+        )
+
+        target_ratios = go.Scatter3d(
+            name='Target ratios',
+            x=target[:, 0],
+            y=target[:, 1],
+            z=target[:, 2],
+            text=list(range(1, len(target) + 1)),
+            mode='markers',
+            marker=dict(
+                size=4,
+                color='black',
+                symbol="diamond"
+            )
+        )
+
+        mean_ratios = go.Scatter3d(
+            name='GMM mean ratios',
+            x=self.settings.gmm.means[:, 0],
+            y=self.settings.gmm.means[:, 1],
+            z=self.settings.gmm.means[:, 2],
+            text=list(range(1, len(target) + 1)),
+            mode='markers',
+            marker=dict(
+                size=4,
+                color='red',
+                opacity=0.5,
+                symbol="diamond"
+            )
+        )
+
+        data = [bead_ratios_pre, bead_ratios_post, target_ratios, mean_ratios]
+        layout = go.Layout(
+            showlegend=True,
+            scene=dict(
+                xaxis=dict(
+                    title=dims_names[0]
+                ),
+                yaxis=dict(
+                    title=dims_names[1]
+                ),
+                zaxis=dict(
+                    title=dims_names[2]
+                )
+            ),
+            margin=dict(
+                l=0,
+                r=0,
+                b=0,
+                t=0
+            )
+        )
+        fig = go.Figure(data=data, layout=layout)
+        iplot(fig)
+
     def _gmm_qc(self, data):
         print("Number of unique codes found:", self._gmm.found)
         print("Missing codes:", self._gmm.missing)
         s_score = silhouette_score(data, self._gmm.output.code)
         print("Silhouette Coefficient:", s_score)
-        print("AIC:", self._gmm._gmix.aic(data))
-        print("BIC:", self._gmm._gmix.bic(data))
+        # print("AIC:", self._gmm._gmix.aic(data))
+        # print("BIC:", self._gmm._gmix.bic(data))
 
 
 class Analyze(TableDataFrame):

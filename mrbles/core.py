@@ -524,6 +524,7 @@ class FindBeadsImaging(ImageDataFrame):
         seg_img = ndi.label(image, structure=ellipse_kernel)[0]
         return seg_img
 
+    # TODO: Get rid of photutils
     @staticmethod
     def get_dimensions(mask):
         """Get dimensions of labeled regions in labeled mask."""

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.data module &#8212; mrbles 0.11.0 documentation</title>
+    <title>mrbles.data module &#8212; mrbles 0.11.1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -260,7 +260,7 @@ Defaults to 0.</li>
 
 <dl class="staticmethod">
 <dt id="mrbles.data.ImageSetRead.scan_path">
-<em class="property">static </em><code class="descname">scan_path</code><span class="sig-paren">(</span><em>path</em>, <em>pattern='*.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.scan_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.scan_path" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">scan_path</code><span class="sig-paren">(</span><em>path</em>, <em>pattern='.*.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.scan_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.scan_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scan folder recursively for files matching the pattern.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -268,9 +268,9 @@ Defaults to 0.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>path</strong> (<em>string</em>) – Folder path as string, e.g. r’C:/folder/file.tif’.</li>
-<li><strong>pattern</strong> (<em>string</em>) – File extenstion of general file pattern as search string,
-e.g. ‘20160728_MOL_*’
-Defaults to ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.tif’.</li>
+<li><strong>pattern</strong> (<em>string</em>) – General file pattern as search string, e.g. ‘20160728_MOL_*’, using
+regular expressions (regex).
+Defaults to ‘.*.tif’.</li>
 </ul>
 </td>
 </tr>
@@ -280,7 +280,7 @@ Defaults to ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.ti
 
 <dl class="classmethod">
 <dt id="mrbles.data.ImageSetRead.scan_paths">
-<em class="property">classmethod </em><code class="descname">scan_paths</code><span class="sig-paren">(</span><em>paths</em>, <em>pattern='.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.scan_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.scan_paths" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">scan_paths</code><span class="sig-paren">(</span><em>paths</em>, <em>pattern='.*.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.scan_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.scan_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scan folders recursively for files matching the pattern.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -288,8 +288,8 @@ Defaults to ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.ti
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>paths</strong> (<em>list</em>) – Folder paths as list, e.g. [‘C:/folder/file.tif’, …].</li>
-<li><strong>pattern</strong> (<em>string</em>) – File extension of general file pattern, e.g. ‘20160728_MOL_*’
-Defaults to ‘<a href="#id3"><span class="problematic" id="id4">*</span></a>.tif’.</li>
+<li><strong>pattern</strong> (<em>string</em>) – General file pattern as search string, e.g. ‘20160728_MOL_*’, using
+regular expressions (regex).</li>
 </ul>
 </td>
 </tr>
@@ -438,7 +438,7 @@ Defaults to ‘<a href="#id3"><span class="problematic" id="id4">*</span></a>.ti
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
