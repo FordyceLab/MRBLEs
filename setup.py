@@ -92,7 +92,9 @@ setup(
                       'lmfit',
                       'weightedstats',
                       'xlrd',
-                      'packaging'],
+                      'packaging',
+                      'jupyter',
+                      'seaborn'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -111,7 +113,7 @@ setup(
     # },
 
     # Data files are specified in MANIFEST.in file.
-    include_package_data=False,
+    include_package_data=True,
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

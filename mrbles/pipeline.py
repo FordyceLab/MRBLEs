@@ -958,10 +958,10 @@ class Decode(TableDataFrame):
         dims_post_icp = [dim for dim in bead_set.columns
                          if 'mask_inside_icp' in dim]
         dims_names = [dim.replace('.mask_inside', '') for dim in dims_pre_icp]
-        if dims_names > 3:
+        if len(dims_names) > 3:
             warnings.warn("Set has more than 3 dimensions, only first 3 dimensions are used for 3D plot.",
                           UserWarning)
-        if dims_names < 3:
+        if len(dims_names) < 3:
             ValueError("Set has less than 3 dimensions.")
 
         bead_ratios_pre = go.Scatter3d(
