@@ -954,9 +954,10 @@ class Decode(TableDataFrame):
             np.ceil(255 / len(target))
         )
         dims_pre_icp = [dim for dim in bead_set.columns
-                        if 'mask_inside' in dim]
+                        if ('_ratio.mask_inside' in dim)
+                        and (dim[len(dim)-18:] == '_ratio.mask_inside')]
         dims_post_icp = [dim for dim in bead_set.columns
-                         if 'mask_inside_icp' in dim]
+                         if '_ratio.mask_inside_icp' in dim]
         dims_names = [dim.replace('.mask_inside', '') for dim in dims_pre_icp]
         if len(dims_names) > 3:
             warnings.warn("Set has more than 3 dimensions, only first 3 dimensions are used for 3D plot.",
