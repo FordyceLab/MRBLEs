@@ -83,7 +83,7 @@ setup(
                       'scipy',
                       'pandas>=0.23.1',
                       'xarray',
-                      'opencv-python',
+                      'opencv-python>=3.2.0',
                       'scikit-learn',
                       'scikit-image',
                       'photutils>=0.4.0',
@@ -113,7 +113,7 @@ setup(
     # },
 
     # Data files are specified in MANIFEST.in file.
-    include_package_data=True,
+    include_package_data=False,
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
