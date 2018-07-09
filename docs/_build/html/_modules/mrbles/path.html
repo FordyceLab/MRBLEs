@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.path &#8212; mrbles 0.11.2 documentation</title>
+    <title>mrbles.path &#8212; mrbles 0.11.4 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -103,8 +103,9 @@
 <span class="sd">            Data that contains the various sets.</span>
 <span class="sd">        signal : str</span>
 <span class="sd">            Column with signal data.</span>
-<span class="sd">        z_score : bool</span>
-<span class="sd">            Convert to Z-score.</span>
+<span class="sd">        z_score : bool or list</span>
+<span class="sd">            Convert to Z-score if set to True, or uses mean and SD values of</span>
+<span class="sd">            provided list position 0 is mean, position 1 is SD.</span>
 <span class="sd">            Defaults to True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data_conv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -120,8 +121,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">dataframe</span></div>
 
     <span class="k">def</span> <span class="nf">_unmix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">z_score</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">)[</span><span class="s1">&#39;signal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">z_score</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">)[</span><span class="s1">&#39;signal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">())</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">z_score</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">z_score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">z_score</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">unmixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">unmixed</span>
 
@@ -188,7 +192,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
