@@ -65,8 +65,9 @@ class PathUnmix(TableDataFrame):
             Data that contains the various sets.
         signal : str
             Column with signal data.
-        z_score : bool
-            Convert to Z-score.
+        z_score : bool or list
+            Convert to Z-score if set to True, or uses mean and SD values of
+            provided list position 0 is mean, position 1 is SD.
             Defaults to True.
         """
         data_conv = pd.DataFrame(
@@ -84,6 +85,9 @@ class PathUnmix(TableDataFrame):
     def _unmix(self, data, z_score=True):
         if z_score is True:
             data = zscore(data.groupby('code')['signal'].median())
+        elif isinstance(z_score, list):
+            for idx in data.columns:
+                data = (data.groupby('code')['signal'].median() - z_score[0]) / z_score[1]
         unmixed = np.linalg.lstsq(self.references, data, rcond=None)[0]
         return unmixed
 
