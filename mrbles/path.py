@@ -83,11 +83,11 @@ class PathUnmix(TableDataFrame):
         self._dataframe = dataframe
 
     def _unmix(self, data, z_score=True):
+        data = data.groupby('code')['signal'].median()
         if z_score is True:
-            data = zscore(data.groupby('code')['signal'].median())
+            data = zscore(data)
         elif isinstance(z_score, list):
-            for idx in data.columns:
-                data = (data.groupby('code')['signal'].median() - z_score[0]) / z_score[1]
+            data = (data - z_score[0]) / z_score[1]
         unmixed = np.linalg.lstsq(self.references, data, rcond=None)[0]
         return unmixed
 
