@@ -27,7 +27,7 @@ from builtins import (str, super, range, int, object)
 # General Python
 import os
 import re
-import warnings
+# import warnings
 # import sys
 import gc
 from math import sqrt
@@ -44,9 +44,9 @@ import xarray as xr
 from matplotlib import pyplot as plt
 from skimage.external import tifffile as tff
 
-# Plotting
-import plotly.graph_objs as go
-from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
+# # Plotting
+# import plotly.graph_objs as go
+# from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
 
 # Intra-Package dependencies
 from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
