@@ -26,6 +26,7 @@ import sys
 import itertools
 import random
 import time
+import warnings
 # import multiprocessing as mp
 # Data
 import numpy as np
@@ -36,7 +37,10 @@ import cv2
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import plotly.graph_objs as go
+from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
 import seaborn as sns
+# Intra-Package dependencies
+from mrbles.data import TableDataFrame
 
 
 # Functions
@@ -430,10 +434,248 @@ class GenerateCodes(object):
         return levels
 
 
-class Cluster(object):
+class ClusterCheck(TableDataFrame):
+    """Cluster check reporting."""
 
-    def __init__(self, *args, **kwargs):
-        return super(Cluster, self).__init__(*args, **kwargs)
+    def __init__(self, decode_object, *args, **kwargs):
+        super(ClusterCheck, self).__init__(*args, **kwargs)
+        self._dataframe = decode_object.data
+        self._decode = decode_object
+        init_notebook_mode(connected=True)
+
+    def _ci(self, confidence):
+        if confidence is not None:
+            ci_data = self._dataframe[self._dataframe.confidence >= confidence]
+        else:
+            ci_data = self._dataframe
+        return ci_data
+
+    def _ellipses(self, means, covars, confidence):
+        data = []
+        for i, (mean, covar) in enumerate(zip(means, covars)):
+            v, w = np.linalg.eigh(covar)
+            sigma = (1 - confidence) / 0.0255102040816327
+            v = sigma * 2. * np.sqrt(v)
+            angle = np.arctan2(w[1, 0], w[0, 0])
+            angle = np.degrees(angle)
+
+            # Plot an ellipse to show the Gaussian component
+            a = v[1]
+            b = v[0]
+            x_origin = mean[0]
+            y_origin = mean[1]
+
+            theta = np.radians(np.arange(0.0, 360.0, 1.0))
+            x = a * (np.cos(theta))
+            y = b * (np.sin(theta))
+            rtheta = np.radians(angle + 90)
+            R = np.array([
+                 [np.cos(rtheta), -np.sin(rtheta)],
+                 [np.sin(rtheta), np.cos(rtheta)]
+                ])
+
+            x, y = np.dot(R, np.array([x, y]))
+            x += x_origin
+            y += y_origin
+
+            elle = go.Scatter(x=x, y=y, mode='line',
+                              name='CI %0.2f' % confidence,
+                              showlegend=False,
+                              hoverinfo='none',
+                              line=dict(color='Grey',
+                                        width=1,
+                                        dash='dot'))
+            data.append(elle)
+        return data
+
+    # TODO: Add possibility to choose dimensions.
+    def plot_3D(self, confidence=None):
+        """Plot ratio clusters in 3D.
+
+        Parameters
+        ----------
+        confidence : float
+            Set minimal confidence level.
+        """
+        bead_set = self._ci(confidence)
+        target = self._decode._target.values
+        colors = np.multiply(
+            bead_set.code.values.astype(int),
+            np.ceil(255 / len(target))
+        )
+        dims_pre_icp = [dim for dim in bead_set.columns if
+                        ('_ratio.mask_inside' in dim) and
+                        (dim[len(dim) - 18:] == '_ratio.mask_inside')]
+        dims_post_icp = [dim for dim in bead_set.columns
+                         if '_ratio.mask_inside_icp' in dim]
+        dims_names = [dim.replace('.mask_inside', '') for dim in dims_pre_icp]
+        if len(dims_names) > 3:
+            warnings.warn("Set has more than 3 dimensions, only first 3 dimensions are used for 3D plot.",
+                          UserWarning)
+        if len(dims_names) < 3:
+            ValueError("Set has less than 3 dimensions.")
+
+        bead_ratios_pre = go.Scatter3d(
+            name='Bead ratios - Pre-ICP',
+            x=bead_set[dims_pre_icp[0]].values,
+            y=bead_set[dims_pre_icp[1]].values,
+            z=bead_set[dims_pre_icp[2]].values,
+            text=bead_set['code'].values + 1,
+            mode='markers',
+            marker=dict(
+                size=3,
+                color=colors,
+                colorscale='Rainbow',
+                opacity=0.6,
+                symbol="circle-open"
+            )
+        )
+
+        bead_ratios_post = go.Scatter3d(
+            name='Bead ratios - Post-ICP',
+            x=bead_set[dims_post_icp[0]].values,
+            y=bead_set[dims_post_icp[1]].values,
+            z=bead_set[dims_post_icp[2]].values,
+            text=bead_set['code'].values + 1,
+            mode='markers',
+            marker=dict(
+                size=3,
+                color=colors,
+                colorscale='Rainbow',
+                opacity=0.6
+            )
+        )
+
+        target_ratios = go.Scatter3d(
+            name='Target ratios',
+            x=target[:, 0],
+            y=target[:, 1],
+            z=target[:, 2],
+            text=list(range(1, len(target) + 1)),
+            mode='markers',
+            marker=dict(
+                size=4,
+                color='black',
+                symbol="diamond"
+            )
+        )
+
+        mean_ratios = go.Scatter3d(
+            name='GMM mean ratios',
+            x=self._decode.settings.gmm.means[:, 0],
+            y=self._decode.settings.gmm.means[:, 1],
+            z=self._decode.settings.gmm.means[:, 2],
+            text=list(range(1, len(target) + 1)),
+            mode='markers',
+            marker=dict(
+                size=4,
+                color='red',
+                opacity=0.5,
+                symbol="diamond"
+            )
+        )
+
+        data = [bead_ratios_pre, bead_ratios_post, target_ratios, mean_ratios]
+        layout = go.Layout(
+            showlegend=True,
+            scene=dict(
+                xaxis=dict(
+                    title=dims_names[0]
+                ),
+                yaxis=dict(
+                    title=dims_names[1]
+                ),
+                zaxis=dict(
+                    title=dims_names[2]
+                )
+            ),
+            margin=dict(
+                l=0,
+                r=0,
+                b=0,
+                t=0
+            )
+        )
+        fig = go.Figure(data=data, layout=layout)
+        iplot(fig)
+
+    def plot_2D(self, colors, ci_trace=None, confidence=None):
+        """Plot 2D clusters."""
+        mrbles_data = self._ci(confidence)
+        color_exclude = [color for color in self._decode._target.columns if
+                         color not in colors][0]
+        mrbles_data = mrbles_data[mrbles_data[('info.%s' % color_exclude)] == 0]
+        levels = (self._decode._target[color_exclude] == 0)
+        target_ratios = self._decode._target.loc[levels, colors].values
+        codes_target = self._decode._target.loc[levels].index.values
+        colors_data = np.multiply(mrbles_data.code.values,
+                                  (255 / len(target_ratios))).astype(int)
+        codes_found = np.unique(mrbles_data.code)
+        color_pos = [np.argwhere(
+            self._decode._target.columns == colors[0])[0, 0]]
+        color_pos.append(np.argwhere(
+            self._decode._target.columns == colors[1])[0, 0])
+        means = self._decode.settings.gmm.means[levels][: , color_pos]
+        covars = self._decode.settings.gmm._gmix.covariances_[levels][:, color_pos][..., color_pos]
+        data = []
+        if ci_trace is not None:
+            data.extend(self._ellipses(means, covars, ci_trace))
+
+        bead_ratios_plot = go.Scatter(
+            name='Bead ratios',
+            x=mrbles_data[('%s_ratio.mask_inside_icp' % colors[0])].values,
+            y=mrbles_data[('%s_ratio.mask_inside_icp' % colors[1])].values,
+            text=mrbles_data[('code')].values + 1,
+            mode='markers',
+            marker=dict(
+                size=3,
+                color=colors_data,
+                colorscale='Rainbow',
+                opacity=0.6
+            )
+        )
+        data.append(bead_ratios_plot)
+
+        target_ratios_plot = go.Scatter(
+            name='Target ratios',
+            x=target_ratios[:, 0],
+            y=target_ratios[:, 1],
+            text=codes_target + 1,
+            mode='markers',
+            marker=dict(
+                size=4,
+                color='black',
+                symbol="diamond"
+            )
+        )
+        data.append(target_ratios_plot)
+
+        mean_ratios_plot = go.Scatter(
+            name='GMM mean ratios',
+            x=means[:, 0],
+            y=means[:, 1],
+            text=codes_found + 1,
+            mode='markers',
+            marker=dict(
+                size=4,
+                color='red',
+                opacity=0.5,
+                symbol="diamond"
+            )
+        )
+        data.append(mean_ratios_plot)
+
+        layout = go.Layout(
+            showlegend=True,
+            margin=dict(
+                l=0,
+                r=0,
+                b=0,
+                t=0
+            )
+        )
+        fig1 = go.Figure(data=data, layout=layout)
+        iplot(fig1)
 
     @staticmethod
     def scatter(data, target, codes=None, title=None, axes_names=None):

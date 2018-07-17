@@ -51,6 +51,7 @@ from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
 # Intra-Package dependencies
 from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
+from mrbles.report import ClusterCheck
 
 
 # General methods
@@ -902,6 +903,7 @@ class Decode(TableDataFrame):
         self._icp = ICP(target)
         self._gmm = Classify(target)
         self._dataframe = None
+        self._cluster_check = None
         # Setup settings object
         self.settings = Settings([self._icp, self._gmm], ['icp', 'gmm'])
         self.settings.__doc__ = """
@@ -933,8 +935,8 @@ class Decode(TableDataFrame):
         self._dataframe = self._dataframe.combine_first(icp_data)
         if combine_data is not None:
             self.combine(combine_data)
+        self._cluster_check = ClusterCheck(self)
 
-    # TODO: Add possibility to choose dimensions.
     def plot_clusters_3D(self, confidence=None):
         """Plot ratio clusters in 3D.
 
@@ -942,112 +944,25 @@ class Decode(TableDataFrame):
         ----------
         confidence : float
             Set minimal confidence level.
+            Defaults to None.
         """
-        init_notebook_mode(connected=True)
-        if confidence is not None:
-            bead_set = self._dataframe[self._dataframe.confidence >= confidence]
-        else:
-            bead_set = self._dataframe
-        target = self._target.values
-        colors = np.multiply(
-            bead_set.code.values.astype(int),
-            np.ceil(255 / len(target))
-        )
-        dims_pre_icp = [dim for dim in bead_set.columns
-                        if ('_ratio.mask_inside' in dim)
-                        and (dim[len(dim)-18:] == '_ratio.mask_inside')]
-        dims_post_icp = [dim for dim in bead_set.columns
-                         if '_ratio.mask_inside_icp' in dim]
-        dims_names = [dim.replace('.mask_inside', '') for dim in dims_pre_icp]
-        if len(dims_names) > 3:
-            warnings.warn("Set has more than 3 dimensions, only first 3 dimensions are used for 3D plot.",
-                          UserWarning)
-        if len(dims_names) < 3:
-            ValueError("Set has less than 3 dimensions.")
+        self._cluster_check.plot_3D(confidence)
 
-        bead_ratios_pre = go.Scatter3d(
-            name='Bead ratios - Pre-ICP',
-            x=bead_set[dims_pre_icp[0]].values,
-            y=bead_set[dims_pre_icp[1]].values,
-            z=bead_set[dims_pre_icp[2]].values,
-            text=bead_set['code'].values + 1,
-            mode='markers',
-            marker=dict(
-                size=3,
-                color=colors,
-                colorscale='Rainbow',
-                opacity=0.6,
-                symbol="circle-open"
-            )
-        )
+    def plot_clusters_2D(self, colors, ci_trace=None, confidence=None):
+        """Plot ratio clusters in 2D.
 
-        bead_ratios_post = go.Scatter3d(
-            name='Bead ratios - Post-ICP',
-            x=bead_set[dims_post_icp[0]].values,
-            y=bead_set[dims_post_icp[1]].values,
-            z=bead_set[dims_post_icp[2]].values,
-            text=bead_set['code'].values + 1,
-            mode='markers',
-            marker=dict(
-                size=3,
-                color=colors,
-                colorscale='Rainbow',
-                opacity=0.6
-            )
-        )
-
-        target_ratios = go.Scatter3d(
-            name='Target ratios',
-            x=target[:, 0],
-            y=target[:, 1],
-            z=target[:, 2],
-            text=list(range(1, len(target) + 1)),
-            mode='markers',
-            marker=dict(
-                size=4,
-                color='black',
-                symbol="diamond"
-            )
-        )
-
-        mean_ratios = go.Scatter3d(
-            name='GMM mean ratios',
-            x=self.settings.gmm.means[:, 0],
-            y=self.settings.gmm.means[:, 1],
-            z=self.settings.gmm.means[:, 2],
-            text=list(range(1, len(target) + 1)),
-            mode='markers',
-            marker=dict(
-                size=4,
-                color='red',
-                opacity=0.5,
-                symbol="diamond"
-            )
-        )
-
-        data = [bead_ratios_pre, bead_ratios_post, target_ratios, mean_ratios]
-        layout = go.Layout(
-            showlegend=True,
-            scene=dict(
-                xaxis=dict(
-                    title=dims_names[0]
-                ),
-                yaxis=dict(
-                    title=dims_names[1]
-                ),
-                zaxis=dict(
-                    title=dims_names[2]
-                )
-            ),
-            margin=dict(
-                l=0,
-                r=0,
-                b=0,
-                t=0
-            )
-        )
-        fig = go.Figure(data=data, layout=layout)
-        iplot(fig)
+        Parameters
+        ----------
+        colors : list
+            List of color (NPL) names.
+        ci_trace : float
+            Set trace confidence line around clusters.
+            Defaults to None.
+        confidence : float
+            Set minimal confidence level of data.
+            Defaults to None.
+        """
+        self._cluster_check.plot_2D(colors, ci_trace, confidence)
 
     def _gmm_qc(self, data):
         print("Number of unique codes found:", self._gmm.found)
