@@ -49,9 +49,10 @@ from skimage.external import tifffile as tff
 # from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
 
 # Intra-Package dependencies
+import mrbles
 from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
-from mrbles.report import ClusterCheck
+from mrbles.report import ClusterCheck, BeadsReport
 
 
 # General methods
@@ -974,7 +975,7 @@ class Decode(TableDataFrame):
 
 
 class Analyze(TableDataFrame):
-    """Analyze data MRBLE data and retutn per-code statistics.
+    """Analyze data MRBLE data and return per-code statistics.
 
     Parameters
     ----------
@@ -999,11 +1000,23 @@ class Analyze(TableDataFrame):
 
     """
 
-    def __init__(self, dataframe, seq_list=None, images=None):
+    def __init__(self, dataframe, seq_list=None, images=None, masks=None):
         super(Analyze, self).__init__()
-        self.seq_list = seq_list
-        self._images = images
+        if isinstance(dataframe, (mrbles.pipeline.Extract,
+                                  mrbles.pipeline.Decode,
+                                  mrbles.data.TableDataFrame)):
+            dataframe = dataframe.data
         self._data_per_bead = dataframe
+        self.seq_list = seq_list
+        if isinstance(images, (mrbles.pipeline.Images,
+                               mrbles.pipeline.Ratio,
+                               mrbles.data.ImageDataFrame)):
+            images = images.data
+        self._images = images
+        if isinstance(masks, (mrbles.pipeline.Find,
+                              mrbles.data.ImageDataFrame)):
+            masks = masks.data
+        self._masks = masks
         self._norm_data = None
 
         # Attributes
@@ -1016,29 +1029,49 @@ class Analyze(TableDataFrame):
             'N': len,
             'CV': sp.stats.variation
         }
-        # Analyze per-code
-        self._dataframe = self._analyze(dataframe)
 
-    def _analyze(self, data):
-        if 'set' in data.columns:
-            return self._multi(data)
-        else:
-            return self._single(data)
+    def analyze(self, assay_channel, confidence=None, bkg_data=None):
+        """Calculate per-code statisics.
 
-    def background(self, bkg_data):
-        """Subtract background.
-
-        Parameters
+        Paramaters
         ----------
+        assay_channel : str
+            Assay channel name (column name) to calculate per-code statistics
+            for.
+        confidence: float
+            Filter by minimum confidence interval, e.g. 0.95 (95% CI).
+            Defaults to None.
         bkg_data : float/int, string, list, NumPy array, Pandas DataFrame
             If float/value is used, this value be subtracted. If string is
             used, column from internal dataframe is used. Otherwise, the data
-            is subtracted, which needs to be the same size as the per-bead
-            data. In the case of Pandas DataFrame, do slice the single exact
-            column. Row number of the data is the code.
+            provided is subtracted, which needs to be the same size as the
+            per-bead data. In the case of Pandas DataFrame, do slice the single
+            exact column. Row number of the data is the code.
+            Defaults to None.
 
         """
-        pass
+        if bkg_data is not None:
+            self._background(assay_channel, bkg_data)
+            assay_channel = '%s_min_bkg' % assay_channel
+        if confidence is not None:
+            data_filter = self._data_per_bead.loc[
+                self._data_per_bead.confidence >= confidence]
+        else:
+            data_filter = self._data_per_bead
+        if 'set' in data_filter.columns:
+            data_filter = data_filter.loc[:, ('set', 'code', assay_channel)]
+            self._dataframe = self._multi(data_filter)
+        else:
+            data_filter = data_filter.loc[:, ('code', assay_channel)]
+            self._dataframe = self._single(data_filter)
+
+    def _background(self, assay_channel, bkg_data):
+        if isinstance(bkg_data, str):
+            self._data_per_bead['%s_min_bkg' % assay_channel] = \
+                self._data_per_bead[assay_channel] - self._data_per_bead[bkg_data]
+        elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
+            self._data_per_bead['%s_min_bkg' % assay_channel] = \
+                self._data_per_bead[assay_channel] - bkg_data
 
     def normalize(self, norm_data, scaled=True):
         """Normalize data.
@@ -1053,13 +1086,14 @@ class Analyze(TableDataFrame):
 
         """
         per_code = self._single(norm_data)
+        per_code['code'] = per_code.index
         if scaled is True:
             per_code['mean_scaled'] = per_code['mean'] / per_code['mean'].max()
             per_code['median_scaled'] = per_code['median'] / per_code['median'].max()
             per_code['sd_scaled'] = per_code['sd'] / per_code['mean'].max()
             per_code['se_scaled'] = per_code['sd_scaled'] / np.sqrt(per_code['N'])
         self._norm_data = per_code
-        set_codes = np.unique(beads_data['code'])
+        set_codes = np.unique(self._data_per_bead['code'])
         for code in set_codes:
             if scaled is True:
                 norm_mean = per_code.loc[per_code['code'] == code, 'mean_scaled'].values
@@ -1087,12 +1121,18 @@ class Analyze(TableDataFrame):
 
     @property
     def norm_data(self):
+        """Return normalized data."""
         return self._norm_data
 
     @property
     def data_per_bead(self):
         """Return (normalized) data per bead."""
         return self._data_per_bead
+
+    @property
+    def data_per_code(self):
+        """Return (normalized) data per code."""
+        return self._dataframe
 
     def _single(self, data):
         channels = list(data.columns)
@@ -1137,9 +1177,57 @@ class Analyze(TableDataFrame):
         }
         return result
 
-    def per_mrble_report(self):
-        """Generate per-MRBLE PDF image report."""
-        pass
+    def mrble_report(self, assay_channel, filename, set_name=None,
+                     image_names=None, mask_names=None, codes=None, sort=True):
+        """Generate per-MRBLE PDF image report.
+
+        Parameters
+        ----------
+        assay_channel : str
+            Assay channel name, e.g. 'Cy5_FF'
+        filename : str
+            Filename for generated PDF file.
+        set_name : str
+            Name of set, e.g. 'Set A'
+        image_names : list of str
+            List of image names.
+            Defaults to ['Dy', 'Sm', 'Tm', 'bkg', 'Eu', assay_channel].
+        mask_names : list of str
+            List of mask names.
+            Defaults to ['mask_ring', 'mask_inside', 'mask_full', 'mask_bkg'].
+        codes : int, list of int
+            Integer or list of integers with selected codes.
+            Defaults to None.
+        sort : boolean
+            Sort by code.
+            Defaults to True.
+        """
+        if image_names is None:
+            image_names = ['Dy', 'Sm', 'Tm', 'bkg', 'Eu', assay_channel]
+        if mask_names is None:
+            mask_names = ['mask_ring', 'mask_inside', 'mask_full', 'mask_bkg']
+        if (self._images is None) or (self._masks is None):
+            print("Images and/or masks are not loaded into object.")
+            return None
+        if set_name is None:
+            images = self._image.sel(c=image_names)
+            masks = self._masks.sel(c=mask_names)
+            data = self._data_per_bead
+        else:
+            images = self._images[set_name].sel(c=image_names)
+            masks = self._masks[set_name].sel(c=mask_names)
+            data = self._data_per_bead[self._data_per_bead.set == set_name]
+        report = BeadsReport(data,
+                             images,
+                             masks,
+                             assay_channel,
+                             codes,
+                             sort)
+        answer = input("Do you wan to continue (y for yes, or n for no)?: ")
+        if answer == 'y':
+            report.generate(filename)
+        else:
+            print("Aborted.")
 
     def qc_report(self):
         """Generate Quality Control PDF report."""

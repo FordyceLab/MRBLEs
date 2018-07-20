@@ -23,6 +23,7 @@ from builtins import (super, range, int, object)
 # [Modules]
 # General Python
 import sys
+import os
 import itertools
 import random
 import time
@@ -31,13 +32,14 @@ import warnings
 # Data
 import numpy as np
 import pandas as pd
+import xarray as xr
 # Imaging
 import cv2
 # Image display
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import plotly.graph_objs as go
-from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
+from plotly.offline import init_notebook_mode, iplot
 import seaborn as sns
 # Intra-Package dependencies
 from mrbles.data import TableDataFrame
@@ -74,364 +76,8 @@ def image_overlay(image, image_blend, alpha=0.2, cmap_image='Greys_r', cmap_blen
     plt.imshow(image, cmap=cmap_image)
     plt.imshow(image_blend, cmap=cmap_blend, interpolation='none', alpha=alpha)
 
-def cluster3d_check(bead_set, target, gmix, set_prob=1, channels=None):
-    """Clustering plot
-    """
-    if channels is None:
-        channels = ['rat_dy_icp', 'rat_tm_icp', 'rat_sm_icp']
-    clusters = len(target)
-    colors = np.multiply(bead_set.code.loc[((bead_set.code >= 0) & (
-        bead_set.log_prob > set_prob))].values, np.ceil(255 / clusters))
-
-    bead_ratios_all = go.Scatter3d(
-        name='Bead ratios - Marked',
-        x=bead_set.loc[((bead_set.code.isnull()) | (
-            bead_set.log_prob <= set_prob)), (channels[0])].values,
-        y=bead_set.loc[((bead_set.code.isnull()) | (
-            bead_set.log_prob <= set_prob)), (channels[1])].values,
-        z=bead_set.loc[((bead_set.code.isnull()) | (
-            bead_set.log_prob <= set_prob)), (channels[2])].values,
-        text=bead_set.loc[:, ('lbl')].values,
-        mode='markers',
-        marker=dict(
-            size=3,
-            colorscale='grey',
-            opacity=0.7,
-            symbol='cross'
-        )
-    )
-
-    bead_ratios = go.Scatter3d(
-        name='Bead ratios - Filtered',
-        x=bead_set.loc[((bead_set.code >= 0) & (
-            bead_set.log_prob > set_prob)), ('rat_dy_icp')].values,
-        y=bead_set.loc[((bead_set.code >= 0) & (
-            bead_set.log_prob > set_prob)), ('rat_sm_icp')].values,
-        z=bead_set.loc[((bead_set.code >= 0) & (
-            bead_set.log_prob > set_prob)), ('rat_tm_icp')].values,
-        text=bead_set.loc[(bead_set.code >= 0), ('lbl')].values,
-        mode='markers',
-        marker=dict(
-            size=3,
-            color=colors,
-            colorscale='Rainbow',
-            opacity=0.6
-        )
-    )
-
-    target_ratios = go.Scatter3d(
-        name='Target ratios',
-        x=target[:, 0],
-        y=target[:, 1],
-        z=target[:, 2],
-        text=list(range(1, clusters + 1)),
-        mode='markers',
-        marker=dict(
-            size=4,
-            color='black',
-            opacity=0.5,
-            symbol="diamond"
-        )
-    )
-
-    mean_ratios = go.Scatter3d(
-        name='GMM mean ratios',
-        x=gmix.means[:, 0],
-        y=gmix.means[:, 1],
-        z=gmix.means[:, 2],
-        text=list(range(1, clusters + 1)),
-        mode='markers',
-        marker=dict(
-            size=4,
-            color='red',
-            opacity=0.5,
-            symbol="diamond"
-        )
-    )
-
-    data = [bead_ratios_all, bead_ratios, target_ratios, mean_ratios]
-    layout = go.Layout(
-        showlegend=True,
-        scene=dict(
-            xaxis=dict(
-                title='Dy/Eu'
-            ),
-            yaxis=dict(
-                title='Sm/Eu'
-            ),
-            zaxis=dict(
-                title='Tm/Eu'
-            )
-        ),
-        margin=dict(
-            l=0,
-            r=0,
-            b=0,
-            t=0
-        )
-    )
-    fig = go.Figure(data=data, layout=layout)
-    return fig
-
 
 # Classes
-
-
-class GenerateCodes(object):
-    """Generate bead code set.
-
-    Parameters
-    ----------
-    colors : list of str
-        List of coding colors in a list of strings.
-
-    s0s : liat of float
-        List of standard deviations (SD) at intensity 0 for each encoding color.
-
-    slopes : float
-        List of slopes of the SDs versus intensity for each encoding color.
-
-    nsigma : float
-        The number of SD to separate coding levels.
-
-    Examples
-    --------
-    >>> code_set_gen = GenerateCodes(['Dy', 'Sm', 'Tm'],
-                                     [0.0039, 0.0055, 0.0029],
-                                     [0.022, 0.016, 0.049], 6.4)
-    >>> code_set_gen.result
-               Dy        Sm        Tm
-    0    0.000000  0.000000  0.000000
-    >>> code_set_gen = GenerateCodes(['Dy', 'Sm'],
-                                     [0.0039, 0.0055],
-                                     [0.022, 0.016], 8.4)
-    >>> code_set_gen.generate()
-    Number of codes:  24
-    >>> code_set_gen.result
-              Dy        Sm
-    0   0.000000  0.000000
-    1   0.000000  0.106747
-    2   0.000000  0.246642
-    ......................
-    >>> code_set_gen.iterate(28)
-    ....................
-    Number of codes:  26
-    Number of codes:  26
-    Number of codes:  28
-    Final nsigma:  8.09
-    Iterations  :  31
-    """
-
-    def __init__(self, colors, s0s, slopes, nsigma):
-        if not len(colors) == len(slopes) == len(s0s):
-            raise ValueError(
-                "Length colors, nsigmas and slopes not equal: %s." % sys.exit()[1])
-        self._colors = colors
-        self._s0s = s0s
-        self._slopes = slopes
-        self._nsigma = nsigma
-        self._result = None
-
-    def __repr__(self):
-        """Return levels."""
-        return repr([self.levels])
-
-    @property
-    def colors(self):
-        """Return color names."""
-        return self._colors
-
-    @colors.setter
-    def colors(self, value):
-        self._colors = value
-
-    @property
-    def axis(self):
-        """Return number of axis (colors)."""
-        return len(self._colors)
-
-    @property
-    def levels(self):
-        """Return number of levels."""
-        return np.array(self._levels()).T
-
-    def _levels(self, nsigma=None):
-        if nsigma is None:
-            nsigma = self._nsigma
-        levels = []
-        for idx, _ in enumerate(self._colors):
-            levels.append(self.get_levels(self._s0s[idx],
-                                          self._slopes[idx],
-                                          nsigma))
-        return levels
-
-    @staticmethod
-    def recursive_looper(iterators, pos=0):
-        """Recursive looper.
-
-        Implements the same functionality as nested for loops, but is more
-        dynamic. Iterators can either be a list of methods which return
-        iterables, a list of iterables, or a combination of both.
-        """
-        next_loop, v = None, []
-        try:
-            gen = iter(iterators[pos]())
-        except TypeError:
-            gen = iter(iterators[pos])
-        while True:
-            try:
-                yield v + next_loop.next()
-            except (StopIteration, AttributeError):
-                v = [gen.next(), ]
-                if pos < len(iterators) - 1:
-                    next_loop = recursive_looper(iterators, pos + 1)
-                else:
-                    yield v
-
-    @property
-    def result(self):
-        """Return resulting ratios."""
-        if self._result is not None:
-            return pd.DataFrame(self._result, columns=self._colors)
-        else:
-            return None
-
-    def to_csv(self, filename):
-        """Export to CSV."""
-        self.result.to_csv(filename, sep=',', encoding='utf-8')
-
-    # Experimental
-    def to_csv_rep(self, filename, repeats,
-                   labels=None, pos=True):
-        """Export to CSV, with repeated ratios for bead synthesis."""
-        if labels is None:
-            labels = ['CeTb', 'Dy', 'Sm', 'Tm']
-        if pos is True:
-            labels.append('pos')
-        data = pd.DataFrame(columns=labels)
-        position = 1
-        no = 0
-        for code in range(self.result.count()[0]):
-            for r in range(repeats):
-                data.loc[no] = [0,
-                                self.result.loc[code, 'Dy'],
-                                self.result.loc[code, 'Sm'],
-                                self.result.loc[code, 'Tm'],
-                                code + 1]
-                #data.loc[no] = [0,
-                #                self.result.loc[code, 'Dy'],
-                #                self.result.loc[code, 'Sm'],
-                #                0,
-                #                code+1]
-                no += 1
-        data.to_csv(filename, sep=',', encoding='utf-8')
-
-    def generate(self, nsigma=None, depends=None):
-        """Generate codes with default nsigma or given nsigma.
-
-        parameters
-        ----------
-        nsigma : float, optional
-            The number of SD to separate coding levels.
-            Defaults to initial nsigma.
-
-        depends : any, experimental, optional
-            Used for Tm (3rd in array) dependence on Dy (1st array).
-
-        """
-        if nsigma is None:
-            nsigma = self._nsigma
-        if depends is not None:
-            levels = self._levels(nsigma)[:-1]
-        else:
-            levels = self._levels(nsigma)
-        codes = []
-        for value in itertools.product(*levels):
-            if sum(value) <= 1:
-                codes.append(value)
-
-        # Experimental for Tm (must be 3rd in array) depence on Dy (must be 1st in array)
-        if depends is not None:
-            codes_dep = []
-            for code in codes:
-                # depends = 0.045
-                levels = self.get_levels(
-                    self._s0s[2] + depends * code[0], self._slopes[2], nsigma)
-                print(levels)
-                for level in levels:
-                    if (code[0] + code[1] + level) <= 1:
-                        codes_dep.append([code[0], code[1], level])
-            codes = codes_dep
-        # END
-
-        print("Number of codes: ", len(codes))
-        self._result = codes
-
-    def iterate(self, num, nsimga_start=None, nsigma_step=0.01, max_iter=1000):
-        """Iterate nsigma until number of codes are found.
-
-        Does not work with dependence, such as Tm dependence on Dy.
-
-        parameters
-        ----------
-        num : int
-            Number of required codes.
-
-        nsigma_start : float, optional
-            Start value of nsigma.
-            Defaults to initial nsigma.
-
-        nsigma_step : float, optional
-            Iterarion step.
-            Defaults to 0.01
-
-        max_iter : int, optional
-            Maximum iteration steps.
-            Defaults to 1000.
-
-        """
-        if nsimga_start is None:
-            nsimga_start = self._nsigma
-        len_codes = 0
-        step = 0
-        while len_codes < num and step < max_iter:
-            self.generate(nsimga_start)
-            len_codes = len(self._result)
-            nsimga_start -= nsigma_step
-            step += 1
-        print("Final nsigma: ", nsimga_start)
-        print("Iterations  : ", step)
-
-    @staticmethod
-    def get_levels(std0, slope, nsigma):
-        """Predict the number of levels of a coding color.
-
-        The coding levels are based on s0, the standard deviation (SD) at
-        intensity 0, and the slope between intensity and SD.
-
-        Parameters
-        ----------
-        std0 : float
-            The SD at intensity 0.
-
-        slope : float
-            The slope of the SD versus intensity.
-
-        nsigma : float
-            The number of SD to separate levels.
-
-        Returns
-        -------
-        levels : list of float
-            Returns list of codes values for a given coding color.
-
-        """
-        nslope = nsigma * slope
-        levels = [0]
-        while levels[-1] <= 1:
-            levels.append((levels[-1] * (1 + nslope) + 2 * nsigma * std0) / (1 - nslope))
-        levels.pop()
-        return levels
 
 
 class ClusterCheck(TableDataFrame):
@@ -730,33 +376,6 @@ class ClusterCheck(TableDataFrame):
             plt.draw()
 
 
-class PeptideScramble(object):
-    """Randomizes amino acid sequence
-
-    Parameters
-    ----------
-    seq : string
-        Inset amino acid sequence as a string.
-
-    Returns
-    -------
-    seq : string
-        Returns string of shuffled amino acid sequence.
-
-    """
-
-    def __init__(self, seq):
-        self.seq = seq
-
-    def random(self, seq=None):
-        """Return randomized amino acid sequence."""
-        if seq is None:
-            seq = self.seq
-        seq_list = list(seq)
-        random.shuffle(seq_list)
-        return ''.join(seq_list)
-
-
 class BeadsReport(object):
     """Per-MRBLE images report.
 
@@ -774,12 +393,16 @@ class BeadsReport(object):
         Contains all the dimension, posotional, and intensity data per-MBRLE.
     images : mrbles.ImageDataFrame, Xarray DataArray
         Contains images.
-    sets : string, list of string
-        String or list of strings with set names to be combined.
-        Defaults to None.
+    masks : Xarray DataArray
+        Contains masks.
+    assay_channel : str
+        Assay channel name, e.g. 'Cy5_FF'
     codes : int, list of int
         Integer or list of integers with selected codes.
         Defaults to None.
+    sort : boolean
+        Sort by code.
+        Defaults to True.
 
     Methods:
     --------
@@ -797,28 +420,8 @@ class BeadsReport(object):
         Defaults to True.
     """
 
-    def __init__(self, data, images, assay_channel,
-                 sets=None, codes=None, sort=True):
-        """Init."""
-        self._dataframe = data.fillna(0)
-        if sort is True:
-            self._dataframe.sort_values('code', inplace=True)
-        if sets is not None:
-            if isinstance(sets, list):
-                self._dataframe = \
-                    self._dataframe[self._dataframe['set'].isin(sets)]
-            else:
-                self._dataframe = \
-                    self._dataframe[self._dataframe['set'] == sets]
-        if codes is not None:
-            if isinstance(codes, list):
-                self._dataframe = \
-                    self._dataframe[self._dataframe['code'].isin(codes)]
-            else:
-                self._dataframe = \
-                    self._dataframe[self._dataframe['code'] == codes]
-        self._images = images
-
+    def __init__(self, data, images, masks, assay_channel,
+                 codes=None, sort=True):
         # Speed settings
         self.parallelize = True
         self.time_sec = 0.0275
@@ -828,13 +431,26 @@ class BeadsReport(object):
         self.ref_mask = "mask_inside"
         self.bkg_channel = "bkg"
         self.bkg_mask = "mask_inside"
-        self.assay_channel = assay_channel
         self.assay_mask = "mask_ring"
         self.npl_channels = ['Eu', 'Dy', 'Tm', 'Sm']
         self.npl_mask = "mask_inside"
 
+        self._dataframe = data.fillna(0)
+        self.assay_channel = assay_channel
+        self._images = images.combine_first(masks)
+
+        if sort is True:
+            self._dataframe.sort_values('code', inplace=True)
+        # Set max values for image plots
         self.max_assay = self._images.sel(c=self.assay_channel).max()
         self.max_npl = self._images.sel(c=self.npl_channels).max()
+        if codes is not None:
+            if isinstance(codes, list):
+                self._dataframe = \
+                    self._dataframe[self._dataframe['code'].isin(codes)]
+            else:
+                self._dataframe = \
+                    self._dataframe[self._dataframe['code'] == codes]
 
         self._time_estimate()
 
@@ -860,7 +476,7 @@ class BeadsReport(object):
         each, which makes a total of 12,000 images.
         """
         time_0 = time.time()
-        self._per_pdf(filename, sets, codes)
+        self._per_pdf(filename)
         time_1 = time.time()
         time_total = (time_1 - time_0)
         time_per_image = time_total / (self.beads_num * self.images_num)
@@ -904,6 +520,7 @@ class BeadsReport(object):
         elif any(channel in str(image.c.values) for channel in self.npl_channels):
             ax_sub.set_xlabel(
                 "R: %0.3f" % (dim[str(image.c.values) + '_ratio' + '.' + self.npl_mask]),
+                # "R: %0.3f" % (dim[str(image.c.values) + '.' + self.npl_mask]),
                 size=3
             )
             ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
@@ -947,11 +564,17 @@ class QCReport(object):
 
     def __init__(self, data):
         self._per_bead_data = data
+        self._savefig = None
         self.dpi = 300
 
-        self.npl_channels = ['Eu', 'Dy', 'Tm', 'Sm']
+        # Defaults
+        self.report_folder = 'report/'
 
-    def generate(self, filename):
+    def generate(self, filename, savefig=False):
+        self._savefig = savefig
+        if self._savefig is True:
+            if not os.path.exists(self.report_folder):
+                os.makedirs(self.report_folder)
         with PdfPages(filename) as pdf_object:
             self._add_figure([self.bead_size,
                               self.beads_per_code],
@@ -966,14 +589,23 @@ class QCReport(object):
 
     def bead_size(self):
         """Bead size distribution plot."""
-        self._per_bead_data.loc[:, 'diameter'] = self._per_bead_data.radius * 2
-        b_std = self._per_bead_data.diameter.std()
-        b_mean = self._per_bead_data.diameter.mean()
+        if 'diameter_conv' in self._per_bead_data.columns:
+            d_name = 'diameter_conv'
+            dim = 'Converted'
+        else:
+            d_name = 'diameter'
+            dim = 'Pixels'
+        b_std = self._per_bead_data[d_name].std()
+        b_mean = self._per_bead_data[d_name].mean()
         x_left = b_mean - (5 * b_std)
         x_right = b_mean + (5 * b_std)
-        self._per_bead_data.diameter.plot(
-            kind='hist', bins=100, color='lightgray', title="Beads Diameter (Pixels) Mean: %0.2f SD: %0.2f" % (b_mean, b_std)).set_xlim(left=x_left, right=x_right)
-        self._per_bead_data.diameter.plot(kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(bottom=0)
+        self._per_bead_data[d_name].plot(
+            kind='hist', bins=100,
+            color='lightgray',
+            title="Beads Diameter (%s) Mean: %0.2f SD: %0.2f" % (dim, b_mean, b_std)).set_xlim(left=x_left, right=x_right)
+        self._per_bead_data[d_name].plot(kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(bottom=0)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'bead_size.png'), dpi=self.dpi)
 
     def beads_per_code(self):
         """Beads per-code distribution plot."""
@@ -982,12 +614,16 @@ class QCReport(object):
         self._per_bead_data.groupby(['set', 'code']).size().plot(
             kind='hist', color='lightgray', title="Beads-per-code (N) Mean: %0.2f SD: %0.2f" % (b_mean, b_std))
         self._per_bead_data.groupby(['set', 'code']).size().plot(kind='kde', secondary_y=True, color='black', alpha=0.7)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'beads_per_code.png'), dpi=self.dpi)
 
     def npl_plots(self, pdf_object):
         # Pre ICP
         sns.distplot(self._per_bead_data['Dy_ratio.mask_inside'], hist=True, kde=False, bins=1000)
         plt.title("Dy ratios - pre-ICP")
         pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'Dy_ratios_pre-ICP.png'), dpi=self.dpi)
         plt.close()
 
         # Before CI filter
@@ -996,7 +632,10 @@ class QCReport(object):
         g.fig.subplots_adjust(top=10)
         g.map(sns.regplot, 'Sm_ratio.mask_inside', 'Tm_ratio.mask_inside', fit_reg=False,
               scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        plt.tight_layout()
         pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'Sm_vs_Tm_ratios_pre-ICP.png'), dpi=self.dpi)
         plt.close()
 
         # After CI filter
@@ -1005,13 +644,19 @@ class QCReport(object):
         g.fig.subplots_adjust(top=10)
         g.map(sns.regplot, 'Sm_ratio.mask_inside', 'Tm_ratio.mask_inside', fit_reg=False,
               scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        plt.tight_layout()
         pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'Sm_vs_Tm_ratios_pre-ICP_CI95_filter.png'), dpi=self.dpi)
         plt.close()
 
         # Post ICP
         sns.distplot(self._per_bead_data['Dy_ratio.mask_inside_icp'], hist=True, kde=False, bins=1000)
         plt.title("Dy ratios - Post-ICP")
+        plt.tight_layout()
         pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'Dy_ratios_post-ICP.png'), dpi=self.dpi)
         plt.close()
 
         # Before CI filter
@@ -1020,7 +665,10 @@ class QCReport(object):
         g.fig.subplots_adjust(top=10)
         g.map(sns.regplot, 'Sm_ratio.mask_inside_icp', 'Tm_ratio.mask_inside_icp', fit_reg=False,
               scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        plt.tight_layout()
         pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'Sm_vs_Tm_ratios_post-ICP.png'), dpi=self.dpi)
         plt.close()
 
         # After CI filter
@@ -1029,24 +677,29 @@ class QCReport(object):
         g.fig.subplots_adjust(top=10)
         g.map(sns.regplot, 'Sm_ratio.mask_inside_icp', 'Tm_ratio.mask_inside_icp', fit_reg=False,
               scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+        plt.tight_layout()
         pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'Sm_vs_Tm_ratios_post-ICP_CI95_filter.png'), dpi=self.dpi)
         plt.close()
 
     def assay_contamination(self):
         npl_num = len(self.npl_channels)
         plt.figure(dpi=150)
         self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Dy_ratio.mask_inside_icp',
-                         title='Dy Ratio vs Cy5 (ring)')
+                                 title='Dy Ratio vs Cy5 (ring)')
         #plt.savefig('Dy Ratio vs Cy5 (ring) - BKG.png', dpi=300)
 
         plt.figure(dpi=150)
-        self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Sm_ratio.mask_inside_icp',
-                         title='Sm Ratio vs Cy5 (ring)')
+        self._per_bead_data.plot(kind='scatter', figsize=(9, 6),
+                                 x='Cy5_min_bkg', y='Sm_ratio.mask_inside_icp',
+                                 title='Sm Ratio vs Cy5 (ring)')
         #plt.savefig('Sm Ratio vs Cy5 (ring) - BKG.png',dpi=300)
 
         plt.figure(dpi=300)
-        self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Tm_ratio.mask_inside_icp',
-                         title='Tm Ratio vs Cy5 (ring)')
+        self._per_bead_data.plot(kind='scatter', figsize=(9, 6),
+                                 x='Cy5_min_bkg', y='Tm_ratio.mask_inside_icp',
+                                 title='Tm Ratio vs Cy5 (ring)')
         #plt.savefig('Tm Ratio vs Cy5 (ring) - BKG.png', dpi=300)
 
     def npl_covar_plots(self):
@@ -1114,3 +767,329 @@ class QCReport(object):
         g.map(sns.regplot, 'sample_size', 'Cy5_min_bkg', data=data_per_step_all,
             logx=True, ci=95, n_boot=5000,
             scatter=True, scatter_kws={'alpha': 0.3, 'color': 'darkgray'}, line_kws={'color': 'black'})
+
+    def html_report(self):
+        """Generate HTML report."""
+
+        html = """
+        <H1 align="center">html2fpdf</H1>
+        <h2>Basic usage</h2>
+        <p>You can now easily print text while mixing different
+        styles : <B>bold</B>, <I>italic</I>, <U>underlined</U>, or
+        <B><I><U>all at once</U></I></B>!
+
+        <BR>You can also insert hyperlinks
+        like this <A HREF="http://www.mousevspython.com">www.mousevspython.comg</A>,
+        or include a hyperlink in an image. Just click on the one below.<br>
+        <center>
+        <A HREF="http://www.mousevspython.com"><img src="tutorial/logo.png" width="150" height="150"></A>
+        </center>
+
+        <h3>Sample List</h3>
+        <ul><li>option 1</li>
+        <ol><li>option 2</li></ol>
+        <li>option 3</li></ul>
+
+        <table border="0" align="center" width="50%">
+        <thead><tr><th width="30%">Header 1</th><th width="70%">header 2</th></tr></thead>
+        <tbody>
+        <tr><td>cell 1</td><td>cell 2</td></tr>
+        <tr><td>cell 2</td><td>cell 3</td></tr>
+        </tbody>
+        </table>
+        """
+
+        from pyfpdf import FPDF, HTMLMixin
+
+        class MyFPDF(FPDF, HTMLMixin):
+            pass
+
+        pdf=MyFPDF()
+        #First page
+        pdf.add_page()
+        pdf.write_html(html)
+        pdf.output('html.pdf','F')
+
+
+class GenerateCodes(object):
+    """Generate bead code set.
+
+    Parameters
+    ----------
+    colors : list of str
+        List of coding colors in a list of strings.
+
+    s0s : liat of float
+        List of standard deviations (SD) at intensity 0 for each encoding color.
+
+    slopes : float
+        List of slopes of the SDs versus intensity for each encoding color.
+
+    nsigma : float
+        The number of SD to separate coding levels.
+
+    Examples
+    --------
+    >>> code_set_gen = GenerateCodes(['Dy', 'Sm', 'Tm'],
+                                     [0.0039, 0.0055, 0.0029],
+                                     [0.022, 0.016, 0.049], 6.4)
+    >>> code_set_gen.result
+               Dy        Sm        Tm
+    0    0.000000  0.000000  0.000000
+    >>> code_set_gen = GenerateCodes(['Dy', 'Sm'],
+                                     [0.0039, 0.0055],
+                                     [0.022, 0.016], 8.4)
+    >>> code_set_gen.generate()
+    Number of codes:  24
+    >>> code_set_gen.result
+              Dy        Sm
+    0   0.000000  0.000000
+    1   0.000000  0.106747
+    2   0.000000  0.246642
+    ......................
+    >>> code_set_gen.iterate(28)
+    ....................
+    Number of codes:  26
+    Number of codes:  26
+    Number of codes:  28
+    Final nsigma:  8.09
+    Iterations  :  31
+    """
+
+    def __init__(self, colors, s0s, slopes, nsigma):
+        if not len(colors) == len(slopes) == len(s0s):
+            raise ValueError(
+                "Length colors, nsigmas and slopes not equal: %s." % sys.exit()[1])
+        self._colors = colors
+        self._s0s = s0s
+        self._slopes = slopes
+        self._nsigma = nsigma
+        self._result = None
+
+    def __repr__(self):
+        """Return levels."""
+        return repr([self.levels])
+
+    @property
+    def colors(self):
+        """Return color names."""
+        return self._colors
+
+    @colors.setter
+    def colors(self, value):
+        self._colors = value
+
+    @property
+    def axis(self):
+        """Return number of axis (colors)."""
+        return len(self._colors)
+
+    @property
+    def levels(self):
+        """Return number of levels."""
+        return np.array(self._levels()).T
+
+    def _levels(self, nsigma=None):
+        if nsigma is None:
+            nsigma = self._nsigma
+        levels = []
+        for idx, _ in enumerate(self._colors):
+            levels.append(self.get_levels(self._s0s[idx],
+                                          self._slopes[idx],
+                                          nsigma))
+        return levels
+
+    @staticmethod
+    def recursive_looper(iterators, pos=0):
+        """Recursive looper.
+
+        Implements the same functionality as nested for loops, but is more
+        dynamic. Iterators can either be a list of methods which return
+        iterables, a list of iterables, or a combination of both.
+        """
+        next_loop, v = None, []
+        try:
+            gen = iter(iterators[pos]())
+        except TypeError:
+            gen = iter(iterators[pos])
+        while True:
+            try:
+                yield v + next_loop.next()
+            except (StopIteration, AttributeError):
+                v = [gen.next(), ]
+                if pos < len(iterators) - 1:
+                    next_loop = recursive_looper(iterators, pos + 1)
+                else:
+                    yield v
+
+    @property
+    def result(self):
+        """Return resulting ratios."""
+        if self._result is not None:
+            return pd.DataFrame(self._result, columns=self._colors)
+        else:
+            return None
+
+    def to_csv(self, filename):
+        """Export to CSV."""
+        self.result.to_csv(filename, sep=',', encoding='utf-8')
+
+    # Experimental
+    def to_csv_rep(self, filename, repeats,
+                   labels=None, pos=True):
+        """Export to CSV, with repeated ratios for bead synthesis."""
+        if labels is None:
+            labels = ['CeTb', 'Dy', 'Sm', 'Tm']
+        if pos is True:
+            labels.append('pos')
+        data = pd.DataFrame(columns=labels)
+        position = 1
+        no = 0
+        for code in range(self.result.count()[0]):
+            for r in range(repeats):
+                data.loc[no] = [0,
+                                self.result.loc[code, 'Dy'],
+                                self.result.loc[code, 'Sm'],
+                                self.result.loc[code, 'Tm'],
+                                code + 1]
+                #data.loc[no] = [0,
+                #                self.result.loc[code, 'Dy'],
+                #                self.result.loc[code, 'Sm'],
+                #                0,
+                #                code+1]
+                no += 1
+        data.to_csv(filename, sep=',', encoding='utf-8')
+
+    def generate(self, nsigma=None, depends=None):
+        """Generate codes with default nsigma or given nsigma.
+
+        parameters
+        ----------
+        nsigma : float, optional
+            The number of SD to separate coding levels.
+            Defaults to initial nsigma.
+
+        depends : any, experimental, optional
+            Used for Tm (3rd in array) dependence on Dy (1st array).
+
+        """
+        if nsigma is None:
+            nsigma = self._nsigma
+        if depends is not None:
+            levels = self._levels(nsigma)[:-1]
+        else:
+            levels = self._levels(nsigma)
+        codes = []
+        for value in itertools.product(*levels):
+            if sum(value) <= 1:
+                codes.append(value)
+
+        # Experimental for Tm (must be 3rd in array) depence on Dy (must be 1st in array)
+        if depends is not None:
+            codes_dep = []
+            for code in codes:
+                # depends = 0.045
+                levels = self.get_levels(
+                    self._s0s[2] + depends * code[0], self._slopes[2], nsigma)
+                print(levels)
+                for level in levels:
+                    if (code[0] + code[1] + level) <= 1:
+                        codes_dep.append([code[0], code[1], level])
+            codes = codes_dep
+        # END
+
+        print("Number of codes: ", len(codes))
+        self._result = codes
+
+    def iterate(self, num, nsimga_start=None, nsigma_step=0.01, max_iter=1000):
+        """Iterate nsigma until number of codes are found.
+
+        Does not work with dependence, such as Tm dependence on Dy.
+
+        parameters
+        ----------
+        num : int
+            Number of required codes.
+
+        nsigma_start : float, optional
+            Start value of nsigma.
+            Defaults to initial nsigma.
+
+        nsigma_step : float, optional
+            Iterarion step.
+            Defaults to 0.01
+
+        max_iter : int, optional
+            Maximum iteration steps.
+            Defaults to 1000.
+
+        """
+        if nsimga_start is None:
+            nsimga_start = self._nsigma
+        len_codes = 0
+        step = 0
+        while len_codes < num and step < max_iter:
+            self.generate(nsimga_start)
+            len_codes = len(self._result)
+            nsimga_start -= nsigma_step
+            step += 1
+        print("Final nsigma: ", nsimga_start)
+        print("Iterations  : ", step)
+
+    @staticmethod
+    def get_levels(std0, slope, nsigma):
+        """Predict the number of levels of a coding color.
+
+        The coding levels are based on s0, the standard deviation (SD) at
+        intensity 0, and the slope between intensity and SD.
+
+        Parameters
+        ----------
+        std0 : float
+            The SD at intensity 0.
+
+        slope : float
+            The slope of the SD versus intensity.
+
+        nsigma : float
+            The number of SD to separate levels.
+
+        Returns
+        -------
+        levels : list of float
+            Returns list of codes values for a given coding color.
+
+        """
+        nslope = nsigma * slope
+        levels = [0]
+        while levels[-1] <= 1:
+            levels.append((levels[-1] * (1 + nslope) + 2 * nsigma * std0) / (1 - nslope))
+        levels.pop()
+        return levels
+
+
+class PeptideScramble(object):
+    """Randomizes amino acid sequence
+
+    Parameters
+    ----------
+    seq : string
+        Inset amino acid sequence as a string.
+
+    Returns
+    -------
+    seq : string
+        Returns string of shuffled amino acid sequence.
+
+    """
+
+    def __init__(self, seq):
+        self.seq = seq
+
+    def random(self, seq=None):
+        """Return randomized amino acid sequence."""
+        if seq is None:
+            seq = self.seq
+        seq_list = list(seq)
+        random.shuffle(seq_list)
+        return ''.join(seq_list)
