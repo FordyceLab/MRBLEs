@@ -42,7 +42,7 @@
 module.</p>
 <dl class="class">
 <dt id="mrbles.report.BeadsReport">
-<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">BeadsReport</code><span class="sig-paren">(</span><em>data</em>, <em>images</em>, <em>assay_channel</em>, <em>sets=None</em>, <em>codes=None</em>, <em>sort=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#BeadsReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.BeadsReport" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">BeadsReport</code><span class="sig-paren">(</span><em>data</em>, <em>images</em>, <em>masks</em>, <em>assay_channel</em>, <em>codes=None</em>, <em>files=None</em>, <em>sort=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#BeadsReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.BeadsReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Per-MRBLE images report.</p>
 <p>This method generates the selected images per-MRBLE.</p>
@@ -56,10 +56,12 @@ each, which makes a total of 11,000 images.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>data</strong> (<em>Pandas DataFrame</em>) – Contains all the dimension, posotional, and intensity data per-MBRLE.</li>
 <li><strong>images</strong> (<em>mrbles.ImageDataFrame, Xarray DataArray</em>) – Contains images.</li>
-<li><strong>sets</strong> (<em>string, list of string</em>) – String or list of strings with set names to be combined.
-Defaults to None.</li>
+<li><strong>masks</strong> (<em>Xarray DataArray</em>) – Contains masks.</li>
+<li><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</li>
 <li><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
 Defaults to None.</li>
+<li><strong>sort</strong> (<em>boolean</em>) – Sort by code.
+Defaults to True.</li>
 <li><strong>Methods</strong></li>
 <li><strong>——–</strong></li>
 <li><strong>generate()</strong> (<em>method</em>)</li>
@@ -340,8 +342,14 @@ iterables, a list of iterables, or a combination of both.</p>
 
 <dl class="method">
 <dt id="mrbles.report.QCReport.generate">
-<code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.generate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.generate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.html_report">
+<code class="descname">html_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.html_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.html_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate HTML report.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mrbles.report.QCReport.npl_covar_plots">
@@ -360,12 +368,6 @@ iterables, a list of iterables, or a combination of both.</p>
 <code class="descclassname">mrbles.report.</code><code class="descname">circle_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>dims=None</em>, <em>ring=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#circle_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.circle_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Circle Overlay Image.</p>
 <p>Overlay image with circles of labeled mask.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="mrbles.report.cluster3d_check">
-<code class="descclassname">mrbles.report.</code><code class="descname">cluster3d_check</code><span class="sig-paren">(</span><em>bead_set</em>, <em>target</em>, <em>gmix</em>, <em>set_prob=1</em>, <em>channels=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#cluster3d_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.cluster3d_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clustering plot</p>
 </dd></dl>
 
 <dl class="function">

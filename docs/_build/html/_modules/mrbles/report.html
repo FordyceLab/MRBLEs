@@ -61,6 +61,7 @@
 <span class="c1"># [Modules]</span>
 <span class="c1"># General Python</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -69,13 +70,14 @@
 <span class="c1"># Data</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="c1"># Imaging</span>
 <span class="kn">import</span> <span class="nn">cv2</span>
 <span class="c1"># Image display</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="k">import</span> <span class="n">PdfPages</span>
 <span class="kn">import</span> <span class="nn">plotly.graph_objs</span> <span class="k">as</span> <span class="nn">go</span>
-<span class="kn">from</span> <span class="nn">plotly.offline</span> <span class="k">import</span> <span class="n">init_notebook_mode</span><span class="p">,</span> <span class="n">iplot</span> <span class="c1"># For plotly offline mode</span>
+<span class="kn">from</span> <span class="nn">plotly.offline</span> <span class="k">import</span> <span class="n">init_notebook_mode</span><span class="p">,</span> <span class="n">iplot</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="c1"># Intra-Package dependencies</span>
 <span class="kn">from</span> <span class="nn">mrbles.data</span> <span class="k">import</span> <span class="n">TableDataFrame</span>
@@ -112,364 +114,8 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap_image</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_blend</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap_blend</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="cluster3d_check"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.cluster3d_check">[docs]</a><span class="k">def</span> <span class="nf">cluster3d_check</span><span class="p">(</span><span class="n">bead_set</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">gmix</span><span class="p">,</span> <span class="n">set_prob</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Clustering plot</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">channels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rat_dy_icp&#39;</span><span class="p">,</span> <span class="s1">&#39;rat_tm_icp&#39;</span><span class="p">,</span> <span class="s1">&#39;rat_sm_icp&#39;</span><span class="p">]</span>
-    <span class="n">clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
-    <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
-        <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&gt;</span> <span class="n">set_prob</span><span class="p">))]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">255</span> <span class="o">/</span> <span class="n">clusters</span><span class="p">))</span>
-
-    <span class="n">bead_ratios_all</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bead ratios - Marked&#39;</span><span class="p">,</span>
-        <span class="n">x</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span>
-            <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&lt;=</span> <span class="n">set_prob</span><span class="p">)),</span> <span class="p">(</span><span class="n">channels</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">y</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span>
-            <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&lt;=</span> <span class="n">set_prob</span><span class="p">)),</span> <span class="p">(</span><span class="n">channels</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">z</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span>
-            <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&lt;=</span> <span class="n">set_prob</span><span class="p">)),</span> <span class="p">(</span><span class="n">channels</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">text</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;lbl&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-            <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-            <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span>
-            <span class="n">opacity</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
-            <span class="n">symbol</span><span class="o">=</span><span class="s1">&#39;cross&#39;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="n">bead_ratios</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bead ratios - Filtered&#39;</span><span class="p">,</span>
-        <span class="n">x</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
-            <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&gt;</span> <span class="n">set_prob</span><span class="p">)),</span> <span class="p">(</span><span class="s1">&#39;rat_dy_icp&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">y</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
-            <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&gt;</span> <span class="n">set_prob</span><span class="p">)),</span> <span class="p">(</span><span class="s1">&#39;rat_sm_icp&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">z</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
-            <span class="n">bead_set</span><span class="o">.</span><span class="n">log_prob</span> <span class="o">&gt;</span> <span class="n">set_prob</span><span class="p">)),</span> <span class="p">(</span><span class="s1">&#39;rat_tm_icp&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">text</span><span class="o">=</span><span class="n">bead_set</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">bead_set</span><span class="o">.</span><span class="n">code</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lbl&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-            <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-            <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-            <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Rainbow&#39;</span><span class="p">,</span>
-            <span class="n">opacity</span><span class="o">=</span><span class="mf">0.6</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="n">target_ratios</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Target ratios&#39;</span><span class="p">,</span>
-        <span class="n">x</span><span class="o">=</span><span class="n">target</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="n">y</span><span class="o">=</span><span class="n">target</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">z</span><span class="o">=</span><span class="n">target</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
-        <span class="n">text</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">clusters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-            <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-            <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
-            <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-            <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;diamond&quot;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="n">mean_ratios</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GMM mean ratios&#39;</span><span class="p">,</span>
-        <span class="n">x</span><span class="o">=</span><span class="n">gmix</span><span class="o">.</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="n">y</span><span class="o">=</span><span class="n">gmix</span><span class="o">.</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">z</span><span class="o">=</span><span class="n">gmix</span><span class="o">.</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
-        <span class="n">text</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">clusters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-            <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-            <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
-            <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-            <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;diamond&quot;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">bead_ratios_all</span><span class="p">,</span> <span class="n">bead_ratios</span><span class="p">,</span> <span class="n">target_ratios</span><span class="p">,</span> <span class="n">mean_ratios</span><span class="p">]</span>
-    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
-        <span class="n">showlegend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scene</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-            <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Dy/Eu&#39;</span>
-            <span class="p">),</span>
-            <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Sm/Eu&#39;</span>
-            <span class="p">),</span>
-            <span class="n">zaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tm/Eu&#39;</span>
-            <span class="p">)</span>
-        <span class="p">),</span>
-        <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-            <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">r</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">t</span><span class="o">=</span><span class="mi">0</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">fig</span></div>
-
 
 <span class="c1"># Classes</span>
-
-
-<div class="viewcode-block" id="GenerateCodes"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes">[docs]</a><span class="k">class</span> <span class="nc">GenerateCodes</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generate bead code set.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    colors : list of str</span>
-<span class="sd">        List of coding colors in a list of strings.</span>
-
-<span class="sd">    s0s : liat of float</span>
-<span class="sd">        List of standard deviations (SD) at intensity 0 for each encoding color.</span>
-
-<span class="sd">    slopes : float</span>
-<span class="sd">        List of slopes of the SDs versus intensity for each encoding color.</span>
-
-<span class="sd">    nsigma : float</span>
-<span class="sd">        The number of SD to separate coding levels.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; code_set_gen = GenerateCodes([&#39;Dy&#39;, &#39;Sm&#39;, &#39;Tm&#39;],</span>
-<span class="sd">                                     [0.0039, 0.0055, 0.0029],</span>
-<span class="sd">                                     [0.022, 0.016, 0.049], 6.4)</span>
-<span class="sd">    &gt;&gt;&gt; code_set_gen.result</span>
-<span class="sd">               Dy        Sm        Tm</span>
-<span class="sd">    0    0.000000  0.000000  0.000000</span>
-<span class="sd">    &gt;&gt;&gt; code_set_gen = GenerateCodes([&#39;Dy&#39;, &#39;Sm&#39;],</span>
-<span class="sd">                                     [0.0039, 0.0055],</span>
-<span class="sd">                                     [0.022, 0.016], 8.4)</span>
-<span class="sd">    &gt;&gt;&gt; code_set_gen.generate()</span>
-<span class="sd">    Number of codes:  24</span>
-<span class="sd">    &gt;&gt;&gt; code_set_gen.result</span>
-<span class="sd">              Dy        Sm</span>
-<span class="sd">    0   0.000000  0.000000</span>
-<span class="sd">    1   0.000000  0.106747</span>
-<span class="sd">    2   0.000000  0.246642</span>
-<span class="sd">    ......................</span>
-<span class="sd">    &gt;&gt;&gt; code_set_gen.iterate(28)</span>
-<span class="sd">    ....................</span>
-<span class="sd">    Number of codes:  26</span>
-<span class="sd">    Number of codes:  26</span>
-<span class="sd">    Number of codes:  28</span>
-<span class="sd">    Final nsigma:  8.09</span>
-<span class="sd">    Iterations  :  31</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">s0s</span><span class="p">,</span> <span class="n">slopes</span><span class="p">,</span> <span class="n">nsigma</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">slopes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s0s</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Length colors, nsigmas and slopes not equal: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span> <span class="o">=</span> <span class="n">colors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_s0s</span> <span class="o">=</span> <span class="n">s0s</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_slopes</span> <span class="o">=</span> <span class="n">slopes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span> <span class="o">=</span> <span class="n">nsigma</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return levels.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">levels</span><span class="p">])</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">colors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return color names.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span>
-
-    <span class="nd">@colors</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">colors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return number of axis (colors).&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return number of levels.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">())</span><span class="o">.</span><span class="n">T</span>
-
-    <span class="k">def</span> <span class="nf">_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsigma</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">nsigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nsigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span>
-        <span class="n">levels</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">):</span>
-            <span class="n">levels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_s0s</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
-                                          <span class="bp">self</span><span class="o">.</span><span class="n">_slopes</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
-                                          <span class="n">nsigma</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">levels</span>
-
-<div class="viewcode-block" id="GenerateCodes.recursive_looper"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.recursive_looper">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">recursive_looper</span><span class="p">(</span><span class="n">iterators</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Recursive looper.</span>
-
-<span class="sd">        Implements the same functionality as nested for loops, but is more</span>
-<span class="sd">        dynamic. Iterators can either be a list of methods which return</span>
-<span class="sd">        iterables, a list of iterables, or a combination of both.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">next_loop</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">gen</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterators</span><span class="p">[</span><span class="n">pos</span><span class="p">]())</span>
-        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">gen</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterators</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">v</span> <span class="o">+</span> <span class="n">next_loop</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">StopIteration</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="n">gen</span><span class="o">.</span><span class="n">next</span><span class="p">(),</span> <span class="p">]</span>
-                <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">iterators</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">next_loop</span> <span class="o">=</span> <span class="n">recursive_looper</span><span class="p">(</span><span class="n">iterators</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">v</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return resulting ratios.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-<div class="viewcode-block" id="GenerateCodes.to_csv"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.to_csv">[docs]</a>    <span class="k">def</span> <span class="nf">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Export to CSV.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
-
-    <span class="c1"># Experimental</span>
-<div class="viewcode-block" id="GenerateCodes.to_csv_rep"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.to_csv_rep">[docs]</a>    <span class="k">def</span> <span class="nf">to_csv_rep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">repeats</span><span class="p">,</span>
-                   <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Export to CSV, with repeated ratios for bead synthesis.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CeTb&#39;</span><span class="p">,</span> <span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pos&#39;</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
-        <span class="n">position</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">no</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">count</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repeats</span><span class="p">):</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">no</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;Dy&#39;</span><span class="p">],</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">],</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">],</span>
-                                <span class="n">code</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="c1">#data.loc[no] = [0,</span>
-                <span class="c1">#                self.result.loc[code, &#39;Dy&#39;],</span>
-                <span class="c1">#                self.result.loc[code, &#39;Sm&#39;],</span>
-                <span class="c1">#                0,</span>
-                <span class="c1">#                code+1]</span>
-                <span class="n">no</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="GenerateCodes.generate"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depends</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Generate codes with default nsigma or given nsigma.</span>
-
-<span class="sd">        parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        nsigma : float, optional</span>
-<span class="sd">            The number of SD to separate coding levels.</span>
-<span class="sd">            Defaults to initial nsigma.</span>
-
-<span class="sd">        depends : any, experimental, optional</span>
-<span class="sd">            Used for Tm (3rd in array) dependence on Dy (1st array).</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">nsigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nsigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span>
-        <span class="k">if</span> <span class="n">depends</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">(</span><span class="n">nsigma</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">(</span><span class="n">nsigma</span><span class="p">)</span>
-        <span class="n">codes</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">levels</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">codes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-        <span class="c1"># Experimental for Tm (must be 3rd in array) depence on Dy (must be 1st in array)</span>
-        <span class="k">if</span> <span class="n">depends</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">codes_dep</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span><span class="p">:</span>
-                <span class="c1"># depends = 0.045</span>
-                <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_s0s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">depends</span> <span class="o">*</span> <span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slopes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">nsigma</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">code</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">level</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">codes_dep</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">code</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">level</span><span class="p">])</span>
-            <span class="n">codes</span> <span class="o">=</span> <span class="n">codes_dep</span>
-        <span class="c1"># END</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of codes: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">codes</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">codes</span></div>
-
-<div class="viewcode-block" id="GenerateCodes.iterate"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.iterate">[docs]</a>    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">nsimga_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsigma_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Iterate nsigma until number of codes are found.</span>
-
-<span class="sd">        Does not work with dependence, such as Tm dependence on Dy.</span>
-
-<span class="sd">        parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        num : int</span>
-<span class="sd">            Number of required codes.</span>
-
-<span class="sd">        nsigma_start : float, optional</span>
-<span class="sd">            Start value of nsigma.</span>
-<span class="sd">            Defaults to initial nsigma.</span>
-
-<span class="sd">        nsigma_step : float, optional</span>
-<span class="sd">            Iterarion step.</span>
-<span class="sd">            Defaults to 0.01</span>
-
-<span class="sd">        max_iter : int, optional</span>
-<span class="sd">            Maximum iteration steps.</span>
-<span class="sd">            Defaults to 1000.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">nsimga_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nsimga_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span>
-        <span class="n">len_codes</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">while</span> <span class="n">len_codes</span> <span class="o">&lt;</span> <span class="n">num</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="n">max_iter</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">nsimga_start</span><span class="p">)</span>
-            <span class="n">len_codes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">)</span>
-            <span class="n">nsimga_start</span> <span class="o">-=</span> <span class="n">nsigma_step</span>
-            <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Final nsigma: &quot;</span><span class="p">,</span> <span class="n">nsimga_start</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iterations  : &quot;</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="GenerateCodes.get_levels"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.get_levels">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_levels</span><span class="p">(</span><span class="n">std0</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">nsigma</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Predict the number of levels of a coding color.</span>
-
-<span class="sd">        The coding levels are based on s0, the standard deviation (SD) at</span>
-<span class="sd">        intensity 0, and the slope between intensity and SD.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        std0 : float</span>
-<span class="sd">            The SD at intensity 0.</span>
-
-<span class="sd">        slope : float</span>
-<span class="sd">            The slope of the SD versus intensity.</span>
-
-<span class="sd">        nsigma : float</span>
-<span class="sd">            The number of SD to separate levels.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        levels : list of float</span>
-<span class="sd">            Returns list of codes values for a given coding color.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nslope</span> <span class="o">=</span> <span class="n">nsigma</span> <span class="o">*</span> <span class="n">slope</span>
-        <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">while</span> <span class="n">levels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">levels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">levels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nslope</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nsigma</span> <span class="o">*</span> <span class="n">std0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">nslope</span><span class="p">))</span>
-        <span class="n">levels</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">levels</span></div></div>
 
 
 <div class="viewcode-block" id="ClusterCheck"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.ClusterCheck">[docs]</a><span class="k">class</span> <span class="nc">ClusterCheck</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
@@ -768,33 +414,6 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="PeptideScramble"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.PeptideScramble">[docs]</a><span class="k">class</span> <span class="nc">PeptideScramble</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Randomizes amino acid sequence</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    seq : string</span>
-<span class="sd">        Inset amino acid sequence as a string.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    seq : string</span>
-<span class="sd">        Returns string of shuffled amino acid sequence.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span>
-
-<div class="viewcode-block" id="PeptideScramble.random"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.PeptideScramble.random">[docs]</a>    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return randomized amino acid sequence.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">seq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span>
-        <span class="n">seq_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
-        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seq_list</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq_list</span><span class="p">)</span></div></div>
-
-
 <div class="viewcode-block" id="BeadsReport"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.BeadsReport">[docs]</a><span class="k">class</span> <span class="nc">BeadsReport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Per-MRBLE images report.</span>
 
@@ -812,12 +431,16 @@
 <span class="sd">        Contains all the dimension, posotional, and intensity data per-MBRLE.</span>
 <span class="sd">    images : mrbles.ImageDataFrame, Xarray DataArray</span>
 <span class="sd">        Contains images.</span>
-<span class="sd">    sets : string, list of string</span>
-<span class="sd">        String or list of strings with set names to be combined.</span>
-<span class="sd">        Defaults to None.</span>
+<span class="sd">    masks : Xarray DataArray</span>
+<span class="sd">        Contains masks.</span>
+<span class="sd">    assay_channel : str</span>
+<span class="sd">        Assay channel name, e.g. &#39;Cy5_FF&#39;</span>
 <span class="sd">    codes : int, list of int</span>
 <span class="sd">        Integer or list of integers with selected codes.</span>
 <span class="sd">        Defaults to None.</span>
+<span class="sd">    sort : boolean</span>
+<span class="sd">        Sort by code.</span>
+<span class="sd">        Defaults to True.</span>
 
 <span class="sd">    Methods:</span>
 <span class="sd">    --------</span>
@@ -835,28 +458,8 @@
 <span class="sd">        Defaults to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span>
-                 <span class="n">sets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Init.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">sort</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">sets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sets</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;set&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sets</span><span class="p">)]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;set&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">sets</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">codes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">codes</span><span class="p">)]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">codes</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">images</span>
-
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span>
+                 <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="c1"># Speed settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parallelize</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_sec</span> <span class="o">=</span> <span class="mf">0.0275</span>
@@ -866,14 +469,33 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ref_mask</span> <span class="o">=</span> <span class="s2">&quot;mask_inside&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bkg_channel</span> <span class="o">=</span> <span class="s2">&quot;bkg&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bkg_mask</span> <span class="o">=</span> <span class="s2">&quot;mask_inside&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assay_channel</span> <span class="o">=</span> <span class="n">assay_channel</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assay_mask</span> <span class="o">=</span> <span class="s2">&quot;mask_ring&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">npl_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Eu&#39;</span><span class="p">,</span> <span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">npl_mask</span> <span class="o">=</span> <span class="s2">&quot;mask_inside&quot;</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assay_channel</span> <span class="o">=</span> <span class="n">assay_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sort</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Set max values for image plots</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_assay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">assay_channel</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_npl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">npl_channels</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-
+        <span class="k">if</span> <span class="n">codes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">codes</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">codes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">files</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">files</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">files</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_estimate</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_time_estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -898,7 +520,7 @@
 <span class="sd">        each, which makes a total of 12,000 images.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time_0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_pdf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sets</span><span class="p">,</span> <span class="n">codes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_pdf</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">time_1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">time_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">time_1</span> <span class="o">-</span> <span class="n">time_0</span><span class="p">)</span>
         <span class="n">time_per_image</span> <span class="o">=</span> <span class="n">time_total</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beads_num</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">images_num</span><span class="p">)</span>
@@ -942,6 +564,7 @@
         <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">channel</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">npl_channels</span><span class="p">):</span>
             <span class="n">ax_sub</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span>
                 <span class="s2">&quot;R: </span><span class="si">%0.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_ratio&#39;</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">npl_mask</span><span class="p">]),</span>
+                <span class="c1"># &quot;R: %0.3f&quot; % (dim[str(image.c.values) + &#39;.&#39; + self.npl_mask]),</span>
                 <span class="n">size</span><span class="o">=</span><span class="mi">3</span>
             <span class="p">)</span>
             <span class="n">ax_sub</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_npl</span><span class="p">)</span>
@@ -985,11 +608,17 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dpi</span> <span class="o">=</span> <span class="mi">300</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">npl_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Eu&#39;</span><span class="p">,</span> <span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">]</span>
+        <span class="c1"># Defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">=</span> <span class="s1">&#39;report/&#39;</span>
 
-<div class="viewcode-block" id="QCReport.generate"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="QCReport.generate"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="o">=</span> <span class="n">savefig</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">PdfPages</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdf_object</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_figure</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bead_size</span><span class="p">,</span>
                               <span class="bp">self</span><span class="o">.</span><span class="n">beads_per_code</span><span class="p">],</span>
@@ -1004,14 +633,23 @@
 
 <div class="viewcode-block" id="QCReport.bead_size"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.bead_size">[docs]</a>    <span class="k">def</span> <span class="nf">bead_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Bead size distribution plot.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;diameter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">radius</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">b_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
-        <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;diameter_conv&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">d_name</span> <span class="o">=</span> <span class="s1">&#39;diameter_conv&#39;</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="s1">&#39;Converted&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">d_name</span> <span class="o">=</span> <span class="s1">&#39;diameter&#39;</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="s1">&#39;Pixels&#39;</span>
+        <span class="n">b_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="p">[</span><span class="n">d_name</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="p">[</span><span class="n">d_name</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="n">x_left</span> <span class="o">=</span> <span class="n">b_mean</span> <span class="o">-</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">b_std</span><span class="p">)</span>
         <span class="n">x_right</span> <span class="o">=</span> <span class="n">b_mean</span> <span class="o">+</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">b_std</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-            <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgray&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Beads Diameter (Pixels) Mean: </span><span class="si">%0.2f</span><span class="s2"> SD: </span><span class="si">%0.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b_mean</span><span class="p">,</span> <span class="n">b_std</span><span class="p">))</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">x_left</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">x_right</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">secondary_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="p">[</span><span class="n">d_name</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgray&#39;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Beads Diameter (</span><span class="si">%s</span><span class="s2">) Mean: </span><span class="si">%0.2f</span><span class="s2"> SD: </span><span class="si">%0.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">b_mean</span><span class="p">,</span> <span class="n">b_std</span><span class="p">))</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">x_left</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">x_right</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="p">[</span><span class="n">d_name</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">secondary_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;bead_size.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="QCReport.beads_per_code"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.beads_per_code">[docs]</a>    <span class="k">def</span> <span class="nf">beads_per_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Beads per-code distribution plot.&quot;&quot;&quot;</span>
@@ -1019,13 +657,17 @@
         <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
             <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgray&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Beads-per-code (N) Mean: </span><span class="si">%0.2f</span><span class="s2"> SD: </span><span class="si">%0.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">b_mean</span><span class="p">,</span> <span class="n">b_std</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">secondary_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">secondary_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;beads_per_code.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="QCReport.npl_plots"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.npl_plots">[docs]</a>    <span class="k">def</span> <span class="nf">npl_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdf_object</span><span class="p">):</span>
         <span class="c1"># Pre ICP</span>
         <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="p">[</span><span class="s1">&#39;Dy_ratio.mask_inside&#39;</span><span class="p">],</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Dy ratios - pre-ICP&quot;</span><span class="p">)</span>
         <span class="n">pdf_object</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;Dy_ratios_pre-ICP.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="c1"># Before CI filter</span>
@@ -1034,7 +676,10 @@
         <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
         <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;Sm_ratio.mask_inside&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm_ratio.mask_inside&#39;</span><span class="p">,</span> <span class="n">fit_reg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
               <span class="n">scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scatter_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">},</span> <span class="n">line_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">})</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
         <span class="n">pdf_object</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;Sm_vs_Tm_ratios_pre-ICP.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="c1"># After CI filter</span>
@@ -1043,13 +688,19 @@
         <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
         <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;Sm_ratio.mask_inside&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm_ratio.mask_inside&#39;</span><span class="p">,</span> <span class="n">fit_reg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
               <span class="n">scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scatter_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">},</span> <span class="n">line_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">})</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
         <span class="n">pdf_object</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;Sm_vs_Tm_ratios_pre-ICP_CI95_filter.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="c1"># Post ICP</span>
         <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="p">[</span><span class="s1">&#39;Dy_ratio.mask_inside_icp&#39;</span><span class="p">],</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Dy ratios - Post-ICP&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
         <span class="n">pdf_object</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;Dy_ratios_post-ICP.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="c1"># Before CI filter</span>
@@ -1058,7 +709,10 @@
         <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
         <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;Sm_ratio.mask_inside_icp&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm_ratio.mask_inside_icp&#39;</span><span class="p">,</span> <span class="n">fit_reg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
               <span class="n">scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scatter_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">},</span> <span class="n">line_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">})</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
         <span class="n">pdf_object</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;Sm_vs_Tm_ratios_post-ICP.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="c1"># After CI filter</span>
@@ -1067,24 +721,29 @@
         <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
         <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;Sm_ratio.mask_inside_icp&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm_ratio.mask_inside_icp&#39;</span><span class="p">,</span> <span class="n">fit_reg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
               <span class="n">scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scatter_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">},</span> <span class="n">line_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">})</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
         <span class="n">pdf_object</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_savefig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">report_folder</span> <span class="o">+</span> <span class="s1">&#39;Sm_vs_Tm_ratios_post-ICP_CI95_filter.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="QCReport.assay_contamination"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.assay_contamination">[docs]</a>    <span class="k">def</span> <span class="nf">assay_contamination</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">npl_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npl_channels</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Cy5_min_bkg&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Dy_ratio.mask_inside_icp&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Dy Ratio vs Cy5 (ring)&#39;</span><span class="p">)</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Dy Ratio vs Cy5 (ring)&#39;</span><span class="p">)</span>
         <span class="c1">#plt.savefig(&#39;Dy Ratio vs Cy5 (ring) - BKG.png&#39;, dpi=300)</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Cy5_min_bkg&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Sm_ratio.mask_inside_icp&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Sm Ratio vs Cy5 (ring)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                                 <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Cy5_min_bkg&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Sm_ratio.mask_inside_icp&#39;</span><span class="p">,</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Sm Ratio vs Cy5 (ring)&#39;</span><span class="p">)</span>
         <span class="c1">#plt.savefig(&#39;Sm Ratio vs Cy5 (ring) - BKG.png&#39;,dpi=300)</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Cy5_min_bkg&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Tm_ratio.mask_inside_icp&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tm Ratio vs Cy5 (ring)&#39;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_bead_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                                 <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Cy5_min_bkg&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Tm_ratio.mask_inside_icp&#39;</span><span class="p">,</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tm Ratio vs Cy5 (ring)&#39;</span><span class="p">)</span></div>
         <span class="c1">#plt.savefig(&#39;Tm Ratio vs Cy5 (ring) - BKG.png&#39;, dpi=300)</span>
 
 <div class="viewcode-block" id="QCReport.npl_covar_plots"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.npl_covar_plots">[docs]</a>    <span class="k">def</span> <span class="nf">npl_covar_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1151,7 +810,333 @@
 
         <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">regplot</span><span class="p">,</span> <span class="s1">&#39;sample_size&#39;</span><span class="p">,</span> <span class="s1">&#39;Cy5_min_bkg&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data_per_step_all</span><span class="p">,</span>
             <span class="n">logx</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ci</span><span class="o">=</span><span class="mi">95</span><span class="p">,</span> <span class="n">n_boot</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
-            <span class="n">scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scatter_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">},</span> <span class="n">line_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">})</span></div></div>
+            <span class="n">scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scatter_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">},</span> <span class="n">line_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="QCReport.html_report"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.QCReport.html_report">[docs]</a>    <span class="k">def</span> <span class="nf">html_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate HTML report.&quot;&quot;&quot;</span>
+
+        <span class="n">html</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;H1 align=&quot;center&quot;&gt;html2fpdf&lt;/H1&gt;</span>
+<span class="s2">        &lt;h2&gt;Basic usage&lt;/h2&gt;</span>
+<span class="s2">        &lt;p&gt;You can now easily print text while mixing different</span>
+<span class="s2">        styles : &lt;B&gt;bold&lt;/B&gt;, &lt;I&gt;italic&lt;/I&gt;, &lt;U&gt;underlined&lt;/U&gt;, or</span>
+<span class="s2">        &lt;B&gt;&lt;I&gt;&lt;U&gt;all at once&lt;/U&gt;&lt;/I&gt;&lt;/B&gt;!</span>
+
+<span class="s2">        &lt;BR&gt;You can also insert hyperlinks</span>
+<span class="s2">        like this &lt;A HREF=&quot;http://www.mousevspython.com&quot;&gt;www.mousevspython.comg&lt;/A&gt;,</span>
+<span class="s2">        or include a hyperlink in an image. Just click on the one below.&lt;br&gt;</span>
+<span class="s2">        &lt;center&gt;</span>
+<span class="s2">        &lt;A HREF=&quot;http://www.mousevspython.com&quot;&gt;&lt;img src=&quot;tutorial/logo.png&quot; width=&quot;150&quot; height=&quot;150&quot;&gt;&lt;/A&gt;</span>
+<span class="s2">        &lt;/center&gt;</span>
+
+<span class="s2">        &lt;h3&gt;Sample List&lt;/h3&gt;</span>
+<span class="s2">        &lt;ul&gt;&lt;li&gt;option 1&lt;/li&gt;</span>
+<span class="s2">        &lt;ol&gt;&lt;li&gt;option 2&lt;/li&gt;&lt;/ol&gt;</span>
+<span class="s2">        &lt;li&gt;option 3&lt;/li&gt;&lt;/ul&gt;</span>
+
+<span class="s2">        &lt;table border=&quot;0&quot; align=&quot;center&quot; width=&quot;50%&quot;&gt;</span>
+<span class="s2">        &lt;thead&gt;&lt;tr&gt;&lt;th width=&quot;30%&quot;&gt;Header 1&lt;/th&gt;&lt;th width=&quot;70%&quot;&gt;header 2&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;</span>
+<span class="s2">        &lt;tbody&gt;</span>
+<span class="s2">        &lt;tr&gt;&lt;td&gt;cell 1&lt;/td&gt;&lt;td&gt;cell 2&lt;/td&gt;&lt;/tr&gt;</span>
+<span class="s2">        &lt;tr&gt;&lt;td&gt;cell 2&lt;/td&gt;&lt;td&gt;cell 3&lt;/td&gt;&lt;/tr&gt;</span>
+<span class="s2">        &lt;/tbody&gt;</span>
+<span class="s2">        &lt;/table&gt;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">pyfpdf</span> <span class="k">import</span> <span class="n">FPDF</span><span class="p">,</span> <span class="n">HTMLMixin</span>
+
+        <span class="k">class</span> <span class="nc">MyFPDF</span><span class="p">(</span><span class="n">FPDF</span><span class="p">,</span> <span class="n">HTMLMixin</span><span class="p">):</span>
+            <span class="k">pass</span>
+
+        <span class="n">pdf</span><span class="o">=</span><span class="n">MyFPDF</span><span class="p">()</span>
+        <span class="c1">#First page</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">add_page</span><span class="p">()</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s1">&#39;html.pdf&#39;</span><span class="p">,</span><span class="s1">&#39;F&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GenerateCodes"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes">[docs]</a><span class="k">class</span> <span class="nc">GenerateCodes</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate bead code set.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    colors : list of str</span>
+<span class="sd">        List of coding colors in a list of strings.</span>
+
+<span class="sd">    s0s : liat of float</span>
+<span class="sd">        List of standard deviations (SD) at intensity 0 for each encoding color.</span>
+
+<span class="sd">    slopes : float</span>
+<span class="sd">        List of slopes of the SDs versus intensity for each encoding color.</span>
+
+<span class="sd">    nsigma : float</span>
+<span class="sd">        The number of SD to separate coding levels.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; code_set_gen = GenerateCodes([&#39;Dy&#39;, &#39;Sm&#39;, &#39;Tm&#39;],</span>
+<span class="sd">                                     [0.0039, 0.0055, 0.0029],</span>
+<span class="sd">                                     [0.022, 0.016, 0.049], 6.4)</span>
+<span class="sd">    &gt;&gt;&gt; code_set_gen.result</span>
+<span class="sd">               Dy        Sm        Tm</span>
+<span class="sd">    0    0.000000  0.000000  0.000000</span>
+<span class="sd">    &gt;&gt;&gt; code_set_gen = GenerateCodes([&#39;Dy&#39;, &#39;Sm&#39;],</span>
+<span class="sd">                                     [0.0039, 0.0055],</span>
+<span class="sd">                                     [0.022, 0.016], 8.4)</span>
+<span class="sd">    &gt;&gt;&gt; code_set_gen.generate()</span>
+<span class="sd">    Number of codes:  24</span>
+<span class="sd">    &gt;&gt;&gt; code_set_gen.result</span>
+<span class="sd">              Dy        Sm</span>
+<span class="sd">    0   0.000000  0.000000</span>
+<span class="sd">    1   0.000000  0.106747</span>
+<span class="sd">    2   0.000000  0.246642</span>
+<span class="sd">    ......................</span>
+<span class="sd">    &gt;&gt;&gt; code_set_gen.iterate(28)</span>
+<span class="sd">    ....................</span>
+<span class="sd">    Number of codes:  26</span>
+<span class="sd">    Number of codes:  26</span>
+<span class="sd">    Number of codes:  28</span>
+<span class="sd">    Final nsigma:  8.09</span>
+<span class="sd">    Iterations  :  31</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">s0s</span><span class="p">,</span> <span class="n">slopes</span><span class="p">,</span> <span class="n">nsigma</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">slopes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s0s</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Length colors, nsigmas and slopes not equal: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span> <span class="o">=</span> <span class="n">colors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_s0s</span> <span class="o">=</span> <span class="n">s0s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slopes</span> <span class="o">=</span> <span class="n">slopes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span> <span class="o">=</span> <span class="n">nsigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return levels.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">levels</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">colors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return color names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span>
+
+    <span class="nd">@colors</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">colors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return number of axis (colors).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return number of levels.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">())</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">def</span> <span class="nf">_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsigma</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">nsigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nsigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">):</span>
+            <span class="n">levels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_s0s</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">_slopes</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                                          <span class="n">nsigma</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">levels</span>
+
+<div class="viewcode-block" id="GenerateCodes.recursive_looper"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.recursive_looper">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">recursive_looper</span><span class="p">(</span><span class="n">iterators</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Recursive looper.</span>
+
+<span class="sd">        Implements the same functionality as nested for loops, but is more</span>
+<span class="sd">        dynamic. Iterators can either be a list of methods which return</span>
+<span class="sd">        iterables, a list of iterables, or a combination of both.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">next_loop</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">gen</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterators</span><span class="p">[</span><span class="n">pos</span><span class="p">]())</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">gen</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterators</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">v</span> <span class="o">+</span> <span class="n">next_loop</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">StopIteration</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="n">gen</span><span class="o">.</span><span class="n">next</span><span class="p">(),</span> <span class="p">]</span>
+                <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">iterators</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">next_loop</span> <span class="o">=</span> <span class="n">recursive_looper</span><span class="p">(</span><span class="n">iterators</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">v</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return resulting ratios.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="GenerateCodes.to_csv"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.to_csv">[docs]</a>    <span class="k">def</span> <span class="nf">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export to CSV.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+    <span class="c1"># Experimental</span>
+<div class="viewcode-block" id="GenerateCodes.to_csv_rep"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.to_csv_rep">[docs]</a>    <span class="k">def</span> <span class="nf">to_csv_rep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">repeats</span><span class="p">,</span>
+                   <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export to CSV, with repeated ratios for bead synthesis.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CeTb&#39;</span><span class="p">,</span> <span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;pos&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">no</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">count</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repeats</span><span class="p">):</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">no</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;Dy&#39;</span><span class="p">],</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">],</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">],</span>
+                                <span class="n">code</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="c1">#data.loc[no] = [0,</span>
+                <span class="c1">#                self.result.loc[code, &#39;Dy&#39;],</span>
+                <span class="c1">#                self.result.loc[code, &#39;Sm&#39;],</span>
+                <span class="c1">#                0,</span>
+                <span class="c1">#                code+1]</span>
+                <span class="n">no</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenerateCodes.generate"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depends</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate codes with default nsigma or given nsigma.</span>
+
+<span class="sd">        parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nsigma : float, optional</span>
+<span class="sd">            The number of SD to separate coding levels.</span>
+<span class="sd">            Defaults to initial nsigma.</span>
+
+<span class="sd">        depends : any, experimental, optional</span>
+<span class="sd">            Used for Tm (3rd in array) dependence on Dy (1st array).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">nsigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nsigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span>
+        <span class="k">if</span> <span class="n">depends</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">(</span><span class="n">nsigma</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">(</span><span class="n">nsigma</span><span class="p">)</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">levels</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">codes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># Experimental for Tm (must be 3rd in array) depence on Dy (must be 1st in array)</span>
+        <span class="k">if</span> <span class="n">depends</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">codes_dep</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span><span class="p">:</span>
+                <span class="c1"># depends = 0.045</span>
+                <span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_s0s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">depends</span> <span class="o">*</span> <span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slopes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">nsigma</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">code</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">level</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">codes_dep</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">code</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">level</span><span class="p">])</span>
+            <span class="n">codes</span> <span class="o">=</span> <span class="n">codes_dep</span>
+        <span class="c1"># END</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of codes: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">codes</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">codes</span></div>
+
+<div class="viewcode-block" id="GenerateCodes.iterate"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.iterate">[docs]</a>    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">nsimga_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsigma_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate nsigma until number of codes are found.</span>
+
+<span class="sd">        Does not work with dependence, such as Tm dependence on Dy.</span>
+
+<span class="sd">        parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        num : int</span>
+<span class="sd">            Number of required codes.</span>
+
+<span class="sd">        nsigma_start : float, optional</span>
+<span class="sd">            Start value of nsigma.</span>
+<span class="sd">            Defaults to initial nsigma.</span>
+
+<span class="sd">        nsigma_step : float, optional</span>
+<span class="sd">            Iterarion step.</span>
+<span class="sd">            Defaults to 0.01</span>
+
+<span class="sd">        max_iter : int, optional</span>
+<span class="sd">            Maximum iteration steps.</span>
+<span class="sd">            Defaults to 1000.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">nsimga_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nsimga_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nsigma</span>
+        <span class="n">len_codes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">len_codes</span> <span class="o">&lt;</span> <span class="n">num</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="n">max_iter</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">nsimga_start</span><span class="p">)</span>
+            <span class="n">len_codes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">)</span>
+            <span class="n">nsimga_start</span> <span class="o">-=</span> <span class="n">nsigma_step</span>
+            <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Final nsigma: &quot;</span><span class="p">,</span> <span class="n">nsimga_start</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iterations  : &quot;</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenerateCodes.get_levels"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.GenerateCodes.get_levels">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_levels</span><span class="p">(</span><span class="n">std0</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">nsigma</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict the number of levels of a coding color.</span>
+
+<span class="sd">        The coding levels are based on s0, the standard deviation (SD) at</span>
+<span class="sd">        intensity 0, and the slope between intensity and SD.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        std0 : float</span>
+<span class="sd">            The SD at intensity 0.</span>
+
+<span class="sd">        slope : float</span>
+<span class="sd">            The slope of the SD versus intensity.</span>
+
+<span class="sd">        nsigma : float</span>
+<span class="sd">            The number of SD to separate levels.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        levels : list of float</span>
+<span class="sd">            Returns list of codes values for a given coding color.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nslope</span> <span class="o">=</span> <span class="n">nsigma</span> <span class="o">*</span> <span class="n">slope</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">levels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">levels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">levels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nslope</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nsigma</span> <span class="o">*</span> <span class="n">std0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">nslope</span><span class="p">))</span>
+        <span class="n">levels</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">levels</span></div></div>
+
+
+<div class="viewcode-block" id="PeptideScramble"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.PeptideScramble">[docs]</a><span class="k">class</span> <span class="nc">PeptideScramble</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Randomizes amino acid sequence</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    seq : string</span>
+<span class="sd">        Inset amino acid sequence as a string.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    seq : string</span>
+<span class="sd">        Returns string of shuffled amino acid sequence.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span>
+
+<div class="viewcode-block" id="PeptideScramble.random"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.PeptideScramble.random">[docs]</a>    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return randomized amino acid sequence.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">seq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span>
+        <span class="n">seq_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seq_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq_list</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>

@@ -1077,7 +1077,7 @@ class ICP(object):
     def matrix_create(func, input1, input2):
         """Create identity matrix and set values with function on inputs e.g 'np.mean'.
 
-        parameters
+        Parameters
         ----------
         func : function
             Function to apply on input1 divided by input2, e.g. 'np.std'.

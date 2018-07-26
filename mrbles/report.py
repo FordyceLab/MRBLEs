@@ -421,7 +421,7 @@ class BeadsReport(object):
     """
 
     def __init__(self, data, images, masks, assay_channel,
-                 codes=None, sort=True):
+                 codes=None, files=None, sort=True):
         # Speed settings
         self.parallelize = True
         self.time_sec = 0.0275
@@ -451,7 +451,13 @@ class BeadsReport(object):
             else:
                 self._dataframe = \
                     self._dataframe[self._dataframe['code'] == codes]
-
+        if files is not None:
+            if isinstance(files, list):
+                self._dataframe = \
+                    self._dataframe[self._dataframe['f'].isin(files)]
+            else:
+                self._dataframe = \
+                    self._dataframe[self._dataframe['f'] == files]
         self._time_estimate()
 
     def _time_estimate(self):

@@ -87,9 +87,10 @@
 <span class="c1"># from plotly.offline import init_notebook_mode, iplot # For plotly offline mode</span>
 
 <span class="c1"># Intra-Package dependencies</span>
+<span class="kn">import</span> <span class="nn">mrbles</span>
 <span class="kn">from</span> <span class="nn">mrbles.core</span> <span class="k">import</span> <span class="n">FindBeadsImaging</span><span class="p">,</span> <span class="n">ICP</span><span class="p">,</span> <span class="n">Classify</span><span class="p">,</span> <span class="n">SpectralUnmixing</span>
 <span class="kn">from</span> <span class="nn">mrbles.data</span> <span class="k">import</span> <span class="n">ImageSetRead</span><span class="p">,</span> <span class="n">ImageDataFrame</span><span class="p">,</span> <span class="n">TableDataFrame</span>
-<span class="kn">from</span> <span class="nn">mrbles.report</span> <span class="k">import</span> <span class="n">ClusterCheck</span>
+<span class="kn">from</span> <span class="nn">mrbles.report</span> <span class="k">import</span> <span class="n">ClusterCheck</span><span class="p">,</span> <span class="n">BeadsReport</span>
 
 
 <span class="c1"># General methods</span>
@@ -471,6 +472,23 @@
     <span class="k">def</span> <span class="nf">sets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return list of sets.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">TableDataFrame</span><span class="o">.</span><span class="n">get_set_names</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Find.plot_size_dist"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Find.plot_size_dist">[docs]</a>    <span class="k">def</span> <span class="nf">plot_size_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;diameter_conv&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">b_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">b_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">mean</span>
+        <span class="n">x_left</span> <span class="o">=</span> <span class="n">b_mean</span> <span class="o">-</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">b_std</span><span class="p">)</span>
+        <span class="n">x_right</span> <span class="o">=</span> <span class="n">b_mean</span> <span class="o">+</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">b_std</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgray&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span>
+                <span class="n">left</span><span class="o">=</span><span class="n">x_left</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">x_right</span><span class="p">);</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">secondary_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span>
+                <span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">);</span></div>
 
 <div class="viewcode-block" id="Find.inspect"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Find.inspect">[docs]</a>    <span class="k">def</span> <span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">set_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Display random images from set for inspection.&quot;&quot;&quot;</span>
@@ -873,6 +891,14 @@
             <span class="n">num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">num</span>
 
+<div class="viewcode-block" id="Extract.background_subtract"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Extract.background_subtract">[docs]</a>    <span class="k">def</span> <span class="nf">background_subtract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">bkg_data</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="n">bkg_data</span></div>
+
 <div class="viewcode-block" id="Extract.filter"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Extract.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkg_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">ref_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
                <span class="n">bkg</span><span class="o">=</span><span class="s1">&#39;bkg.mask_full&#39;</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;Eu.mask_inside&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Filter and flag based on unmixed background and reference signal.</span>
@@ -1012,7 +1038,7 @@
 
 
 <div class="viewcode-block" id="Analyze"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze">[docs]</a><span class="k">class</span> <span class="nc">Analyze</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Analyze data MRBLE data and retutn per-code statistics.</span>
+    <span class="sd">&quot;&quot;&quot;Analyze data MRBLE data and return per-code statistics.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1037,11 +1063,23 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">seq_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">seq_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Analyze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span> <span class="o">=</span> <span class="n">seq_list</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">images</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="p">(</span><span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Extract</span><span class="p">,</span>
+                                  <span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Decode</span><span class="p">,</span>
+                                  <span class="n">mrbles</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TableDataFrame</span><span class="p">)):</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span> <span class="o">=</span> <span class="n">seq_list</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="p">(</span><span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Images</span><span class="p">,</span>
+                               <span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Ratio</span><span class="p">,</span>
+                               <span class="n">mrbles</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ImageDataFrame</span><span class="p">)):</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">images</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="p">(</span><span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Find</span><span class="p">,</span>
+                              <span class="n">mrbles</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ImageDataFrame</span><span class="p">)):</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_masks</span> <span class="o">=</span> <span class="n">masks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_norm_data</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Attributes</span>
@@ -1054,29 +1092,49 @@
             <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">,</span>
             <span class="s1">&#39;CV&#39;</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">variation</span>
         <span class="p">}</span>
-        <span class="c1"># Analyze per-code</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_analyze</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="k">if</span> <span class="s1">&#39;set&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multi</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<div class="viewcode-block" id="Analyze.analyze"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.analyze">[docs]</a>    <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bkg_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate per-code statisics.</span>
 
-<div class="viewcode-block" id="Analyze.background"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.background">[docs]</a>    <span class="k">def</span> <span class="nf">background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Subtract background.</span>
-
-<span class="sd">        Parameters</span>
+<span class="sd">        Paramaters</span>
 <span class="sd">        ----------</span>
+<span class="sd">        assay_channel : str</span>
+<span class="sd">            Assay channel name (column name) to calculate per-code statistics</span>
+<span class="sd">            for.</span>
+<span class="sd">        confidence: float</span>
+<span class="sd">            Filter by minimum confidence interval, e.g. 0.95 (95% CI).</span>
+<span class="sd">            Defaults to None.</span>
 <span class="sd">        bkg_data : float/int, string, list, NumPy array, Pandas DataFrame</span>
 <span class="sd">            If float/value is used, this value be subtracted. If string is</span>
 <span class="sd">            used, column from internal dataframe is used. Otherwise, the data</span>
-<span class="sd">            is subtracted, which needs to be the same size as the per-bead</span>
-<span class="sd">            data. In the case of Pandas DataFrame, do slice the single exact</span>
-<span class="sd">            column. Row number of the data is the code.</span>
+<span class="sd">            provided is subtracted, which needs to be the same size as the</span>
+<span class="sd">            per-bead data. In the case of Pandas DataFrame, do slice the single</span>
+<span class="sd">            exact column. Row number of the data is the code.</span>
+<span class="sd">            Defaults to None.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="k">if</span> <span class="n">bkg_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_background</span><span class="p">(</span><span class="n">assay_channel</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">)</span>
+            <span class="n">assay_channel</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span>
+        <span class="k">if</span> <span class="n">confidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="o">.</span><span class="n">confidence</span> <span class="o">&gt;=</span> <span class="n">confidence</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span>
+        <span class="k">if</span> <span class="s1">&#39;set&#39;</span> <span class="ow">in</span> <span class="n">data_filter</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="n">data_filter</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multi</span><span class="p">(</span><span class="n">data_filter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="n">data_filter</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single</span><span class="p">(</span><span class="n">data_filter</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="n">bkg_data</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="n">bkg_data</span>
 
 <div class="viewcode-block" id="Analyze.normalize"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm_data</span><span class="p">,</span> <span class="n">scaled</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Normalize data.</span>
@@ -1091,13 +1149,14 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">per_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single</span><span class="p">(</span><span class="n">norm_data</span><span class="p">)</span>
+        <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">index</span>
         <span class="k">if</span> <span class="n">scaled</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
             <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;median_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
             <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;sd_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;sd&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
             <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;se_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;sd_scaled&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_norm_data</span> <span class="o">=</span> <span class="n">per_code</span>
-        <span class="n">set_codes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">beads_data</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">])</span>
+        <span class="n">set_codes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">set_codes</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">scaled</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">norm_mean</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;mean_scaled&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
@@ -1125,12 +1184,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">norm_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return normalized data.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_norm_data</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_per_bead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return (normalized) data per bead.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_per_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return (normalized) data per code.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span>
 
     <span class="k">def</span> <span class="nf">_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="n">channels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
@@ -1175,9 +1240,62 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">result</span>
 
-<div class="viewcode-block" id="Analyze.per_mrble_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.per_mrble_report">[docs]</a>    <span class="k">def</span> <span class="nf">per_mrble_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Generate per-MRBLE PDF image report.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Analyze.mrble_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.mrble_report">[docs]</a>    <span class="k">def</span> <span class="nf">mrble_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">set_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">image_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate per-MRBLE PDF image report.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        assay_channel : str</span>
+<span class="sd">            Assay channel name, e.g. &#39;Cy5_FF&#39;</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Filename for generated PDF file.</span>
+<span class="sd">        set_name : str</span>
+<span class="sd">            Name of set, e.g. &#39;Set A&#39;</span>
+<span class="sd">        codes : int, list of int</span>
+<span class="sd">            Integer or list of integers with selected codes.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        files : int, list of int</span>
+<span class="sd">            Integer or list of integers with selected files.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        sort : boolean</span>
+<span class="sd">            Sort by code.</span>
+<span class="sd">            Defaults to True.</span>
+<span class="sd">        image_names : list of str</span>
+<span class="sd">            List of image names.</span>
+<span class="sd">            Defaults to [&#39;Dy&#39;, &#39;Sm&#39;, &#39;Tm&#39;, &#39;bkg&#39;, &#39;Eu&#39;, assay_channel].</span>
+<span class="sd">        mask_names : list of str</span>
+<span class="sd">            List of mask names.</span>
+<span class="sd">            Defaults to [&#39;mask_ring&#39;, &#39;mask_inside&#39;, &#39;mask_full&#39;, &#39;mask_bkg&#39;].</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">image_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">,</span> <span class="s1">&#39;bkg&#39;</span><span class="p">,</span> <span class="s1">&#39;Eu&#39;</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mask_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mask_ring&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_inside&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_full&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_bkg&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_masks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Images and/or masks are not loaded into object.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">set_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">image_names</span><span class="p">)</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_masks</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">mask_names</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="n">set_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">image_names</span><span class="p">)</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_masks</span><span class="p">[</span><span class="n">set_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">mask_names</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="o">.</span><span class="n">set</span> <span class="o">==</span> <span class="n">set_name</span><span class="p">]</span>
+        <span class="n">report</span> <span class="o">=</span> <span class="n">BeadsReport</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                             <span class="n">images</span><span class="p">,</span>
+                             <span class="n">masks</span><span class="p">,</span>
+                             <span class="n">assay_channel</span><span class="p">,</span>
+                             <span class="n">codes</span><span class="p">,</span>
+                             <span class="n">files</span><span class="p">,</span>
+                             <span class="n">sort</span><span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Do you wan to continue (y for yes, or n for no)?: &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">report</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Aborted.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Analyze.qc_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.qc_report">[docs]</a>    <span class="k">def</span> <span class="nf">qc_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Generate Quality Control PDF report.&quot;&quot;&quot;</span>

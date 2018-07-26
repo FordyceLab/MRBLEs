@@ -44,9 +44,9 @@
 </div>
 <dl class="class">
 <dt id="mrbles.pipeline.Analyze">
-<em class="property">class </em><code class="descclassname">mrbles.pipeline.</code><code class="descname">Analyze</code><span class="sig-paren">(</span><em>dataframe</em>, <em>seq_list=None</em>, <em>images=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mrbles.pipeline.</code><code class="descname">Analyze</code><span class="sig-paren">(</span><em>dataframe</em>, <em>seq_list=None</em>, <em>images=None</em>, <em>masks=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
-<p>Analyze data MRBLE data and retutn per-code statistics.</p>
+<p>Analyze data MRBLE data and return per-code statistics.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -75,21 +75,24 @@ Default: {‘mean’: np.mean,</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="mrbles.pipeline.Analyze.background">
-<code class="descname">background</code><span class="sig-paren">(</span><em>bkg_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.background"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.background" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subtract background.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bkg_data</strong> (<em>float/int, string, list, NumPy array, Pandas DataFrame</em>) – If float/value is used, this value be subtracted. If string is
+<dt id="mrbles.pipeline.Analyze.analyze">
+<code class="descname">analyze</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>confidence=None</em>, <em>bkg_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.analyze" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate per-code statisics.</p>
+<dl class="docutils">
+<dt>assay_channel <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Assay channel name (column name) to calculate per-code statistics
+for.</dd>
+<dt>confidence: float</dt>
+<dd>Filter by minimum confidence interval, e.g. 0.95 (95% CI).
+Defaults to None.</dd>
+<dt>bkg_data <span class="classifier-delimiter">:</span> <span class="classifier">float/int, string, list, NumPy array, Pandas DataFrame</span></dt>
+<dd>If float/value is used, this value be subtracted. If string is
 used, column from internal dataframe is used. Otherwise, the data
-is subtracted, which needs to be the same size as the per-bead
-data. In the case of Pandas DataFrame, do slice the single exact
-column. Row number of the data is the code.</td>
-</tr>
-</tbody>
-</table>
+provided is subtracted, which needs to be the same size as the
+per-bead data. In the case of Pandas DataFrame, do slice the single
+exact column. Row number of the data is the code.
+Defaults to None.</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -99,9 +102,45 @@ column. Row number of the data is the code.</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="mrbles.pipeline.Analyze.data_per_code">
+<code class="descname">data_per_code</code><a class="headerlink" href="#mrbles.pipeline.Analyze.data_per_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return (normalized) data per code.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.pipeline.Analyze.mrble_report">
+<code class="descname">mrble_report</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>filename</em>, <em>set_name=None</em>, <em>codes=None</em>, <em>files=None</em>, <em>sort=True</em>, <em>image_names=None</em>, <em>mask_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.mrble_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.mrble_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate per-MRBLE PDF image report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</li>
+<li><strong>filename</strong> (<em>str</em>) – Filename for generated PDF file.</li>
+<li><strong>set_name</strong> (<em>str</em>) – Name of set, e.g. ‘Set A’</li>
+<li><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
+Defaults to None.</li>
+<li><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
+Defaults to None.</li>
+<li><strong>sort</strong> (<em>boolean</em>) – Sort by code.
+Defaults to True.</li>
+<li><strong>image_names</strong> (<em>list of str</em>) – List of image names.
+Defaults to [‘Dy’, ‘Sm’, ‘Tm’, ‘bkg’, ‘Eu’, assay_channel].</li>
+<li><strong>mask_names</strong> (<em>list of str</em>) – List of mask names.
+Defaults to [‘mask_ring’, ‘mask_inside’, ‘mask_full’, ‘mask_bkg’].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="mrbles.pipeline.Analyze.norm_data">
 <code class="descname">norm_data</code><a class="headerlink" href="#mrbles.pipeline.Analyze.norm_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return normalized data.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Analyze.normalize">
@@ -120,12 +159,6 @@ Defaults to True.</li>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mrbles.pipeline.Analyze.per_mrble_report">
-<code class="descname">per_mrble_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.per_mrble_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.per_mrble_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate per-MRBLE PDF image report.</p>
 </dd></dl>
 
 <dl class="method">
@@ -228,6 +261,11 @@ Defaults to np.median.</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="mrbles.pipeline.Extract.background_subtract">
+<code class="descname">background_subtract</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>bkg_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract.background_subtract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract.background_subtract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mrbles.pipeline.Extract.filter">
 <code class="descname">filter</code><span class="sig-paren">(</span><em>bkg_factor=2.0</em>, <em>ref_factor=2.0</em>, <em>bkg='bkg.mask_full'</em>, <em>ref='Eu.mask_inside'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract.filter" title="Permalink to this definition">¶</a></dt>
@@ -378,6 +416,11 @@ See property documentation for more information.</li>
 <code class="descname">inspect</code><span class="sig-paren">(</span><em>set_name=None</em>, <em>fig_num=3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Find.inspect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Find.inspect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Display random images from set for inspection.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="mrbles.pipeline.Find.plot_size_dist">
+<code class="descname">plot_size_dist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Find.plot_size_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Find.plot_size_dist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="mrbles.pipeline.Find.sets">
@@ -616,7 +659,7 @@ Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="#mrbles.pipeline.Analyze.background" title="mrbles.pipeline.Analyze.background"><strong>background</strong></a> (<em>str</em>) – Name of the background spectrum.
+<li><strong>background</strong> (<em>str</em>) – Name of the background spectrum.
 Defaults to ‘bkg’.</li>
 <li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_x" title="mrbles.data.ImageDataFrame.crop_x"><strong>crop_x</strong></a> (<em>slice</em>) – Crop X slice. Set with slice().</li>
 <li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_y" title="mrbles.data.ImageDataFrame.crop_y"><strong>crop_y</strong></a> (<em>slice</em>) – Crop Y slice. Set with slice().</li>

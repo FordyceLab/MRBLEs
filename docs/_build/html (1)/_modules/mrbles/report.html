@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.report &#8212; mrbles 0.11.4 documentation</title>
+    <title>mrbles.report &#8212; mrbles 0.11.5 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -64,6 +64,7 @@
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="c1"># import multiprocessing as mp</span>
 <span class="c1"># Data</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -74,7 +75,10 @@
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="k">import</span> <span class="n">PdfPages</span>
 <span class="kn">import</span> <span class="nn">plotly.graph_objs</span> <span class="k">as</span> <span class="nn">go</span>
+<span class="kn">from</span> <span class="nn">plotly.offline</span> <span class="k">import</span> <span class="n">init_notebook_mode</span><span class="p">,</span> <span class="n">iplot</span> <span class="c1"># For plotly offline mode</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="c1"># Intra-Package dependencies</span>
+<span class="kn">from</span> <span class="nn">mrbles.data</span> <span class="k">import</span> <span class="n">TableDataFrame</span>
 
 
 <span class="c1"># Functions</span>
@@ -468,12 +472,250 @@
         <span class="k">return</span> <span class="n">levels</span></div></div>
 
 
-<div class="viewcode-block" id="Cluster"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.Cluster">[docs]</a><span class="k">class</span> <span class="nc">Cluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ClusterCheck"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.ClusterCheck">[docs]</a><span class="k">class</span> <span class="nc">ClusterCheck</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cluster check reporting.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Cluster</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decode_object</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ClusterCheck</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">decode_object</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span> <span class="o">=</span> <span class="n">decode_object</span>
+        <span class="n">init_notebook_mode</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Cluster.scatter"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.Cluster.scatter">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">confidence</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">confidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ci_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">confidence</span> <span class="o">&gt;=</span> <span class="n">confidence</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ci_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span>
+        <span class="k">return</span> <span class="n">ci_data</span>
+
+    <span class="k">def</span> <span class="nf">_ellipses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">covars</span><span class="p">,</span> <span class="n">confidence</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">covar</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">covars</span><span class="p">)):</span>
+            <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">covar</span><span class="p">)</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">confidence</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.0255102040816327</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+
+            <span class="c1"># Plot an ellipse to show the Gaussian component</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">x_origin</span> <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">y_origin</span> <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+            <span class="n">rtheta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angle</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span>
+            <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                 <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rtheta</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rtheta</span><span class="p">)],</span>
+                 <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rtheta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rtheta</span><span class="p">)]</span>
+                <span class="p">])</span>
+
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]))</span>
+            <span class="n">x</span> <span class="o">+=</span> <span class="n">x_origin</span>
+            <span class="n">y</span> <span class="o">+=</span> <span class="n">y_origin</span>
+
+            <span class="n">elle</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span>
+                              <span class="n">name</span><span class="o">=</span><span class="s1">&#39;CI </span><span class="si">%0.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">confidence</span><span class="p">,</span>
+                              <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="n">hoverinfo</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                              <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;Grey&#39;</span><span class="p">,</span>
+                                        <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                        <span class="n">dash</span><span class="o">=</span><span class="s1">&#39;dot&#39;</span><span class="p">))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elle</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="c1"># TODO: Add possibility to choose dimensions.</span>
+<div class="viewcode-block" id="ClusterCheck.plot_3D"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.ClusterCheck.plot_3D">[docs]</a>    <span class="k">def</span> <span class="nf">plot_3D</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot ratio clusters in 3D.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        confidence : float</span>
+<span class="sd">            Set minimal confidence level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bead_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ci</span><span class="p">(</span><span class="n">confidence</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">bead_set</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">255</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">dims_pre_icp</span> <span class="o">=</span> <span class="p">[</span><span class="n">dim</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">bead_set</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span>
+                        <span class="p">(</span><span class="s1">&#39;_ratio.mask_inside&#39;</span> <span class="ow">in</span> <span class="n">dim</span><span class="p">)</span> <span class="ow">and</span>
+                        <span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="o">-</span> <span class="mi">18</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;_ratio.mask_inside&#39;</span><span class="p">)]</span>
+        <span class="n">dims_post_icp</span> <span class="o">=</span> <span class="p">[</span><span class="n">dim</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">bead_set</span><span class="o">.</span><span class="n">columns</span>
+                         <span class="k">if</span> <span class="s1">&#39;_ratio.mask_inside_icp&#39;</span> <span class="ow">in</span> <span class="n">dim</span><span class="p">]</span>
+        <span class="n">dims_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">dim</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.mask_inside&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">dims_pre_icp</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Set has more than 3 dimensions, only first 3 dimensions are used for 3D plot.&quot;</span><span class="p">,</span>
+                          <span class="ne">UserWarning</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims_names</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Set has less than 3 dimensions.&quot;</span><span class="p">)</span>
+
+        <span class="n">bead_ratios_pre</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bead ratios - Pre-ICP&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="n">dims_pre_icp</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="n">dims_pre_icp</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">z</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="n">dims_pre_icp</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Rainbow&#39;</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;circle-open&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">bead_ratios_post</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bead ratios - Post-ICP&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="n">dims_post_icp</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="n">dims_post_icp</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">z</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="n">dims_post_icp</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">bead_set</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Rainbow&#39;</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">0.6</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">target_ratios</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Target ratios&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">target</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">target</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">z</span><span class="o">=</span><span class="n">target</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">text</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;diamond&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">mean_ratios</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GMM mean ratios&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">gmm</span><span class="o">.</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">gmm</span><span class="o">.</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">gmm</span><span class="o">.</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">text</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;diamond&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">bead_ratios_pre</span><span class="p">,</span> <span class="n">bead_ratios_post</span><span class="p">,</span> <span class="n">target_ratios</span><span class="p">,</span> <span class="n">mean_ratios</span><span class="p">]</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+            <span class="n">showlegend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">scene</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">dims_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">dims_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">zaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">dims_names</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+        <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ClusterCheck.plot_2D"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.ClusterCheck.plot_2D">[docs]</a>    <span class="k">def</span> <span class="nf">plot_2D</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">ci_trace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot 2D clusters.&quot;&quot;&quot;</span>
+        <span class="n">mrbles_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ci</span><span class="p">(</span><span class="n">confidence</span><span class="p">)</span>
+        <span class="n">color_exclude</span> <span class="o">=</span> <span class="p">[</span><span class="n">color</span> <span class="k">for</span> <span class="n">color</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span>
+                         <span class="n">color</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">colors</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mrbles_data</span> <span class="o">=</span> <span class="n">mrbles_data</span><span class="p">[</span><span class="n">mrbles_data</span><span class="p">[(</span><span class="s1">&#39;info.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">color_exclude</span><span class="p">)]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="p">[</span><span class="n">color_exclude</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">target_ratios</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">levels</span><span class="p">,</span> <span class="n">colors</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">codes_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">levels</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">colors_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">mrbles_data</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">255</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_ratios</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">codes_found</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mrbles_data</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+        <span class="n">color_pos</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="n">color_pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">_target</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">means</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">gmm</span><span class="o">.</span><span class="n">means</span><span class="p">[</span><span class="n">levels</span><span class="p">][:</span> <span class="p">,</span> <span class="n">color_pos</span><span class="p">]</span>
+        <span class="n">covars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">gmm</span><span class="o">.</span><span class="n">_gmix</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="n">levels</span><span class="p">][:,</span> <span class="n">color_pos</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">color_pos</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">ci_trace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ellipses</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">covars</span><span class="p">,</span> <span class="n">ci_trace</span><span class="p">))</span>
+
+        <span class="n">bead_ratios_plot</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Bead ratios&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">mrbles_data</span><span class="p">[(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_ratio.mask_inside_icp&#39;</span> <span class="o">%</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">mrbles_data</span><span class="p">[(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_ratio.mask_inside_icp&#39;</span> <span class="o">%</span> <span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">mrbles_data</span><span class="p">[(</span><span class="s1">&#39;code&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colors_data</span><span class="p">,</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Rainbow&#39;</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">0.6</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bead_ratios_plot</span><span class="p">)</span>
+
+        <span class="n">target_ratios_plot</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Target ratios&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">target_ratios</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">target_ratios</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">codes_target</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;diamond&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_ratios_plot</span><span class="p">)</span>
+
+        <span class="n">mean_ratios_plot</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GMM mean ratios&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">means</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">codes_found</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;diamond&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_ratios_plot</span><span class="p">)</span>
+
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+            <span class="n">showlegend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">fig1</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+        <span class="n">iplot</span><span class="p">(</span><span class="n">fig1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ClusterCheck.scatter"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.ClusterCheck.scatter">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axes_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot clusters in scatter plot 2D or 3D.</span>
 
@@ -942,7 +1184,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

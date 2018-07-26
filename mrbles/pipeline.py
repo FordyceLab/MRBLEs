@@ -435,6 +435,23 @@ class Find(ImageDataFrame):
         """Return list of sets."""
         return TableDataFrame.get_set_names(self._bead_dims)
 
+    def plot_size_dist(self):
+        plt.figure(dpi=150)
+        if 'diameter_conv' in self.bead_dims.columns:
+            b_std = self.bead_dims.diameter_conv.std()
+            b_mean = self.bead_dims.diameter_conv.mean()
+        else:
+            b_std = self.bead_dims.diameter.std()
+            b_mean = self.bead_dims.diameter.mean
+        x_left = b_mean - (5 * b_std)
+        x_right = b_mean + (5 * b_std)
+        self.bead_dims.diameter_conv.plot(
+            kind='hist', bins=100, color='lightgray').set_xlim(
+                left=x_left, right=x_right);
+        self.bead_dims.diameter_conv.plot(
+            kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(
+                bottom=0);
+
     def inspect(self, set_name=None, fig_num=3):
         """Display random images from set for inspection."""
         if not isinstance(self._dataframe, dict):
@@ -836,6 +853,14 @@ class Extract(TableDataFrame):
             num = np.unique(mask.values[mask.values > 0])
         return num
 
+    def background_subtract(self, assay_channel, bkg_data):
+        if isinstance(bkg_data, str):
+            self._dataframe['%s_min_bkg' % assay_channel] = \
+                self._dataframe[assay_channel] - self._dataframe[bkg_data]
+        elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
+            self._dataframe['%s_min_bkg' % assay_channel] = \
+                self._dataframe[assay_channel] - bkg_data
+
     def filter(self, bkg_factor=2.0, ref_factor=2.0,
                bkg='bkg.mask_full', ref='Eu.mask_inside'):
         """Filter and flag based on unmixed background and reference signal.
@@ -1177,8 +1202,8 @@ class Analyze(TableDataFrame):
         }
         return result
 
-    def mrble_report(self, assay_channel, filename, set_name=None,
-                     image_names=None, mask_names=None, codes=None, sort=True):
+    def mrble_report(self, assay_channel, filename, set_name=None, codes=None,
+                     files=None, sort=True, image_names=None, mask_names=None):
         """Generate per-MRBLE PDF image report.
 
         Parameters
@@ -1189,18 +1214,22 @@ class Analyze(TableDataFrame):
             Filename for generated PDF file.
         set_name : str
             Name of set, e.g. 'Set A'
+        codes : int, list of int
+            Integer or list of integers with selected codes.
+            Defaults to None.
+        files : int, list of int
+            Integer or list of integers with selected files.
+            Defaults to None.
+        sort : boolean
+            Sort by code.
+            Defaults to True.
         image_names : list of str
             List of image names.
             Defaults to ['Dy', 'Sm', 'Tm', 'bkg', 'Eu', assay_channel].
         mask_names : list of str
             List of mask names.
             Defaults to ['mask_ring', 'mask_inside', 'mask_full', 'mask_bkg'].
-        codes : int, list of int
-            Integer or list of integers with selected codes.
-            Defaults to None.
-        sort : boolean
-            Sort by code.
-            Defaults to True.
+
         """
         if image_names is None:
             image_names = ['Dy', 'Sm', 'Tm', 'bkg', 'Eu', assay_channel]
@@ -1222,6 +1251,7 @@ class Analyze(TableDataFrame):
                              masks,
                              assay_channel,
                              codes,
+                             files,
                              sort)
         answer = input("Do you wan to continue (y for yes, or n for no)?: ")
         if answer == 'y':
