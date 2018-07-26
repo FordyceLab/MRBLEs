@@ -400,6 +400,9 @@ class BeadsReport(object):
     codes : int, list of int
         Integer or list of integers with selected codes.
         Defaults to None.
+    files : int, list of int
+            Integer or list of integers with selected files.
+            Defaults to None.
     sort : boolean
         Sort by code.
         Defaults to True.
