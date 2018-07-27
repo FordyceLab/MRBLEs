@@ -1260,6 +1260,15 @@ class Analyze(TableDataFrame):
             print("Aborted.")
 
     def qc_report(self, filename, savefig=False):
-        """Generate Quality Control PDF report."""
+        """Generate Quality Control PDF report.
+
+        Parameters
+        ----------
+        filename : str
+            Filename to save QC PDF report to.
+        savefig : boolean
+            Save figures separately to 'report' folder.
+            Defaults to False.
+        """
         qc_report = QCReport(self.data_per_bead)
         qc_report.generate(filename, savefig=False)

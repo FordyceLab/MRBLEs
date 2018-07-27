@@ -569,7 +569,13 @@ class BeadsReport(object):
 
 
 class QCReport(object):
-    """MRBLE library Quality Control report."""
+    """MRBLE library Quality Control report.
+
+    Parameters
+    ----------
+    data : Pandas DataFrame
+        Per beads data.
+    """
 
     def __init__(self, data):
         self._per_bead_data = data
@@ -580,6 +586,17 @@ class QCReport(object):
         self.report_folder = 'report/'
 
     def generate(self, filename, savefig=False):
+        """Generate QC report.
+
+        Parameters
+        ----------
+        filename : str
+            Filename to save QC PDF report to.
+        savefig : boolean
+            Save figures separately to 'report' folder.
+            Defaults to False.
+
+        """
         self._savefig = savefig
         if self._savefig is True:
             if not os.path.exists(self.report_folder):
