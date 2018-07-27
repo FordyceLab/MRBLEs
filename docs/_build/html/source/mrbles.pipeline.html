@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.pipeline module &#8212; mrbles 0.11.5 documentation</title>
+    <title>mrbles.pipeline module &#8212; mrbles 0.11.7 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.7 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -163,8 +163,21 @@ Defaults to True.</li>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Analyze.qc_report">
-<code class="descname">qc_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.qc_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.qc_report" title="Permalink to this definition">¶</a></dt>
+<code class="descname">qc_report</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.qc_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.qc_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Quality Control PDF report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</li>
+<li><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
+Defaults to False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -710,83 +723,6 @@ subtracted, and normalized.</p>
 <p>Settings object.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="mrbles.pipeline.get_stats">
-<code class="descclassname">mrbles.pipeline.</code><code class="descname">get_stats</code><span class="sig-paren">(</span><em>data_array</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.get_stats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get statistics from data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_array</strong></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">stats_array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="mrbles.pipeline.get_stats_norm">
-<code class="descclassname">mrbles.pipeline.</code><code class="descname">get_stats_norm</code><span class="sig-paren">(</span><em>data</em>, <em>norm</em>, <em>scale_norm=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#get_stats_norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.get_stats_norm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="mrbles.pipeline.get_stats_per_channel_and_code">
-<code class="descclassname">mrbles.pipeline.</code><code class="descname">get_stats_per_channel_and_code</code><span class="sig-paren">(</span><em>data</em>, <em>channels</em>, <em>codes=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#get_stats_per_channel_and_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.get_stats_per_channel_and_code" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get stats per channel and code.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="mrbles.pipeline.get_stats_per_code">
-<code class="descclassname">mrbles.pipeline.</code><code class="descname">get_stats_per_code</code><span class="sig-paren">(</span><em>data</em>, <em>channel</em>, <em>norm=None</em>, <em>norm_channel=None</em>, <em>codes=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#get_stats_per_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.get_stats_per_code" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get statistical values for each code in you data set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<em>Pandas DataFrame</em>) – This is the per bead data.</li>
-<li><strong>channel</strong> (<em>string</em>) – This is the channel (or column) to extract statistical values from.</li>
-<li><strong>codes</strong> (<em>int, list</em>) – This value can be set if only a select (list) or one code (int) needs
-to be processed. If value is not set the unique codes from data, the
-Pandas DataFrame is used.
-Defaults to None.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>bead_set</strong> – This dataframe contains: AVG, SD, N, CV, SEM, and RSEM for each code.
-Codes start at 0. Code -1 represents weighted statistical values over
-all codes.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Pandas DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="mrbles.pipeline.get_weighted_stats">
-<code class="descclassname">mrbles.pipeline.</code><code class="descname">get_weighted_stats</code><span class="sig-paren">(</span><em>data_array</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#get_weighted_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.get_weighted_stats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get weighted statistics.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_array</strong> (<em>NumPy array, list</em>) – Array with data to return statistics from.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns array with weighted stats over</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">NumPy array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </div>
 </div>
 
@@ -836,7 +772,7 @@ all codes.</p>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.7 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

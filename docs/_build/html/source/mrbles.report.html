@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.report module &#8212; mrbles 0.11.5 documentation</title>
+    <title>mrbles.report module &#8212; mrbles 0.11.7 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.7 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -320,9 +320,17 @@ iterables, a list of iterables, or a combination of both.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">QCReport</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>MRBLE library Quality Control report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>Pandas DataFrame</em>) – Per beads data.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="mrbles.report.QCReport.assay_contamination">
-<code class="descname">assay_contamination</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.assay_contamination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.assay_contamination" title="Permalink to this definition">¶</a></dt>
+<code class="descname">assay_contamination</code><span class="sig-paren">(</span><em>pdf_object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.assay_contamination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.assay_contamination" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -345,7 +353,21 @@ iterables, a list of iterables, or a combination of both.</p>
 <dl class="method">
 <dt id="mrbles.report.QCReport.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.generate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generate QC report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</li>
+<li><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
+Defaults to False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mrbles.report.QCReport.html_report">
@@ -428,7 +450,7 @@ Overlay of 2 images using alpha blend.</p>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.7 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

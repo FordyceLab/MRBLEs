@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.pipeline &#8212; mrbles 0.11.5 documentation</title>
+    <title>mrbles.pipeline &#8212; mrbles 0.11.7 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.7 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -90,7 +90,7 @@
 <span class="kn">import</span> <span class="nn">mrbles</span>
 <span class="kn">from</span> <span class="nn">mrbles.core</span> <span class="k">import</span> <span class="n">FindBeadsImaging</span><span class="p">,</span> <span class="n">ICP</span><span class="p">,</span> <span class="n">Classify</span><span class="p">,</span> <span class="n">SpectralUnmixing</span>
 <span class="kn">from</span> <span class="nn">mrbles.data</span> <span class="k">import</span> <span class="n">ImageSetRead</span><span class="p">,</span> <span class="n">ImageDataFrame</span><span class="p">,</span> <span class="n">TableDataFrame</span>
-<span class="kn">from</span> <span class="nn">mrbles.report</span> <span class="k">import</span> <span class="n">ClusterCheck</span><span class="p">,</span> <span class="n">BeadsReport</span>
+<span class="kn">from</span> <span class="nn">mrbles.report</span> <span class="k">import</span> <span class="n">ClusterCheck</span><span class="p">,</span> <span class="n">BeadsReport</span><span class="p">,</span> <span class="n">QCReport</span>
 
 
 <span class="c1"># General methods</span>
@@ -1297,165 +1297,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Aborted.&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Analyze.qc_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.qc_report">[docs]</a>    <span class="k">def</span> <span class="nf">qc_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Generate Quality Control PDF report.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+<div class="viewcode-block" id="Analyze.qc_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.qc_report">[docs]</a>    <span class="k">def</span> <span class="nf">qc_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate Quality Control PDF report.</span>
 
-
-<span class="c1"># Deprecated</span>
-<div class="viewcode-block" id="get_stats_per_channel_and_code"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.get_stats_per_channel_and_code">[docs]</a><span class="k">def</span> <span class="nf">get_stats_per_channel_and_code</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get stats per channel and code.&quot;&quot;&quot;</span>
-    <span class="n">bead_sets</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
-        <span class="n">bead_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_stats_per_code</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">codes</span><span class="p">))</span>
-    <span class="n">final_bead_set</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">bead_sets</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">channels</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">final_bead_set</span></div>
-
-
-<div class="viewcode-block" id="get_stats_per_code"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.get_stats_per_code">[docs]</a><span class="k">def</span> <span class="nf">get_stats_per_code</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span>
-                       <span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_channel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get statistical values for each code in you data set.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : Pandas DataFrame</span>
-<span class="sd">        This is the per bead data.</span>
-<span class="sd">    channel : string</span>
-<span class="sd">        This is the channel (or column) to extract statistical values from.</span>
-<span class="sd">    codes : int, list</span>
-<span class="sd">        This value can be set if only a select (list) or one code (int) needs</span>
-<span class="sd">        to be processed. If value is not set the unique codes from data, the</span>
-<span class="sd">        Pandas DataFrame is used.</span>
-<span class="sd">        Defaults to None.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bead_set : Pandas DataFrame</span>
-<span class="sd">        This dataframe contains: AVG, SD, N, CV, SEM, and RSEM for each code.</span>
-<span class="sd">        Codes start at 0. Code -1 represents weighted statistical values over</span>
-<span class="sd">        all codes.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data_stats</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">data_stats_norm</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">n_codes</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">codes_set</span> <span class="o">=</span> <span class="n">codes</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">codes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">codes_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">notnull</span><span class="p">()])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">codes_set</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes_set</span><span class="p">:</span>
-        <span class="n">n_codes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-        <span class="n">data_code</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="p">(</span><span class="n">channel</span><span class="p">)]</span>
-        <span class="n">stats</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">data_code</span><span class="p">)</span>
-        <span class="n">data_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">norm_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">norm_code</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">norm</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="p">(</span><span class="n">norm_channel</span><span class="p">)]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">norm_code</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">norm</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="p">(</span><span class="n">channel</span><span class="p">)]</span>
-            <span class="n">stats_norm</span> <span class="o">=</span> <span class="n">get_stats_norm</span><span class="p">(</span><span class="n">data_code</span><span class="p">,</span> <span class="n">norm_code</span><span class="p">)</span>
-            <span class="n">data_stats_norm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats_norm</span><span class="p">)</span>
-    <span class="c1"># n_codes.append(-1)</span>
-    <span class="c1"># data_stats.append(get_weighted_stats(data_stats))</span>
-    <span class="n">final_codes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">n_codes</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">])</span>
-    <span class="n">final_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-        <span class="n">data_stats</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AVG&#39;</span><span class="p">,</span> <span class="s1">&#39;SD&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;CV&#39;</span><span class="p">,</span> <span class="s1">&#39;SEM&#39;</span><span class="p">,</span> <span class="s1">&#39;RSEM&#39;</span><span class="p">,</span> <span class="s1">&#39;MED&#39;</span><span class="p">])</span>
-    <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># data_stats_norm.append(get_weighted_stats(data_stats_norm))</span>
-        <span class="n">final_stats_norm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_stats_norm</span><span class="p">,</span>
-                                        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AVG_NORM&#39;</span><span class="p">,</span>
-                                                 <span class="s1">&#39;SD_NORM&#39;</span><span class="p">,</span>
-                                                 <span class="s1">&#39;N_NORM&#39;</span><span class="p">,</span>
-                                                 <span class="s1">&#39;CV_NORM&#39;</span><span class="p">,</span>
-                                                 <span class="s1">&#39;SEM_NORM&#39;</span><span class="p">,</span>
-                                                 <span class="s1">&#39;RSEM_NORM&#39;</span><span class="p">,</span>
-                                                 <span class="s1">&#39;MED_NORM&#39;</span><span class="p">])</span>
-    <span class="n">bead_set</span> <span class="o">=</span> <span class="n">final_codes</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">final_stats</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bead_set</span> <span class="o">=</span> <span class="n">bead_set</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">final_stats_norm</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">bead_set</span></div>
-
-
-<div class="viewcode-block" id="get_stats_norm"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.get_stats_norm">[docs]</a><span class="k">def</span> <span class="nf">get_stats_norm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">scale_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">scale_norm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">norm</span> <span class="o">/=</span> <span class="n">norm</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="n">norm_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
-    <span class="n">norm_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
-    <span class="n">data_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">data_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-    <span class="n">mean</span> <span class="o">=</span> <span class="n">data_mean</span> <span class="o">/</span> <span class="n">norm_mean</span>
-    <span class="n">sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">data_sd</span> <span class="o">/</span> <span class="n">data_mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span>
-                                 <span class="p">(</span><span class="n">norm_sd</span> <span class="o">/</span> <span class="n">norm_mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">cv</span> <span class="o">=</span> <span class="n">sd</span> <span class="o">/</span> <span class="n">mean</span>
-    <span class="n">sem</span> <span class="o">=</span> <span class="n">sd</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-    <span class="n">rsem</span> <span class="o">=</span> <span class="n">sem</span> <span class="o">/</span> <span class="n">mean</span>
-    <span class="n">median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="n">norm_mean</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mean</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">sem</span><span class="p">,</span> <span class="n">rsem</span><span class="p">,</span> <span class="n">median</span><span class="p">])</span></div>
-
-
-<div class="viewcode-block" id="get_stats"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.get_stats">[docs]</a><span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="n">data_array</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get statistics from data.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data_array :</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    stats_array</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
-    <span class="n">data_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
-    <span class="n">data_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
-    <span class="n">data_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span>
-    <span class="n">data_cv</span> <span class="o">=</span> <span class="n">data_sd</span> <span class="o">/</span> <span class="n">data_mean</span>
-    <span class="n">data_sem</span> <span class="o">=</span> <span class="n">data_sd</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">data_n</span><span class="p">)</span>
-    <span class="n">data_rsem</span> <span class="o">=</span> <span class="n">data_sem</span> <span class="o">/</span> <span class="n">data_mean</span>
-    <span class="n">stats_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">data_mean</span><span class="p">,</span>
-                            <span class="n">data_sd</span><span class="p">,</span>
-                            <span class="n">data_n</span><span class="p">,</span>
-                            <span class="n">data_cv</span><span class="p">,</span>
-                            <span class="n">data_sem</span><span class="p">,</span>
-                            <span class="n">data_rsem</span><span class="p">,</span>
-                            <span class="n">data_median</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">stats_array</span></div>
-
-
-<div class="viewcode-block" id="get_weighted_stats"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.get_weighted_stats">[docs]</a><span class="k">def</span> <span class="nf">get_weighted_stats</span><span class="p">(</span><span class="n">data_array</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get weighted statistics.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data_array : NumPy array, list</span>
-<span class="sd">        Array with data to return statistics from.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    NumPy array</span>
-<span class="sd">        Returns array with weighted stats over</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">data_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">weights</span><span class="o">=</span><span class="n">data_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
-    <span class="n">data_sd</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">data_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">data_mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">data_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]))</span>
-    <span class="n">data_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
-    <span class="n">data_cv</span> <span class="o">=</span> <span class="n">data_sd</span> <span class="o">/</span> <span class="n">data_mean</span>
-    <span class="n">data_sem</span> <span class="o">=</span> <span class="n">data_sd</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">data_n</span><span class="p">)</span>
-    <span class="n">data_rsem</span> <span class="o">=</span> <span class="n">data_sem</span> <span class="o">/</span> <span class="n">data_mean</span>
-    <span class="n">data_median</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">weighted_median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span>
-        <span class="n">data_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]))</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">data_mean</span><span class="p">,</span>
-                     <span class="n">data_sd</span><span class="p">,</span>
-                     <span class="n">data_n</span><span class="p">,</span>
-                     <span class="n">data_cv</span><span class="p">,</span>
-                     <span class="n">data_sem</span><span class="p">,</span>
-                     <span class="n">data_rsem</span><span class="p">,</span>
-                     <span class="n">data_median</span><span class="p">])</span></div>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Filename to save QC PDF report to.</span>
+<span class="sd">        savefig : boolean</span>
+<span class="sd">            Save figures separately to &#39;report&#39; folder.</span>
+<span class="sd">            Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qc_report</span> <span class="o">=</span> <span class="n">QCReport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_per_bead</span><span class="p">)</span>
+        <span class="n">qc_report</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -1488,7 +1342,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.7 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

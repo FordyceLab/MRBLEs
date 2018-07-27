@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.core &#8212; mrbles 0.11.5 documentation</title>
+    <title>mrbles.core &#8212; mrbles 0.11.7 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.7 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -1252,7 +1252,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_nclusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_naxes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_confs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_probs</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_prob</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1301,16 +1301,16 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmix</span><span class="o">.</span><span class="n">means_</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">confs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return confidence intervals.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_confs</span>
+    <span class="k">def</span> <span class="nf">probs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return probabilities.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_probs</span>
 
-    <span class="k">def</span> <span class="nf">_set_confs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_confs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_gmix</span><span class="o">.</span><span class="n">score_samples</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_set_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_probs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_gmix</span><span class="o">.</span><span class="n">score_samples</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return log prbabilities.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return log probabilities.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_proba</span>
 
     <span class="k">def</span> <span class="nf">_set_log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
@@ -1332,22 +1332,22 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return codes, confidence interval and log propability.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return codes, probability and log probability.&quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="s1">&#39;confidence&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prob&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
                 <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;confidence&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confs</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;log_prob&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;confidence&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">probs</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;log_probability&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[(</span><span class="s1">&#39;code&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span>
-            <span class="n">data</span><span class="p">[(</span><span class="s1">&#39;confidence&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confs</span>
-            <span class="n">data</span><span class="p">[(</span><span class="s1">&#39;log_prob&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span>
+            <span class="n">data</span><span class="p">[(</span><span class="s1">&#39;confidence&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">probs</span>
+            <span class="n">data</span><span class="p">[(</span><span class="s1">&#39;log_probability&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span>
         <span class="k">return</span> <span class="n">data</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">found</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return foudn codes.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return found codes.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">))</span>
 
     <span class="nd">@property</span>
@@ -1375,7 +1375,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gmix</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmix</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_confs</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_probs</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_log_prob</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Classify.unit_sphere"><a class="viewcode-back" href="../../source/mrbles.core.html#mrbles.core.Classify.unit_sphere">[docs]</a>    <span class="nd">@staticmethod</span>
@@ -1419,7 +1419,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.11.7 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
