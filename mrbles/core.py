@@ -1214,7 +1214,7 @@ class Classify(object):
         self._nclusters = len(self._target[:, 0])
         self._naxes = len(self._target[0, :])
 
-        self._confs = None
+        self._probs = None
         self._log_prob = None
 
         self._data = None
@@ -1263,16 +1263,16 @@ class Classify(object):
         return self._gmix.means_
 
     @property
-    def confs(self):
-        """Return confidence intervals."""
-        return self._confs
+    def probs(self):
+        """Return probabilities."""
+        return self._probs
 
-    def _set_confs(self, data):
-        self._confs = 1 - np.exp(-self._gmix.score_samples(data))
+    def _set_probs(self, data):
+        self._probs = 1 - np.exp(-self._gmix.score_samples(data))
 
     @property
     def log_prob(self):
-        """Return log prbabilities."""
+        """Return log probabilities."""
         return self._log_proba
 
     def _set_log_prob(self, data):
@@ -1294,22 +1294,22 @@ class Classify(object):
 
     @property
     def output(self):
-        """Return codes, confidence interval and log propability."""
+        """Return codes, probability and log probability."""
         data = pd.DataFrame(columns=['code', 'confidence', 'log_prob'])
         if isinstance(self._data, pd.DataFrame):
             for num, val in enumerate(self._data.index):
                 data.loc[val, ('code')] = self._predict[num]
-                data.loc[val, ('confidence')] = self.confs[num]
-                data.loc[val, ('log_prob')] = self.log_prob[num]
+                data.loc[val, ('confidence')] = self.probs[num]
+                data.loc[val, ('log_probability')] = self.log_prob[num]
         else:
             data[('code')] = self._predict
-            data[('confidence')] = self.confs
-            data[('log_prob')] = self.log_prob
+            data[('confidence')] = self.probs
+            data[('log_probability')] = self.log_prob
         return data
 
     @property
     def found(self):
-        """Return foudn codes."""
+        """Return found codes."""
         return len(np.unique(self._predict))
 
     @property
@@ -1337,7 +1337,7 @@ class Classify(object):
         self._data = data
         self._gmix.fit(data, self._target)
         self._predict = self._gmix.predict(data)
-        self._set_confs(data)
+        self._set_probs(data)
         self._set_log_prob(data)
 
     @staticmethod

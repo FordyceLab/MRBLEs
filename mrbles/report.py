@@ -585,10 +585,13 @@ class QCReport(object):
             if not os.path.exists(self.report_folder):
                 os.makedirs(self.report_folder)
         with PdfPages(filename) as pdf_object:
-            self._add_figure([self.bead_size,
-                              self.beads_per_code],
+            self._add_figure([self.bead_size],
                              pdf_object)
-            self.npl_plots(pdf_object)
+            if 'code' in self._per_bead_data.columns:
+                self._add_figure([self.beads_per_code],
+                             pdf_object)
+                self.npl_plots(pdf_object)
+                self.assay_contamination(pdf_object)
 
     def _add_figure(self, plots, pdf_object):
         for plot in plots:
@@ -692,24 +695,33 @@ class QCReport(object):
             plt.savefig((self.report_folder + 'Sm_vs_Tm_ratios_post-ICP_CI95_filter.png'), dpi=self.dpi)
         plt.close()
 
-    def assay_contamination(self):
-        npl_num = len(self.npl_channels)
-        plt.figure(dpi=150)
-        self._per_bead_data.plot(kind='scatter', figsize=(9, 6), x='Cy5_min_bkg', y='Dy_ratio.mask_inside_icp',
+    def assay_contamination(self, pdf_object):
+        self._per_bead_data.plot(kind='scatter', figsize=(9, 6),
+                                 x='Cy5_FF.mask_ring_min_bkg',
+                                 y='Dy_ratio.mask_inside_icp',
                                  title='Dy Ratio vs Cy5 (ring)')
-        #plt.savefig('Dy Ratio vs Cy5 (ring) - BKG.png', dpi=300)
+        pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'bead_size.png'), dpi=self.dpi)
+        plt.close()
 
-        plt.figure(dpi=150)
         self._per_bead_data.plot(kind='scatter', figsize=(9, 6),
-                                 x='Cy5_min_bkg', y='Sm_ratio.mask_inside_icp',
+                                 x='Cy5_FF.mask_ring_min_bkg',
+                                 y='Sm_ratio.mask_inside_icp',
                                  title='Sm Ratio vs Cy5 (ring)')
-        #plt.savefig('Sm Ratio vs Cy5 (ring) - BKG.png',dpi=300)
+        pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'bead_size.png'), dpi=self.dpi)
+        plt.close()
 
-        plt.figure(dpi=300)
         self._per_bead_data.plot(kind='scatter', figsize=(9, 6),
-                                 x='Cy5_min_bkg', y='Tm_ratio.mask_inside_icp',
+                                 x='Cy5_FF.mask_ring_min_bkg',
+                                 y='Tm_ratio.mask_inside_icp',
                                  title='Tm Ratio vs Cy5 (ring)')
-        #plt.savefig('Tm Ratio vs Cy5 (ring) - BKG.png', dpi=300)
+        pdf_object.savefig(dpi=self.dpi)
+        if self._savefig is True:
+            plt.savefig((self.report_folder + 'bead_size.png'), dpi=self.dpi)
+        plt.close()
 
     def npl_covar_plots(self):
         colors = ['green', 'blue', 'red']
