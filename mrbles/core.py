@@ -1295,15 +1295,15 @@ class Classify(object):
     @property
     def output(self):
         """Return codes, probability and log probability."""
-        data = pd.DataFrame(columns=['code', 'confidence', 'log_prob'])
+        data = pd.DataFrame(columns=['code', 'prob', 'log_prob'])
         if isinstance(self._data, pd.DataFrame):
             for num, val in enumerate(self._data.index):
                 data.loc[val, ('code')] = self._predict[num]
-                data.loc[val, ('confidence')] = self.probs[num]
+                data.loc[val, ('prob')] = self.probs[num]
                 data.loc[val, ('log_probability')] = self.log_prob[num]
         else:
             data[('code')] = self._predict
-            data[('confidence')] = self.probs
+            data[('prob')] = self.probs
             data[('log_probability')] = self.log_prob
         return data
 

@@ -89,12 +89,12 @@ class ClusterCheck(TableDataFrame):
         self._decode = decode_object
         init_notebook_mode(connected=True)
 
-    def _ci(self, confidence):
-        if confidence is not None:
-            ci_data = self._dataframe[self._dataframe.confidence >= confidence]
+    def _set_min_prob(self, min_prob):
+        if min_prob is not None:
+            p_data = self._dataframe[self._dataframe.prob >= min_prob]
         else:
-            ci_data = self._dataframe
-        return ci_data
+            p_data = self._dataframe
+        return p_data
 
     def _ellipses(self, means, covars, confidence):
         data = []
@@ -135,15 +135,15 @@ class ClusterCheck(TableDataFrame):
         return data
 
     # TODO: Add possibility to choose dimensions.
-    def plot_3D(self, confidence=None):
+    def plot_3D(self, min_prob=None):
         """Plot ratio clusters in 3D.
 
         Parameters
         ----------
-        confidence : float
-            Set minimal confidence level.
+        min_prob : float
+            Set minimal probability level.
         """
-        bead_set = self._ci(confidence)
+        bead_set = self._set_min_prob(min_prob)
         target = self._decode._target.values
         colors = np.multiply(
             bead_set.code.values.astype(int),
@@ -245,9 +245,9 @@ class ClusterCheck(TableDataFrame):
         fig = go.Figure(data=data, layout=layout)
         iplot(fig)
 
-    def plot_2D(self, colors, ci_trace=None, confidence=None):
+    def plot_2D(self, colors, ci_trace=None, min_prob=None):
         """Plot 2D clusters."""
-        mrbles_data = self._ci(confidence)
+        mrbles_data = self._set_min_prob(min_prob)
         color_exclude = [color for color in self._decode._target.columns if
                          color not in colors][0]
         mrbles_data = mrbles_data[mrbles_data[('info.%s' % color_exclude)] == 0]
@@ -261,7 +261,7 @@ class ClusterCheck(TableDataFrame):
             self._decode._target.columns == colors[0])[0, 0]]
         color_pos.append(np.argwhere(
             self._decode._target.columns == colors[1])[0, 0])
-        means = self._decode.settings.gmm.means[levels][: , color_pos]
+        means = self._decode.settings.gmm.means[levels][:, color_pos]
         covars = self._decode.settings.gmm._gmix.covariances_[levels][:, color_pos][..., color_pos]
         data = []
         if ci_trace is not None:
@@ -668,7 +668,7 @@ class QCReport(object):
         plt.close()
 
         # After CI filter
-        g = sns.FacetGrid(self._per_bead_data.query('confidence > 0.95'), col="info.Dy", col_wrap=3, sharey=True)
+        g = sns.FacetGrid(self._per_bead_data.query('prob > 0.95'), col="info.Dy", col_wrap=3, sharey=True)
         g.fig.suptitle("Sm vs Tm ratios - pre-ICP (CI > 0.95 filter)")
         g.fig.subplots_adjust(top=10)
         g.map(sns.regplot, 'Sm_ratio.mask_inside', 'Tm_ratio.mask_inside', fit_reg=False,
@@ -701,7 +701,7 @@ class QCReport(object):
         plt.close()
 
         # After CI filter
-        g = sns.FacetGrid(self._per_bead_data.query('confidence > 0.95'), col="info.Dy", col_wrap=3, sharey=True)
+        g = sns.FacetGrid(self._per_bead_data.query('prob > 0.95'), col="info.Dy", col_wrap=3, sharey=True)
         g.fig.suptitle("Sm vs Tm ratios - Post-ICP (CI > 0.95 filter)")
         g.fig.subplots_adjust(top=10)
         g.map(sns.regplot, 'Sm_ratio.mask_inside_icp', 'Tm_ratio.mask_inside_icp', fit_reg=False,

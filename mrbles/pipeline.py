@@ -963,18 +963,18 @@ class Decode(TableDataFrame):
             self.combine(combine_data)
         self._cluster_check = ClusterCheck(self)
 
-    def plot_clusters_3D(self, confidence=None):
+    def plot_clusters_3D(self, min_prob=None):
         """Plot ratio clusters in 3D.
 
         Parameters
         ----------
-        confidence : float
-            Set minimal confidence level.
+        min_prob : float
+            Set minimal probability level from 0 to 1, e.g. 0.95.
             Defaults to None.
         """
-        self._cluster_check.plot_3D(confidence)
+        self._cluster_check.plot_3D(min_prob)
 
-    def plot_clusters_2D(self, colors, ci_trace=None, confidence=None):
+    def plot_clusters_2D(self, colors, ci_trace=None, min_prob=None):
         """Plot ratio clusters in 2D.
 
         Parameters
@@ -984,11 +984,11 @@ class Decode(TableDataFrame):
         ci_trace : float
             Set trace confidence line around clusters.
             Defaults to None.
-        confidence : float
-            Set minimal confidence level of data.
+        min_prob : float
+            Set minimal probability level from 0 to 1, e.g. 0.95.
             Defaults to None.
         """
-        self._cluster_check.plot_2D(colors, ci_trace, confidence)
+        self._cluster_check.plot_2D(colors, ci_trace, min_prob)
 
     def _gmm_qc(self, data):
         print("Number of unique codes found:", self._gmm.found)
@@ -1055,7 +1055,7 @@ class Analyze(TableDataFrame):
             'CV': sp.stats.variation
         }
 
-    def analyze(self, assay_channel, confidence=None, bkg_data=None):
+    def analyze(self, assay_channel, min_prob=None, bkg_data=None):
         """Calculate per-code statisics.
 
         Paramaters
@@ -1063,8 +1063,8 @@ class Analyze(TableDataFrame):
         assay_channel : str
             Assay channel name (column name) to calculate per-code statistics
             for.
-        confidence: float
-            Filter by minimum confidence interval, e.g. 0.95 (95% CI).
+        min_prob: float
+            Filter by minimum probability interval, e.g. 0.95.
             Defaults to None.
         bkg_data : float/int, string, list, NumPy array, Pandas DataFrame
             If float/value is used, this value be subtracted. If string is
@@ -1078,9 +1078,9 @@ class Analyze(TableDataFrame):
         if bkg_data is not None:
             self._background(assay_channel, bkg_data)
             assay_channel = '%s_min_bkg' % assay_channel
-        if confidence is not None:
+        if min_prob is not None:
             data_filter = self._data_per_bead.loc[
-                self._data_per_bead.confidence >= confidence]
+                self._data_per_bead.prob >= min_prob]
         else:
             data_filter = self._data_per_bead
         if 'set' in data_filter.columns:
@@ -1093,7 +1093,8 @@ class Analyze(TableDataFrame):
     def _background(self, assay_channel, bkg_data):
         if isinstance(bkg_data, str):
             self._data_per_bead['%s_min_bkg' % assay_channel] = \
-                self._data_per_bead[assay_channel] - self._data_per_bead[bkg_data]
+                self._data_per_bead[assay_channel] - \
+                    self._data_per_bead[bkg_data]
         elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
             self._data_per_bead['%s_min_bkg' % assay_channel] = \
                 self._data_per_bead[assay_channel] - bkg_data
