@@ -25,9 +25,9 @@ copyright = '2018, Bjorn Harink'
 author = 'Bjorn Harink'
 
 # The short X.Y version
-version = '0.11.7'
+version = '0.11.8'
 # The full version, including alpha/beta/rc tags
-release = '0.11.7'
+release = '0.11.8'
 
 
 # -- General configuration ---------------------------------------------------

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.pipeline module &#8212; mrbles 0.11.7 documentation</title>
+    <title>mrbles.pipeline module &#8212; mrbles 0.11.8 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.7 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.8 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -76,14 +76,14 @@ Default: {‘mean’: np.mean,</p>
 </table>
 <dl class="method">
 <dt id="mrbles.pipeline.Analyze.analyze">
-<code class="descname">analyze</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>confidence=None</em>, <em>bkg_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.analyze" title="Permalink to this definition">¶</a></dt>
+<code class="descname">analyze</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>min_prob=None</em>, <em>bkg_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.analyze" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate per-code statisics.</p>
 <dl class="docutils">
 <dt>assay_channel <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd>Assay channel name (column name) to calculate per-code statistics
 for.</dd>
-<dt>confidence: float</dt>
-<dd>Filter by minimum confidence interval, e.g. 0.95 (95% CI).
+<dt>min_prob: float</dt>
+<dd>Filter by minimum probability interval, e.g. 0.95.
 Defaults to None.</dd>
 <dt>bkg_data <span class="classifier-delimiter">:</span> <span class="classifier">float/int, string, list, NumPy array, Pandas DataFrame</span></dt>
 <dd>If float/value is used, this value be subtracted. If string is
@@ -223,7 +223,7 @@ Defaults to None.</li>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Decode.plot_clusters_2D">
-<code class="descname">plot_clusters_2D</code><span class="sig-paren">(</span><em>colors</em>, <em>ci_trace=None</em>, <em>confidence=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.plot_clusters_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.plot_clusters_2D" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_clusters_2D</code><span class="sig-paren">(</span><em>colors</em>, <em>ci_trace=None</em>, <em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.plot_clusters_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.plot_clusters_2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot ratio clusters in 2D.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -233,7 +233,7 @@ Defaults to None.</li>
 <li><strong>colors</strong> (<em>list</em>) – List of color (NPL) names.</li>
 <li><strong>ci_trace</strong> (<em>float</em>) – Set trace confidence line around clusters.
 Defaults to None.</li>
-<li><strong>confidence</strong> (<em>float</em>) – Set minimal confidence level of data.
+<li><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level from 0 to 1, e.g. 0.95.
 Defaults to None.</li>
 </ul>
 </td>
@@ -244,13 +244,13 @@ Defaults to None.</li>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Decode.plot_clusters_3D">
-<code class="descname">plot_clusters_3D</code><span class="sig-paren">(</span><em>confidence=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.plot_clusters_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.plot_clusters_3D" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_clusters_3D</code><span class="sig-paren">(</span><em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.plot_clusters_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.plot_clusters_3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot ratio clusters in 3D.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>confidence</strong> (<em>float</em>) – Set minimal confidence level.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level from 0 to 1, e.g. 0.95.
 Defaults to None.</td>
 </tr>
 </tbody>
@@ -772,7 +772,7 @@ subtracted, and normalized.</p>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.7 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.11.8 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
