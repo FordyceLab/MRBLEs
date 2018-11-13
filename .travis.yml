@@ -6,6 +6,7 @@ language: python
 env:
   - TOXENV=py27
   - TOXENV=py36
+  - TOXENV=py37
 
 install: pip install tox
 

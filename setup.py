@@ -57,6 +57,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     # Python versions supported
@@ -94,7 +95,9 @@ setup(
                       'xlrd',
                       'packaging',
                       'jupyter',
-                      'seaborn>=0.9.0'],
+                      'seaborn>=0.9.0',
+                      'openpyxl',
+                      'xlrd'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
