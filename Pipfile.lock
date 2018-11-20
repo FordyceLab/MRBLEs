@@ -422,10 +422,10 @@
         },
         "openpyxl": {
             "hashes": [
-                "sha256:022c0f3fa1e873cc0ba20651c54dd5e6276fc4ff150b4060723add4fc448645e"
+                "sha256:41eb21a5620343d715b38081536c4ed3c37249afb72e569fd2af93852ed4ddde"
             ],
             "index": "pypi",
-            "version": "==2.5.9"
+            "version": "==2.5.10"
         },
         "packaging": {
             "hashes": [

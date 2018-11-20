@@ -334,7 +334,6 @@ class FindBeadsImaging(ImageDataFrame):
         mask_outside[mask_min > 0] = 0
         return mask_outside
 
-    @classmethod
     def img2bin(cls, image, thr_block=15, thr_c=11):
         """Convert and adaptive threshold image."""
         img = cls._img2ubyte(image)

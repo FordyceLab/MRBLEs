@@ -179,12 +179,13 @@ class ImageDataFrame(object):
         self._dataframe = data
         self._crop_x = slice(None, None, None)
         self._crop_y = slice(None, None, None)
+        self._shift = {}
 
     def __repr__(self):
         """Return dataframe representation."""
         return repr(self.data)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index=None):
         """Get method."""
         if isinstance(index, str):
             if isinstance(self.data, dict):
@@ -244,6 +245,33 @@ class ImageDataFrame(object):
         else:
             raise ValueError("Not dict or Xarray DataArray: %s."
                              % type(images))
+
+    def shift_channel(self, channel, x_shift, y_shift):
+        """Shift images of channel by x and y pixels.
+
+        WARNING: This will shift the images permanently and sets inbound pixels
+        to 0. Reload images to reset.
+
+        Parameters
+        ----------
+        channel : str
+            Channel name to shift.
+        x_shift : int
+            Pixels to shift in X dimension.
+        y_shift : int
+            Pixels to shift in Y dimension.
+        """
+        data_shift = self._dataframe.copy()
+        if isinstance(data_shift, dict):
+            for key, value in data_shift.items():
+                data_shift[key].loc[:, channel] = \
+                    value.loc[:, channel].shift(x=x_shift, y=y_shift).fillna(0)
+        elif isinstance(data_shift, xr.DataArray):
+            data_shift.loc[:, channel] = \
+                data_shift.loc[:, channel].shift(x=y_shift, y=y_shift)
+        else:
+            data_shift = None
+        self._dataframe = data_shift
 
     # Crop properties
     @property
@@ -386,7 +414,7 @@ class ImageSetRead(ImageDataFrame):
             image_metadata = cls._get_metadata(tf)
             if len(tf.series) > 1 and series == 'all':
                 data = []
-                for idx, serie in enumerate(tf.series):
+                for idx, _ in enumerate(tf.series):
                     data.append(ts.asarray(series=idx))
                 panel_data = np.array(data)
             else:
@@ -557,7 +585,7 @@ class ImageSetRead(ImageDataFrame):
         else:
             # Added check if using newer version of Scikit-Image
             try:
-                if type(metadata['series'][0]) is tff.tifffile.TiffPageSeries:
+                if isinstance(metadata['series'][0], tff.tifffile.TiffPageSeries):
                     dims = [letter.lower()
                             for letter in metadata['series'][0].axes]
             except DeprecationWarning:
