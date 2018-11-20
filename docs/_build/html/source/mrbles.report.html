@@ -24,6 +24,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.12.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
@@ -33,8 +36,374 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="mrbles-report-module">
-<h1>mrbles.report module<a class="headerlink" href="#mrbles-report-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mrbles.report">
+<span id="mrbles-report-module"></span><h1>mrbles.report module<a class="headerlink" href="#module-mrbles.report" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="quality-control-report-classes-and-functions">
+<h2>Quality Control Report Classes and Functions<a class="headerlink" href="#quality-control-report-classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<p>This file stores the quality control report classes and functions for the MRBLEs Analysis
+module.</p>
+<dl class="class">
+<dt id="mrbles.report.BeadsReport">
+<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">BeadsReport</code><span class="sig-paren">(</span><em>data</em>, <em>images</em>, <em>masks</em>, <em>assay_channel</em>, <em>codes=None</em>, <em>files=None</em>, <em>sort=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#BeadsReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.BeadsReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Per-MRBLE images report.</p>
+<p>This method generates the selected images per-MRBLE.</p>
+<p>This method can take a lot of time, since it will generate images
+per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
+each, which makes a total of 11,000 images.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Contains all the dimension, posotional, and intensity data per-MBRLE.</li>
+<li><strong>images</strong> (<em>mrbles.ImageDataFrame, Xarray DataArray</em>) – Contains images.</li>
+<li><strong>masks</strong> (<em>Xarray DataArray</em>) – Contains masks.</li>
+<li><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</li>
+<li><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
+Defaults to None.</li>
+<li><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
+Defaults to None.</li>
+<li><strong>sort</strong> (<em>boolean</em>) – Sort by code.
+Defaults to True.</li>
+<li><strong>Methods</strong></li>
+<li><strong>——–</strong></li>
+<li><strong>generate()</strong> (<em>method</em>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>time_sec</strong> (<em>float</em>) – Time required per-image generated in seconds.
+For instance, 300 beads times 12 images is 3600 images.
+Defaults to 0.0275</li>
+<li><strong>parallelize</strong> (<em>boolean</em>) – Wether to use parallelization. Can be slowing down on low-power
+computers.
+Defaults to True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mrbles.report.BeadsReport.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#BeadsReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.BeadsReport.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Per-MRBLE images report.</p>
+<p>This method generates the selected images per-MRBLE.</p>
+<p>This method can take a lot of time, since it will generate images
+per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
+each, which makes a total of 12,000 images.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.report.ClusterCheck">
+<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">ClusterCheck</code><span class="sig-paren">(</span><em>decode_object</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#ClusterCheck"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.ClusterCheck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
+<p>Cluster check reporting.</p>
+<dl class="method">
+<dt id="mrbles.report.ClusterCheck.plot_2D">
+<code class="descname">plot_2D</code><span class="sig-paren">(</span><em>colors</em>, <em>ci_trace=None</em>, <em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#ClusterCheck.plot_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.ClusterCheck.plot_2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot 2D clusters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.ClusterCheck.plot_3D">
+<code class="descname">plot_3D</code><span class="sig-paren">(</span><em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#ClusterCheck.plot_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.ClusterCheck.plot_3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot ratio clusters in 3D.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.report.ClusterCheck.scatter">
+<em class="property">static </em><code class="descname">scatter</code><span class="sig-paren">(</span><em>data</em>, <em>target</em>, <em>codes=None</em>, <em>title=None</em>, <em>axes_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#ClusterCheck.scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.ClusterCheck.scatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot clusters in scatter plot 2D or 3D.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.report.GenerateCodes">
+<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">GenerateCodes</code><span class="sig-paren">(</span><em>colors</em>, <em>s0s</em>, <em>slopes</em>, <em>nsigma</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generate bead code set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>colors</strong> (<em>list of str</em>) – List of coding colors in a list of strings.</li>
+<li><strong>s0s</strong> (<em>liat of float</em>) – List of standard deviations (SD) at intensity 0 for each encoding color.</li>
+<li><strong>slopes</strong> (<em>float</em>) – List of slopes of the SDs versus intensity for each encoding color.</li>
+<li><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate coding levels.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span> <span class="o">=</span> <span class="n">GenerateCodes</span><span class="p">([</span><span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">],</span>
+<span class="go">                                 [0.0039, 0.0055, 0.0029],</span>
+<span class="go">                                 [0.022, 0.016, 0.049], 6.4)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span><span class="o">.</span><span class="n">result</span>
+<span class="go">           Dy        Sm        Tm</span>
+<span class="go">0    0.000000  0.000000  0.000000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span> <span class="o">=</span> <span class="n">GenerateCodes</span><span class="p">([</span><span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">],</span>
+<span class="go">                                 [0.0039, 0.0055],</span>
+<span class="go">                                 [0.022, 0.016], 8.4)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+<span class="go">Number of codes:  24</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span><span class="o">.</span><span class="n">result</span>
+<span class="go">          Dy        Sm</span>
+<span class="go">0   0.000000  0.000000</span>
+<span class="go">1   0.000000  0.106747</span>
+<span class="go">2   0.000000  0.246642</span>
+<span class="go">......................</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="mi">28</span><span class="p">)</span>
+<span class="go">....................</span>
+<span class="go">Number of codes:  26</span>
+<span class="go">Number of codes:  26</span>
+<span class="go">Number of codes:  28</span>
+<span class="go">Final nsigma:  8.09</span>
+<span class="go">Iterations  :  31</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="mrbles.report.GenerateCodes.axis">
+<code class="descname">axis</code><a class="headerlink" href="#mrbles.report.GenerateCodes.axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of axis (colors).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.report.GenerateCodes.colors">
+<code class="descname">colors</code><a class="headerlink" href="#mrbles.report.GenerateCodes.colors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return color names.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.GenerateCodes.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>nsigma=None</em>, <em>depends=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate codes with default nsigma or given nsigma.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nsigma</strong> (<em>float, optional</em>) – The number of SD to separate coding levels.
+Defaults to initial nsigma.</li>
+<li><strong>depends</strong> (<em>any, experimental, optional</em>) – Used for Tm (3rd in array) dependence on Dy (1st array).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.report.GenerateCodes.get_levels">
+<em class="property">static </em><code class="descname">get_levels</code><span class="sig-paren">(</span><em>std0</em>, <em>slope</em>, <em>nsigma</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.get_levels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.get_levels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict the number of levels of a coding color.</p>
+<p>The coding levels are based on s0, the standard deviation (SD) at
+intensity 0, and the slope between intensity and SD.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>std0</strong> (<em>float</em>) – The SD at intensity 0.</li>
+<li><strong>slope</strong> (<em>float</em>) – The slope of the SD versus intensity.</li>
+<li><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate levels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>levels</strong> – Returns list of codes values for a given coding color.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.GenerateCodes.iterate">
+<code class="descname">iterate</code><span class="sig-paren">(</span><em>num</em>, <em>nsimga_start=None</em>, <em>nsigma_step=0.01</em>, <em>max_iter=1000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.iterate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate nsigma until number of codes are found.</p>
+<p>Does not work with dependence, such as Tm dependence on Dy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>num</strong> (<em>int</em>) – Number of required codes.</li>
+<li><strong>nsigma_start</strong> (<em>float, optional</em>) – Start value of nsigma.
+Defaults to initial nsigma.</li>
+<li><strong>nsigma_step</strong> (<em>float, optional</em>) – Iterarion step.
+Defaults to 0.01</li>
+<li><strong>max_iter</strong> (<em>int, optional</em>) – Maximum iteration steps.
+Defaults to 1000.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.report.GenerateCodes.levels">
+<code class="descname">levels</code><a class="headerlink" href="#mrbles.report.GenerateCodes.levels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of levels.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.report.GenerateCodes.recursive_looper">
+<em class="property">static </em><code class="descname">recursive_looper</code><span class="sig-paren">(</span><em>iterators</em>, <em>pos=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.recursive_looper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.recursive_looper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursive looper.</p>
+<p>Implements the same functionality as nested for loops, but is more
+dynamic. Iterators can either be a list of methods which return
+iterables, a list of iterables, or a combination of both.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.report.GenerateCodes.result">
+<code class="descname">result</code><a class="headerlink" href="#mrbles.report.GenerateCodes.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return resulting ratios.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.GenerateCodes.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export to CSV.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.GenerateCodes.to_csv_rep">
+<code class="descname">to_csv_rep</code><span class="sig-paren">(</span><em>filename</em>, <em>repeats</em>, <em>labels=None</em>, <em>pos=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.to_csv_rep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.to_csv_rep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export to CSV, with repeated ratios for bead synthesis.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.report.PeptideScramble">
+<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">PeptideScramble</code><span class="sig-paren">(</span><em>seq</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#PeptideScramble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.PeptideScramble" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Randomizes amino acid sequence</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seq</strong> (<em>string</em>) – Inset amino acid sequence as a string.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>seq</strong> – Returns string of shuffled amino acid sequence.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mrbles.report.PeptideScramble.random">
+<code class="descname">random</code><span class="sig-paren">(</span><em>seq=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#PeptideScramble.random"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.PeptideScramble.random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return randomized amino acid sequence.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.report.QCReport">
+<em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">QCReport</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>MRBLE library Quality Control report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>Pandas DataFrame</em>) – Per beads data.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mrbles.report.QCReport.assay_contamination">
+<code class="descname">assay_contamination</code><span class="sig-paren">(</span><em>pdf_object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.assay_contamination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.assay_contamination" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.bead_size">
+<code class="descname">bead_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.bead_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.bead_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bead size distribution plot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.beads_per_code">
+<code class="descname">beads_per_code</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.beads_per_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.beads_per_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beads per-code distribution plot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.code_stability">
+<code class="descname">code_stability</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.code_stability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.code_stability" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate QC report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</li>
+<li><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
+Defaults to False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.html_report">
+<code class="descname">html_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.html_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.html_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate HTML report.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.npl_covar_plots">
+<code class="descname">npl_covar_plots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.npl_covar_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.npl_covar_plots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mrbles.report.QCReport.npl_plots">
+<code class="descname">npl_plots</code><span class="sig-paren">(</span><em>pdf_object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.npl_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.npl_plots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mrbles.report.circle_overlay">
+<code class="descclassname">mrbles.report.</code><code class="descname">circle_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>dims=None</em>, <em>ring=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#circle_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.circle_overlay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Circle Overlay Image.</p>
+<p>Overlay image with circles of labeled mask.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mrbles.report.image_overlay">
+<code class="descclassname">mrbles.report.</code><code class="descname">image_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>image_blend</em>, <em>alpha=0.2</em>, <em>cmap_image='Greys_r'</em>, <em>cmap_blend='jet'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#image_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.image_overlay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overlay 2 Images.
+Overlay of 2 images using alpha blend.</p>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -43,6 +412,14 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mrbles.report module</a><ul>
+<li><a class="reference internal" href="#quality-control-report-classes-and-functions">Quality Control Report Classes and Functions</a></li>
+</ul>
+</li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -72,6 +449,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.12.0 documentation</a> &#187;</li> 
       </ul>
     </div>

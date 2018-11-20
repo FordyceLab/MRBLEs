@@ -27,6 +27,9 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="mrbles.report.html" title="mrbles.report"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -41,8 +44,72 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="mrbles-pipeline">
-<h1>mrbles.pipeline<a class="headerlink" href="#mrbles-pipeline" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mrbles.pipeline">
+<span id="mrbles-pipeline"></span><h1>mrbles.pipeline<a class="headerlink" href="#module-mrbles.pipeline" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pipeline-classes-and-functions">
+<h2>Pipeline Classes and functions<a class="headerlink" href="#pipeline-classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<p>This files contains the pipeline for the MRBLEs analysis.</p>
+<div class="figure align-center">
+<img alt="../_images/pipeline-diagram.png" src="../_images/pipeline-diagram.png" />
+</div>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stats</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stats_norm</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stats_per_channel_and_code</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stats_per_code</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_weighted_stats</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Analyze" title="mrbles.pipeline.Analyze"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Analyze</span></code></a>(dataframe[,&nbsp;seq_list,&nbsp;images,&nbsp;masks])</td>
+<td>Analyze data MRBLE data and return per-code statistics.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Decode" title="mrbles.pipeline.Decode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Decode</span></code></a>(target[,&nbsp;seq_list,&nbsp;decode_channels])</td>
+<td>Decode MRBLEs.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Extract" title="mrbles.pipeline.Extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Extract</span></code></a>([function])</td>
+<td>Extract data from images using masks.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Find" title="mrbles.pipeline.Find"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Find</span></code></a>(bead_size[,&nbsp;pixel_size,&nbsp;border_clear,&nbsp;…])</td>
+<td>Find MRBLEs in brightfield images.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Images" title="mrbles.pipeline.Images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Images</span></code></a>([folders,&nbsp;file_patterns,&nbsp;data,&nbsp;channels])</td>
+<td>Load images into mrbles dataframe.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Ratio" title="mrbles.pipeline.Ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ratio</span></code></a>(reference_spectra[,&nbsp;background])</td>
+<td>Generate spectrally unmix ratio images.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.References" title="mrbles.pipeline.References"><code class="xref py py-obj docutils literal notranslate"><span class="pre">References</span></code></a>(folders,&nbsp;files,&nbsp;object_channel,&nbsp;…)</td>
+<td>Create reference spectra.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../source/mrbles.pipeline.html#mrbles.pipeline.Settings" title="mrbles.pipeline.Settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Settings</span></code></a>(objects,&nbsp;object_names)</td>
+<td>Settings object.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -51,6 +118,14 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mrbles.pipeline</a><ul>
+<li><a class="reference internal" href="#pipeline-classes-and-functions">Pipeline Classes and functions</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="mrbles.path.html"
                         title="previous chapter">mrbles.path</a></p>
@@ -86,6 +161,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="mrbles.report.html" title="mrbles.report"
              >next</a> |</li>

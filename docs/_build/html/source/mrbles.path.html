@@ -24,6 +24,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.12.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
@@ -33,8 +36,76 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="mrbles-path-module">
-<h1>mrbles.path module<a class="headerlink" href="#mrbles-path-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mrbles.path">
+<span id="mrbles-path-module"></span><h1>mrbles.path module<a class="headerlink" href="#module-mrbles.path" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="mrble-path-classes-and-functions">
+<h2>MRBLE-Path Classes and Functions<a class="headerlink" href="#mrble-path-classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<p>This file stores the MRBLE-Path classes and functions for the MRBLEs Analysis
+module.</p>
+<dl class="class">
+<dt id="mrbles.path.PathUnmix">
+<em class="property">class </em><code class="descclassname">mrbles.path.</code><code class="descname">PathUnmix</code><span class="sig-paren">(</span><em>references</em>, <em>blast=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
+<p>MRBLE-Path unmixing algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>references</strong> (<em>Pandas DataFrame</em>) – Dataframe with reference spectra.</li>
+<li><strong>blast</strong> (<em>bool</em>) – Setting to convert blast E-scores.
+Defaults to True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="staticmethod">
+<dt id="mrbles.path.PathUnmix.blast_convert">
+<em class="property">static </em><code class="descname">blast_convert</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.blast_convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.blast_convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert and invert BLAST E-values to 0-1 reference spectra.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.path.PathUnmix.generate_test_refs">
+<em class="property">static </em><code class="descname">generate_test_refs</code><span class="sig-paren">(</span><em>channels</em>, <em>spike_channel=None</em>, <em>signal_max=65536</em>, <em>scale=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.generate_test_refs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.generate_test_refs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate test reference spectra.</p>
+<dl class="docutils">
+<dt>spike_channel <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of channel numbers to spike.</dd>
+<dt>signal_max <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Maximum value.
+Defaults to 2**16: 65536.</dd>
+<dt>scale <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>Scale to 1.
+Defaults to True.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.path.PathUnmix.unmix">
+<code class="descname">unmix</code><span class="sig-paren">(</span><em>data</em>, <em>signal</em>, <em>z_score=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.unmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.unmix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unmix data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains the various sets.</li>
+<li><strong>signal</strong> (<em>str</em>) – Column with signal data.</li>
+<li><strong>z_score</strong> (<em>bool or list</em>) – Convert to Z-score if set to True, or uses mean and SD values of
+provided list position 0 is mean, position 1 is SD.
+Defaults to True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -43,6 +114,14 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mrbles.path module</a><ul>
+<li><a class="reference internal" href="#mrble-path-classes-and-functions">MRBLE-Path Classes and Functions</a></li>
+</ul>
+</li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -72,6 +151,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.12.0 documentation</a> &#187;</li> 
       </ul>
     </div>

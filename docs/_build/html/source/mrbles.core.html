@@ -24,6 +24,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.12.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
@@ -33,8 +36,576 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="mrbles-core-module">
-<h1>mrbles.core module<a class="headerlink" href="#mrbles-core-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mrbles.core">
+<span id="mrbles-core-module"></span><h1>mrbles.core module<a class="headerlink" href="#module-mrbles.core" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="core-classes-and-functions">
+<h2>Core Classes and Functions<a class="headerlink" href="#core-classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<p>This file stores the core classes and functions for the MRBLEs Analysis module.</p>
+<dl class="class">
+<dt id="mrbles.core.Classify">
+<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">Classify</code><span class="sig-paren">(</span><em>target</em>, <em>sigma=1e-05</em>, <em>train=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Classification of beads by Gaussian Mixture Model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>target</strong> (<em>list, NumPy array</em>) – List of target ratios.</li>
+<li><strong>tol</strong> (<em>float</em>) – Tolerance.
+Defaults to 1e-5.</li>
+<li><strong>min_covar</strong> (<em>float</em>) – Minimum covariance.
+Defaults to 1e-7.</li>
+<li><strong>sigma</strong> (<em>float</em>) – …
+Defaults to 1e-5.</li>
+<li><strong>train</strong> (<em>boolean</em>) – Sets training mode. Remembers covariance matrix or resets to initial
+covariance matrix.
+Defaults to False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mrbles.core.Classify.code_metrics">
+<code class="descname">code_metrics</code><span class="sig-paren">(</span><em>nsigma=3</em>, <em>resolution=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify.code_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify.code_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return code metrics.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.Classify.decode">
+<code class="descname">decode</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode mrbles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.Classify.ellipsoids">
+<code class="descname">ellipsoids</code><span class="sig-paren">(</span><em>nsigma</em>, <em>resolution=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify.ellipsoids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify.ellipsoids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create CI ellipsoids.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.found">
+<code class="descname">found</code><a class="headerlink" href="#mrbles.core.Classify.found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return found codes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.init_covars">
+<code class="descname">init_covars</code><a class="headerlink" href="#mrbles.core.Classify.init_covars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return initial covariance matrix.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.init_weights">
+<code class="descname">init_weights</code><a class="headerlink" href="#mrbles.core.Classify.init_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return initial weights.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.log_prob">
+<code class="descname">log_prob</code><a class="headerlink" href="#mrbles.core.Classify.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return log probabilities.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.means">
+<code class="descname">means</code><a class="headerlink" href="#mrbles.core.Classify.means" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return means.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.missing">
+<code class="descname">missing</code><a class="headerlink" href="#mrbles.core.Classify.missing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return missing codes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.output">
+<code class="descname">output</code><a class="headerlink" href="#mrbles.core.Classify.output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return codes, probability and log probability.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.probs">
+<code class="descname">probs</code><a class="headerlink" href="#mrbles.core.Classify.probs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return probabilities.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.Classify.stds">
+<code class="descname">stds</code><a class="headerlink" href="#mrbles.core.Classify.stds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Choleski based SD.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.Classify.unit_sphere">
+<em class="property">static </em><code class="descname">unit_sphere</code><span class="sig-paren">(</span><em>resolution=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify.unit_sphere"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify.unit_sphere" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return unit sphere.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.core.FindBeadsCircle">
+<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">FindBeadsCircle</code><span class="sig-paren">(</span><em>min_r</em>, <em>max_r</em>, <em>param_1=10</em>, <em>param_2=10</em>, <em>annulus_width=2</em>, <em>min_dist=None</em>, <em>enlarge=1</em>, <em>auto_filt=True</em>, <em>border_clear=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Find and identify bead objects from image.</p>
+<p>Parameters changes for each setup/magnification/bead-set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>min_r</strong> (<em>int</em>) – Sets the minimum diameter of the bead in pixels.</li>
+<li><strong>max_r</strong> (<em>int</em>) – Sets the maximum diameter of the bead in pixels.</li>
+<li><strong>param_1</strong> (<em>int</em>) – Sets the gradient steepness. CHECK</li>
+<li><strong>param_2</strong> (<em>int</em>) – Sets the sparsity. CHECK</li>
+<li><strong>annulus_width</strong> (<em>int, optional</em>) – Sets the width of the annulus in pixels.
+Defaults to 2 pixels.</li>
+<li><strong>min_dist</strong> (<em>int, optional</em>) – Sets the minimal distance between the centers of the beads in pixels.
+Defaults to 2x of the minimum diameter (min_r).</li>
+<li><strong>enlarge</strong> (<em>float, optional</em>) – Enlarges the found diameter by this factor.
+1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
+Defaults to 1, no enlarging/shrinking.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsCircle.circle_mask">
+<em class="property">static </em><code class="descname">circle_mask</code><span class="sig-paren">(</span><em>image</em>, <em>min_dist</em>, <em>min_r</em>, <em>max_r</em>, <em>param_1</em>, <em>param_2</em>, <em>enlarge</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.circle_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.circle_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find initial circles using Hough transform and return mask.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsCircle.circle_separate">
+<em class="property">static </em><code class="descname">circle_separate</code><span class="sig-paren">(</span><em>mask</em>, <em>circles</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.circle_separate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.circle_separate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and separate circles using watershed on initial mask.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsCircle.circles_dim">
+<code class="descname">circles_dim</code><a class="headerlink" href="#mrbles.core.FindBeadsCircle.circles_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return circle dimensions.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsCircle.convert">
+<em class="property">static </em><code class="descname">convert</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>8 Bit Convert.</p>
+<p>Checks image data type and converts if necessary to uint8 array.
+image : M x N image array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.FindBeadsCircle.create_annulus_mask">
+<code class="descname">create_annulus_mask</code><span class="sig-paren">(</span><em>labeled_mask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.create_annulus_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.create_annulus_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create annulus mask from regular mask.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.FindBeadsCircle.find">
+<code class="descname">find</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find objects in image and return data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsCircle.labeled_annulus_mask">
+<code class="descname">labeled_annulus_mask</code><a class="headerlink" href="#mrbles.core.FindBeadsCircle.labeled_annulus_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return labeled annulus mask.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsCircle.labeled_mask">
+<code class="descname">labeled_mask</code><a class="headerlink" href="#mrbles.core.FindBeadsCircle.labeled_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return labeled mask.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.FindBeadsCircle.overlay_image">
+<code class="descname">overlay_image</code><span class="sig-paren">(</span><em>image</em>, <em>annulus=None</em>, <em>dim=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.overlay_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.overlay_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overlay image with circles of labeled mask.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.core.FindBeadsImaging">
+<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">FindBeadsImaging</code><span class="sig-paren">(</span><em>bead_size</em>, <em>border_clear=True</em>, <em>circle_size=None</em>, <em>parallelize=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame" title="mrbles.data.ImageDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.ImageDataFrame</span></code></a></p>
+<p>Find and identify beads and their regions using imaging.</p>
+<p>Parallel computing version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</li>
+<li><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
+Defaults to True.</li>
+<li><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#mrbles.core.FindBeadsImaging.area_min" title="mrbles.core.FindBeadsImaging.area_min"><strong>area_min</strong></a> (<em>float</em>) – Sets the minimum area in pixels. Set to minimum size inside of ring.
+Defaults to 0.1 * area of set bead_size.</li>
+<li><a class="reference internal" href="#mrbles.core.FindBeadsImaging.area_max" title="mrbles.core.FindBeadsImaging.area_max"><strong>area_max</strong></a> (<em>float</em>) – Sets the maximum area in pixels. Set maximum size outside of ring.
+Defaults to 1.5 * area of set bead_size.</li>
+<li><a class="reference internal" href="#mrbles.core.FindBeadsImaging.eccen_max" title="mrbles.core.FindBeadsImaging.eccen_max"><strong>eccen_max</strong></a> (<em>float</em>) – Get or set maximum eccentricity of beads in value 0 to 1, where a
+perfect circle is 0.
+Defaults to 0.65.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.area_max">
+<code class="descname">area_max</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.area_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set minimum area of beads (circles) in pixels.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.area_min">
+<code class="descname">area_min</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.area_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set minimum area of beads (circles) in pixels.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.bead_dims">
+<code class="descname">bead_dims</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.bead_dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return found bead dimensions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.bead_labels">
+<code class="descname">bead_labels</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.bead_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all positive labels of labeled mask.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.bead_num">
+<code class="descname">bead_num</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.bead_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of beads labeled mask.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.bead_size">
+<code class="descname">bead_size</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.bead_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set approximate width of beads (circles) in pixels.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.circle_area">
+<em class="property">static </em><code class="descname">circle_area</code><span class="sig-paren">(</span><em>diameter</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.circle_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.circle_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return area of circle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>diameter</strong> (<em>float</em>) – Diameter of circle.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mrbles.core.FindBeadsImaging.circle_roi">
+<em class="property">classmethod </em><code class="descname">circle_roi</code><span class="sig-paren">(</span><em>image</em>, <em>circle_size</em>, <em>hough_settings=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.circle_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.circle_roi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a circular image ROI.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>NumPy array image</em>)</li>
+<li><strong>hough_settings</strong> (<em>list, int</em>) – Settings for HoughCircles in list.
+list[0] = dp, list[1] = param1, list[2] = param2</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.cross_overlay">
+<em class="property">static </em><code class="descname">cross_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>dims</em>, <em>color=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.cross_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.cross_overlay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create image with overlay crosses.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.eccen_max">
+<code class="descname">eccen_max</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.eccen_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set maximum eccentricity of beads from 0 to 1.</p>
+<p>A perfect circle is 0 and parabola is 1.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.eccentricity">
+<em class="property">static </em><code class="descname">eccentricity</code><span class="sig-paren">(</span><em>axis_a</em>, <em>axis_b</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.eccentricity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.eccentricity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return eccentricity by major axes.</p>
+<p>Parameters:
+axis_a : float</p>
+<blockquote>
+<div>Size major axis a.</div></blockquote>
+<dl class="docutils">
+<dt>axis_b <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Size major axis b.</dd>
+</dl>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mrbles.core.FindBeadsImaging.filter_mask">
+<em class="property">classmethod </em><code class="descname">filter_mask</code><span class="sig-paren">(</span><em>mask</em>, <em>filter_params</em>, <em>filter_names</em>, <em>slice_types</em>, <em>border_clear=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.filter_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.filter_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter labeled mask based on provided parameters.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mrbles.core.FindBeadsImaging.filter_properties">
+<em class="property">classmethod </em><code class="descname">filter_properties</code><span class="sig-paren">(</span><em>properties</em>, <em>filter_params</em>, <em>filter_names</em>, <em>slice_types</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.filter_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.filter_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get labels of areas outside of limits.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.filter_property">
+<em class="property">static </em><code class="descname">filter_property</code><span class="sig-paren">(</span><em>properties</em>, <em>filter_param</em>, <em>filter_name</em>, <em>slice_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.filter_property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.filter_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get labels of beads outside/inside/up/down of propert limits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>properties</strong> (<em>photutils table</em>) – Table with feature properties from labeled mask.
+&gt;&gt;&gt; from photutils import source_properties, properties_table
+&gt;&gt;&gt; tbl = properties_table(properties)
+&gt;&gt;&gt; properties = source_properties(mask, mask)</li>
+<li><strong>filter_param</strong> (<em>float, int, list</em>) – Parameters to filter by.
+If provided a list it will filter by range, inside or outside).
+If provided a value it filter up or down that value.</li>
+<li><strong>slice_type</strong> (<em>string</em>) – ‘outside’ : &lt; &gt;
+‘inside’  : &gt;= &lt;=
+‘up’      : &gt;
+‘down’    : &lt;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.FindBeadsImaging.find">
+<code class="descname">find</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute finding beads image(s).</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.get_dimensions">
+<em class="property">static </em><code class="descname">get_dimensions</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.get_dimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.get_dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get dimensions of labeled regions in labeled mask.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.get_unique_count">
+<em class="property">static </em><code class="descname">get_unique_count</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.get_unique_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.get_unique_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get count of unique positive values from labeled mask.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.get_unique_values">
+<em class="property">static </em><code class="descname">get_unique_values</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.get_unique_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.get_unique_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all unique positive values from labeled mask.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.FindBeadsImaging.img2bin">
+<code class="descname">img2bin</code><span class="sig-paren">(</span><em>image</em>, <em>thr_block=15</em>, <em>thr_c=11</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.img2bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.img2bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert and adaptive threshold image.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mrbles.core.FindBeadsImaging.make_mask_outside">
+<em class="property">classmethod </em><code class="descname">make_mask_outside</code><span class="sig-paren">(</span><em>mask</em>, <em>size</em>, <em>buffer=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.make_mask_outside"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.make_mask_outside" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return labeled mask of area around bead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.FindBeadsImaging.mask">
+<code class="descname">mask</code><span class="sig-paren">(</span><em>mask_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return labeled mask of the specified mask type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mrbles.core.FindBeadsImaging.mask_types">
+<code class="descname">mask_types</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.mask_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of mask types.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.sector_mask">
+<em class="property">static </em><code class="descname">sector_mask</code><span class="sig-paren">(</span><em>shape</em>, <em>center</em>, <em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.sector_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.sector_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean mask for a circular ROI.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.FindBeadsImaging.show_image_overlay">
+<em class="property">static </em><code class="descname">show_image_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>image_blend</em>, <em>alpha=0.3</em>, <em>cmap1='Greys_r'</em>, <em>cmap2='jet'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.show_image_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.show_image_overlay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overlay of 2 images using alpha blend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>NumPy array</em>) – Base image.</li>
+<li><strong>image_blend</strong> (<em>NumPy arra</em>) – Image to blend over base image.</li>
+<li><strong>aplha</strong> (<em>float</em>) – Amount of blending. Value between 0 and 1.
+Defaults to 0.3.</li>
+<li><strong>c_map1</strong> (<em>cmap</em>) – Color scheme using cmap. See matplotlib for color schemes.
+Defaults to ‘Greys_r’, which are reversed grey values.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.core.ICP">
+<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">ICP</code><span class="sig-paren">(</span><em>target</em>, <em>matrix_method='std'</em>, <em>offset=None</em>, <em>max_iter=100</em>, <em>tol=0.0001</em>, <em>outlier_pct=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Iterative Closest Point (ICP).</p>
+<p>Iterative Closest Point (ICP) algorithm to minimize the difference
+between two clouds of points.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>matrix_method</strong> (<em>string/function/list, optional</em>) – Transformation matrix method. Standard methods: ‘max’, ‘mean’, ‘std’.
+Other options: own function or list of initial guesses.
+Defaults to ‘std’.</li>
+<li><strong>offset</strong> (<em>list of float, optional</em>)</li>
+<li><strong>max_iter</strong> (<em>int, optional</em>) – Maximum number of iterations.
+Defaults to 100.</li>
+<li><strong>tol</strong> (<em>float, optional</em>) – Convergence threshold. ICP will stop after delta &lt; tol.
+Defaults to 1e-4.</li>
+<li><strong>outlier_pct</strong> (<em>float, optional</em>) – Discard percentile 0.x of furthest distance from target. Percentile
+given in fraction [0-1], e.g. ‘0.001’.
+Defaults to 0.</li>
+<li><strong>train</strong> (<em>boolean</em>) – Turn on (True) or off (False) traning mode.
+This will keep the current tranformation from resetting to default
+initial values.
+Defaults to True.</li>
+<li><strong>echo</strong> (<em>boolean</em>) – Turn on (True) or off (False) printing information while in process.
+Prints the delta for each iteration, the final number of iterations,
+and the final transformation and offset matrices.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>matrix</strong> (<em>NumPy array</em>) – This stores the transformation matrix.</li>
+<li><strong>offset</strong> (<em>NumPy vector</em>) – This stores the offset vector.</li>
+<li><strong>Functions</strong> – </li>
+<li><strong>---------</strong> – </li>
+<li><a class="reference internal" href="#mrbles.core.ICP.fit" title="mrbles.core.ICP.fit"><strong>fit</strong></a> (<em>function</em>) – Function to find ICP using set parameters and attributes.</li>
+<li><a class="reference internal" href="#mrbles.core.ICP.transform" title="mrbles.core.ICP.transform"><strong>transform</strong></a> (<em>function</em>) – Function to apply transformat data using current transformation matrix
+and offset vector.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mrbles.core.ICP.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>data</em>, <em>target=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit Iterative Closest Point.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mrbles.core.ICP.matrix_create">
+<em class="property">static </em><code class="descname">matrix_create</code><span class="sig-paren">(</span><em>func</em>, <em>input1</em>, <em>input2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.matrix_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.matrix_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create identity matrix and set values with function on inputs e.g ‘np.mean’.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>func</strong> (<em>function</em>) – Function to apply on input1 divided by input2, e.g. ‘np.std’.
+Insert function without function call: ().</li>
+<li><strong>input1</strong> (<em>list, ndarray</em>)</li>
+<li><strong>input2</strong> (<em>list, ndarray</em>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matrix</strong> – Returns func(input1/input2)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mrbles.core.ICP.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply transformation matrix to data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mrbles.core.SpectralUnmixing">
+<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">SpectralUnmixing</code><span class="sig-paren">(</span><em>ref_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#SpectralUnmixing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.SpectralUnmixing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame" title="mrbles.data.ImageDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.ImageDataFrame</span></code></a></p>
+<p>Spectrally unmix images using reference spectra.</p>
+<p>Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images
+to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for
+each dye.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ref_data</strong> (<em>list, ndarray, Pandas DataFrame, mrbles.data.References</em>) – Reference spectra for each dye channel as Numpy Array: N x M, where N
+are the spectral channels and M the dye channels.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mrbles.core.SpectralUnmixing.unmix">
+<code class="descname">unmix</code><span class="sig-paren">(</span><em>images</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#SpectralUnmixing.unmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.SpectralUnmixing.unmix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unmix images based on initiated reference data.</p>
+<p>Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm
+images to Dy, Sm and Tm nanophospohorous lanthanides using reference
+spectra for each dye.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image_data</strong> (<em>NumPy array, Xarry DataArray, mrbles.Images</em>) – Spectral images as NumPy array: N x M x P,
+where N are the spectral channels and M x P the image pixels
+(Y x X).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mrbles.core.accepts">
+<code class="descclassname">mrbles.core.</code><code class="descname">accepts</code><span class="sig-paren">(</span><em>*types</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#accepts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.accepts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check input parameters for data types.</p>
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -43,6 +614,14 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mrbles.core module</a><ul>
+<li><a class="reference internal" href="#core-classes-and-functions">Core Classes and Functions</a></li>
+</ul>
+</li>
+</ul>
+
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -72,6 +651,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.12.0 documentation</a> &#187;</li> 
       </ul>
     </div>

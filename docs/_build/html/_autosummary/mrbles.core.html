@@ -27,6 +27,9 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="mrbles.data.html" title="mrbles.data"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -41,8 +44,48 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="mrbles-core">
-<h1>mrbles.core<a class="headerlink" href="#mrbles-core" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-mrbles.core">
+<span id="mrbles-core"></span><h1>mrbles.core<a class="headerlink" href="#module-mrbles.core" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="core-classes-and-functions">
+<h2>Core Classes and Functions<a class="headerlink" href="#core-classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<p>This file stores the core classes and functions for the MRBLEs Analysis module.</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.core.html#mrbles.core.accepts" title="mrbles.core.accepts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">accepts</span></code></a>(*types)</td>
+<td>Check input parameters for data types.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.core.html#mrbles.core.Classify" title="mrbles.core.Classify"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Classify</span></code></a>(target[,&nbsp;sigma,&nbsp;train])</td>
+<td>Classification of beads by Gaussian Mixture Model.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../source/mrbles.core.html#mrbles.core.FindBeadsCircle" title="mrbles.core.FindBeadsCircle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FindBeadsCircle</span></code></a>(min_r,&nbsp;max_r[,&nbsp;param_1,&nbsp;…])</td>
+<td>Find and identify bead objects from image.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.core.html#mrbles.core.FindBeadsImaging" title="mrbles.core.FindBeadsImaging"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FindBeadsImaging</span></code></a>(bead_size[,&nbsp;border_clear,&nbsp;…])</td>
+<td>Find and identify beads and their regions using imaging.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../source/mrbles.core.html#mrbles.core.ICP" title="mrbles.core.ICP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ICP</span></code></a>(target[,&nbsp;matrix_method,&nbsp;offset,&nbsp;…])</td>
+<td>Iterative Closest Point (ICP).</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../source/mrbles.core.html#mrbles.core.SpectralUnmixing" title="mrbles.core.SpectralUnmixing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectralUnmixing</span></code></a>(ref_data)</td>
+<td>Spectrally unmix images using reference spectra.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -51,6 +94,14 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mrbles.core</a><ul>
+<li><a class="reference internal" href="#core-classes-and-functions">Core Classes and Functions</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="../readme.html"
                         title="previous chapter">MRBLEs Analysis Package</a></p>
@@ -86,6 +137,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="mrbles.data.html" title="mrbles.data"
              >next</a> |</li>

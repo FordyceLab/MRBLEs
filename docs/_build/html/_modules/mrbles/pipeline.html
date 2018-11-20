@@ -1,0 +1,1357 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mrbles.pipeline &#8212; mrbles 0.12.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mrbles.pipeline</h1><div class="highlight"><pre>
+<span></span><span class="c1"># !/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Pipeline Classes and functions</span>
+<span class="sd">==============================</span>
+
+<span class="sd">This files contains the pipeline for the MRBLEs analysis.</span>
+
+<span class="sd">.. figure::  ../images/pipeline-diagram.png</span>
+<span class="sd">   :align:   center</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># [Future imports]</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">super</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">object</span><span class="p">)</span>
+
+<span class="c1"># [File header]     | Copy and edit for each file in this project!</span>
+<span class="c1"># title             : simp.py</span>
+<span class="c1"># description       : MRBLEs - Simplified and condensed functions.</span>
+<span class="c1"># author            : Bjorn Harink</span>
+<span class="c1"># credits           :</span>
+<span class="c1"># date              : 20170219</span>
+
+<span class="c1"># [Modules]</span>
+<span class="c1"># General Python</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="c1"># import warnings</span>
+<span class="c1"># import sys</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="k">import</span> <span class="n">randint</span>
+
+<span class="c1"># Other</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span> <span class="k">as</span> <span class="n">ndi</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">silhouette_score</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">weightedstats</span> <span class="k">as</span> <span class="nn">ws</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">skimage.external</span> <span class="k">import</span> <span class="n">tifffile</span> <span class="k">as</span> <span class="n">tff</span>
+
+<span class="c1"># # Plotting</span>
+<span class="c1"># import plotly.graph_objs as go</span>
+<span class="c1"># from plotly.offline import init_notebook_mode, iplot # For plotly offline mode</span>
+
+<span class="c1"># Intra-Package dependencies</span>
+<span class="kn">import</span> <span class="nn">mrbles</span>
+<span class="kn">from</span> <span class="nn">mrbles.core</span> <span class="k">import</span> <span class="n">FindBeadsImaging</span><span class="p">,</span> <span class="n">ICP</span><span class="p">,</span> <span class="n">Classify</span><span class="p">,</span> <span class="n">SpectralUnmixing</span>
+<span class="kn">from</span> <span class="nn">mrbles.data</span> <span class="k">import</span> <span class="n">ImageSetRead</span><span class="p">,</span> <span class="n">ImageDataFrame</span><span class="p">,</span> <span class="n">TableDataFrame</span>
+<span class="kn">from</span> <span class="nn">mrbles.report</span> <span class="k">import</span> <span class="n">ClusterCheck</span><span class="p">,</span> <span class="n">BeadsReport</span><span class="p">,</span> <span class="n">QCReport</span>
+
+
+<span class="c1"># General methods</span>
+
+
+<div class="viewcode-block" id="Settings"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Settings">[docs]</a><span class="k">class</span> <span class="nc">Settings</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Settings object.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objects</span><span class="p">,</span> <span class="n">object_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set attributes for given objects.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">objects</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_names</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">obj</span><span class="p">)</span></div>
+
+
+<span class="c1"># Classes</span>
+
+
+<div class="viewcode-block" id="Images"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images">[docs]</a><span class="k">class</span> <span class="nc">Images</span><span class="p">(</span><span class="n">ImageDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load images into mrbles dataframe.</span>
+
+<span class="sd">    There are two methods to load images into the mrbles dataframe:</span>
+<span class="sd">    Method 1 - Provide dictionaries with folder and filename patterns.</span>
+<span class="sd">    Method 2 - Provide a dictionary with numpy arrays.</span>
+
+<span class="sd">    This class facilitates loading images into the mrbles.data.ImageDataFrame.</span>
+<span class="sd">    Please see this class documentation for more information.</span>
+
+<span class="sd">    For loading OME-TIFF image it uses mrbles.data.ImageSetRead.</span>
+<span class="sd">    Please see this class documentation for more information.</span>
+
+<span class="sd">    Method 1 - Example</span>
+<span class="sd">    ------------------</span>
+<span class="sd">    &gt;&gt;&gt; assay_folder = &#39;../data&#39;</span>
+<span class="sd">    &gt;&gt;&gt; assay_folders = {&#39;Set 1&#39;: &#39;../data1&#39;,</span>
+<span class="sd">                         &#39;Set 2&#39;: &#39;../data2&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; assay_files = {&#39;Set 1&#39;: &#39;image_set1_(0-9)(0-9).ome.tif&#39;,</span>
+<span class="sd">                       &#39;Set 2&#39;: &#39;image_set2_(0-9)(0-9).ome.tif&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; assay_images = mrbles.Images(assay_folder, assay_files)</span>
+<span class="sd">        Found 12 files in Set 1</span>
+<span class="sd">        Found 11 files in Set 2</span>
+
+<span class="sd">    Method 2 - Example</span>
+<span class="sd">    ------------------</span>
+<span class="sd">    &gt;&gt;&gt; image_arrays = {&#39;Set 1&#39;: numpy_array_1,</span>
+<span class="sd">                        &#39;Set 2&#39;: numpy_array_2}</span>
+<span class="sd">    &gt;&gt;&gt; channel_names = [&#39;Brightfield&#39;, &#39;Cy5&#39;, &#39;l-435&#39;, &#39;l-546&#39;, &#39;l-620&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; assay_images = mrbles.Images(data=image_arrays, channels=channel_names)</span>
+
+<span class="sd">    Output - Example</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    &gt;&gt;&gt; assay_images</span>
+<span class="sd">        {&#39;Set 1&#39;: &lt;xarray.DataArray (f: 12, c: 5, y: 1024, x: 1024)&gt;</span>
+<span class="sd">            array([[[[169., ..., 166.],</span>
+<span class="sd">                    ...,</span>
+<span class="sd">                    [101., ..., 121.]]]])</span>
+<span class="sd">            Coordinates:</span>
+<span class="sd">            * c        (c) object &#39;Brightfield&#39;, &#39;Cy5&#39;, &#39;l-435&#39;, &#39;l-546&#39;, ...</span>
+<span class="sd">            Dimensions without coordinates: f, y, x,</span>
+<span class="sd">        &#39;Set 2&#39;: ...</span>
+<span class="sd">    &gt;&gt;&gt; assay_images[&#39;Set 2&#39;, 3, &#39;Brightfield&#39;]</span>
+<span class="sd">        &lt;xarray.DataArray (y: 1024, x: 1024)&gt;</span>
+<span class="sd">        array([[188., 163., 182., ..., 188., 174., 170.],</span>
+<span class="sd">                ...,</span>
+<span class="sd">               [144., 141., 142., ..., 162., 162., 154.]])</span>
+<span class="sd">        Coordinates:</span>
+<span class="sd">            c        &lt;U11 &#39;Brightfield&#39;</span>
+<span class="sd">        Dimensions without coordinates: y, x</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    folders : str, dict</span>
+<span class="sd">        String of single folder or dict of multiple folders.</span>
+<span class="sd">        The folder(s) provided will searched recursively.</span>
+<span class="sd">        Dict keys must match file_patterns dict.</span>
+<span class="sd">    file_patterns : dict</span>
+<span class="sd">        Dict of multiple file patterns.</span>
+<span class="sd">        Dict keys must match folders keys, if multiple folders.</span>
+<span class="sd">    data : NumPy array</span>
+<span class="sd">        Alternative method to loading OME-Tif files.</span>
+<span class="sd">        Load a dict of NumPy arrays with dimension order (f, c, y, x):</span>
+<span class="sd">        files (f), channels (c), Y-dimension (y), X-dimension (x)</span>
+<span class="sd">    channels : list of str</span>
+<span class="sd">        List of channel names.</span>
+<span class="sd">        Defaults to None. Channels will be numbers.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    crop_x : slice</span>
+<span class="sd">        Used for setting ROI slice in the X dimension.</span>
+<span class="sd">    crop_y : slice</span>
+<span class="sd">        Used for setting ROI slice in the Y dimension.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folders</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_patterns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Images</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">folders</span> <span class="o">=</span> <span class="n">folders</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_patterns</span> <span class="o">=</span> <span class="n">file_patterns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">folders</span> <span class="ow">and</span> <span class="n">file_patterns</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_images</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folders</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_patterns</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No files found in </span><span class="si">%s</span><span class="s2"> with given parameters.&quot;</span>
+                              <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%i</span><span class="s2"> files in </span><span class="si">%s</span><span class="s2">&quot;</span>
+                              <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">key</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">channels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">channels</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">data_key</span><span class="p">,</span> <span class="n">data_array</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">data_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+                        <span class="n">data_array</span><span class="p">,</span>
+                        <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">],</span>
+                        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="n">coords</span><span class="p">},</span>
+                        <span class="n">encoding</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">})</span>
+
+<div class="viewcode-block" id="Images.load"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load images in memory.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">ImageSetRead</span><span class="p">(</span><span class="n">file_set</span><span class="p">,</span> <span class="n">series</span><span class="p">)</span><span class="o">.</span><span class="n">xdata</span>
+                           <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">file_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+<div class="viewcode-block" id="Images.add_images"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images.add_images">[docs]</a>    <span class="k">def</span> <span class="nf">add_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add images to dataframe.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Images.rename_channel"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images.rename_channel">[docs]</a>    <span class="k">def</span> <span class="nf">rename_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rename channel name.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        old_name : str</span>
+<span class="sd">            Original name of channel.</span>
+<span class="sd">        new_name : str</span>
+<span class="sd">            New name for old_name channel.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data_array</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">channels</span> <span class="o">=</span> <span class="n">data_array</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="k">if</span> <span class="n">old_name</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_coord</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span>
+                                                              <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+                                                              <span class="n">old_name</span><span class="p">,</span>
+                                                              <span class="n">new_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_coord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span>
+                                                 <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+                                                 <span class="n">old_name</span><span class="p">,</span>
+                                                 <span class="n">new_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Images.flat_field"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images.flat_field">[docs]</a>    <span class="k">def</span> <span class="nf">flat_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ff_image</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">affix</span><span class="o">=</span><span class="s1">&#39;_FF&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flat-Field correction.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ff_image : str, NumPy array</span>
+<span class="sd">            Flat-field image file or NumPy array.</span>
+<span class="sd">        channel : str</span>
+<span class="sd">            Channel to apply flat-field correction.</span>
+<span class="sd">        affix : str</span>
+<span class="sd">            Affix for channel name to be appended.</span>
+<span class="sd">            Defaults to &#39;_FF&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ff_image</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">flat_field</span> <span class="o">=</span> <span class="n">tff</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">ff_image</span><span class="p">)</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">flat_field</span> <span class="o">=</span> <span class="n">ff_image</span>
+        <span class="n">flat_field</span> <span class="o">=</span> <span class="n">flat_field</span> <span class="o">/</span> <span class="n">flat_field</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>  <span class="c1"># Normalize Flat-Field</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">ff_dict_df</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">ff_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">channel</span><span class="p">]]</span>
+                <span class="n">ff_dict_df</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff_df</span> <span class="o">/</span> <span class="n">flat_field</span>
+                <span class="n">ff_dict_df</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_coord</span><span class="p">(</span>
+                    <span class="n">ff_dict_df</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">affix</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">ff_dict_df</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_rename_coord</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rename dimension coordinate in an Xarray DataArray.&quot;&quot;&quot;</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">==</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+        <span class="n">renamed_dataframe</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span>
+                                         <span class="n">dims</span><span class="o">=</span><span class="n">dataframe</span><span class="o">.</span><span class="n">dims</span><span class="p">,</span>
+                                         <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="n">coordinates</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">renamed_dataframe</span>
+
+    <span class="c1"># Private methods</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_find_images</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">folders</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">folders</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">scan_path</span><span class="p">(</span><span class="n">folders</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">pattern</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">files</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">folders</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">scan_path</span><span class="p">(</span><span class="n">folders</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">files</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">files</span>
+
+    <span class="c1"># Static methods</span>
+<div class="viewcode-block" id="Images.scan_path"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images.scan_path">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">scan_path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;*.tif&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Scan folder recursively for files matching the pattern.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : string</span>
+<span class="sd">            Folder path as string, e.g. r&#39;C:/folder/file.tif&#39;.</span>
+<span class="sd">        pattern : string</span>
+<span class="sd">            File extenstion of general file pattern as search string,</span>
+<span class="sd">            e.g. &#39;peptides_x_([0-9][0-9])_MMStack_Pos0.ome.tif&#39;</span>
+<span class="sd">            Defaults to &#39;*.tif&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">reg_object</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+                         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">reg_object</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">file_list</span><span class="p">:</span>
+                <span class="n">image_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">image_files</span><span class="p">:</span>
+            <span class="n">file_names</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">image_files</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">file_names</span></div></div>
+
+
+<div class="viewcode-block" id="Find"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Find">[docs]</a><span class="k">class</span> <span class="nc">Find</span><span class="p">(</span><span class="n">ImageDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find MRBLEs in brightfield images.</span>
+
+<span class="sd">    This class provides the method to find MRBLEs and segment regions for each</span>
+<span class="sd">    MRBLE in brightfield images, provided by mrbles.Images.</span>
+
+<span class="sd">    Mask output: mask_full, mask_ring, mask_inside, mask_outside, mask_bkg, mask_check.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; find_mrbles = mrbles.Find(bead_size=18, pixel_size=3.5, border_clear=True, circle_size=350)</span>
+<span class="sd">    &gt;&gt;&gt; find_mrbles.settings.parallelize = True</span>
+<span class="sd">    &gt;&gt;&gt; find_mrbles.find(assay_images[:, : , &#39;Brightfield&#39;])</span>
+<span class="sd">        Bead diameter AVG: 54.36</span>
+<span class="sd">        Bead diameter SD: 2.00</span>
+<span class="sd">        Bead diameter CV: 3.68%</span>
+<span class="sd">        Total number of beads: 2386</span>
+<span class="sd">    &gt;&gt;&gt; find_mrbles</span>
+<span class="sd">        {&#39;Set 1&#39;: &lt;xarray.DataArray (f: 12, c: 6, y: 1024, x: 1024)&gt;</span>
+<span class="sd">            array([[[[0, ..., 0],</span>
+<span class="sd">                      ...,</span>
+<span class="sd">                     [0, ..., 0]]]], dtype=uint16)</span>
+<span class="sd">            Coordinates:</span>
+<span class="sd">            * c        (c) &lt;U12 &#39;mask_full&#39; &#39;mask_ring&#39; &#39;mask_inside&#39; &#39;mask_outside&#39; ...</span>
+<span class="sd">            Dimensions without coordinates: f, y, x,</span>
+<span class="sd">        &#39;Set 2&#39;: ...</span>
+<span class="sd">    &gt;&gt;&gt; find_mrbles[&#39;Set 2&#39;, 3, &#39;mask_ring&#39;]</span>
+<span class="sd">        &lt;xarray.DataArray (y: 860, x: 860)&gt;</span>
+<span class="sd">        array([[0, 0, 0, ..., 0, 0, 0],</span>
+<span class="sd">                ...,</span>
+<span class="sd">               [0, 0, 0, ..., 0, 0, 0]], dtype=uint16)</span>
+<span class="sd">        Coordinates:</span>
+<span class="sd">            c        &lt;U12 &#39;mask_ring&#39;</span>
+<span class="sd">        Dimensions without coordinates: y, x</span>
+
+<span class="sd">    Super-Class wrapper for mrbles.core.FindBeadsImaging.</span>
+<span class="sd">    Please see this class documentation for more information.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bead_size : int</span>
+<span class="sd">        Approximate width of beads (circles) in pixels.</span>
+<span class="sd">    pixel_size : float</span>
+<span class="sd">        Optional setting for image pixel size. Outputs dimensions using</span>
+<span class="sd">        provided conversion value. Adds additional converted to database with</span>
+<span class="sd">        affic &#39;_conv&#39;.</span>
+<span class="sd">        Defaults to None.</span>
+<span class="sd">    border_clear : boolean</span>
+<span class="sd">        Beads touching border or ROI will be removed.</span>
+<span class="sd">        Defaults to True.</span>
+<span class="sd">    circle_size : int</span>
+<span class="sd">        Set circle size for auto find circular ROI.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bead_dims : Pandas DataFrame</span>
+<span class="sd">        Dataframe with individual MRBLE dimensions.</span>
+<span class="sd">    beads_total : int</span>
+<span class="sd">        Total number of MRBLEs found.</span>
+<span class="sd">    beads_per_set : list of int</span>
+<span class="sd">        Number of MRBLEs per set.</span>
+<span class="sd">    settings : property</span>
+<span class="sd">        Property provinding access to settings of mrbles.core.FindBeadsImaging.</span>
+<span class="sd">        See property documentation for more information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bead_size</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">border_clear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">circle_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Find</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bead_size</span> <span class="o">=</span> <span class="n">bead_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span> <span class="o">=</span> <span class="n">pixel_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bead_objects</span> <span class="o">=</span> <span class="n">FindBeadsImaging</span><span class="p">(</span><span class="n">bead_size</span><span class="o">=</span><span class="n">bead_size</span><span class="p">,</span>
+                                              <span class="n">border_clear</span><span class="o">=</span><span class="n">border_clear</span><span class="p">,</span>
+                                              <span class="n">circle_size</span><span class="o">=</span><span class="n">circle_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Find.find"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Find.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_images</span><span class="p">,</span> <span class="n">combine_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute finding images.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_images</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_find_multi_set</span><span class="p">(</span><span class="n">object_images</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_return_data</span><span class="p">(</span><span class="n">object_images</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;diameter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;radius_conv&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;perimeter_conv&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;perimeter&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;diameter_conv&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;diameter&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;area_conv&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">beads_diameter_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">beads_diameter_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="s2">&quot; (converted)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beads_diameter_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">beads_diameter_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">beads_diameter_cv</span> <span class="o">=</span> <span class="p">(</span><span class="n">beads_diameter_sd</span> <span class="o">/</span> <span class="n">beads_diameter_mean</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bead diameter AVG</span><span class="si">%s</span><span class="s2">: </span><span class="si">%0.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">converted</span><span class="p">,</span> <span class="n">beads_diameter_mean</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bead diameter SD</span><span class="si">%s</span><span class="s2">: </span><span class="si">%0.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">converted</span><span class="p">,</span> <span class="n">beads_diameter_sd</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bead diameter CV</span><span class="si">%s</span><span class="s2">: </span><span class="si">%0.2f%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">converted</span><span class="p">,</span> <span class="n">beads_diameter_cv</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">beads_per_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beads_per_set</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of beads in set </span><span class="si">%s</span><span class="s2">: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total number of beads: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">beads_total</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">combine_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">combine_data</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bead_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return MRBLEs dimensions.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">beads_total</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return total bead count in set(s).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">beads_per_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return total bead count in set(s).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bead_no_list</span> <span class="o">=</span> <span class="p">{</span><span class="n">set_x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">[</span><span class="s1">&#39;set&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">set_x</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">set_x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sets</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bead_no_list</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">bead_no_list</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return list of sets.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">TableDataFrame</span><span class="o">.</span><span class="n">get_set_names</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Find.plot_size_dist"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Find.plot_size_dist">[docs]</a>    <span class="k">def</span> <span class="nf">plot_size_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;diameter_conv&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">b_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">b_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">b_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter</span><span class="o">.</span><span class="n">mean</span>
+        <span class="n">x_left</span> <span class="o">=</span> <span class="n">b_mean</span> <span class="o">-</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">b_std</span><span class="p">)</span>
+        <span class="n">x_right</span> <span class="o">=</span> <span class="n">b_mean</span> <span class="o">+</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">b_std</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgray&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span>
+                <span class="n">left</span><span class="o">=</span><span class="n">x_left</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">x_right</span><span class="p">);</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bead_dims</span><span class="o">.</span><span class="n">diameter_conv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">secondary_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span>
+                <span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">);</span></div>
+
+<div class="viewcode-block" id="Find.inspect"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Find.inspect">[docs]</a>    <span class="k">def</span> <span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">set_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig_num</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display random images from set for inspection.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">img_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="n">img_num</span><span class="p">,</span> <span class="n">fig_num</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">set_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">img_num</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">size</span>
+                       <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_inspect</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">img_num</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">fig_num</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">set_name</span><span class="p">],</span> <span class="n">img_num</span><span class="p">,</span> <span class="n">fig_num</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">set_name</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_inspect</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">img_num</span><span class="p">,</span> <span class="n">fig_num</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">plt_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">fig_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">rand_fig</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">img_num</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">fig_num</span><span class="p">,</span> <span class="n">plt_num</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rand_fig</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Figure #</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rand_fig</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_find_multi_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_image_sets</span><span class="p">):</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">object_image_sets</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_return_data</span><span class="p">(</span><span class="n">image_set</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">image_set</span> <span class="ow">in</span> <span class="n">object_image_sets</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="n">data_masks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="n">data_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="n">result_masks</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">sets</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_masks</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">result_dims</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data_dims</span><span class="p">,</span>
+                                <span class="n">keys</span><span class="o">=</span><span class="n">sets</span><span class="p">,</span>
+                                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;set&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result_masks</span><span class="p">,</span> <span class="n">result_dims</span>
+
+    <span class="k">def</span> <span class="nf">_return_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_images</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bead_objects</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">object_images</span><span class="p">)</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_objects</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">bead_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_objects</span><span class="o">.</span><span class="n">bead_dims</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">bead_dims</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return FindBeadsImaging object for settings purposes.</span>
+
+<span class="sd">        See FindBeadsImaging documentation for detailed settings.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; find_object = Find(bead_size=18)</span>
+<span class="sd">        &gt;&gt;&gt; find_object.settings.area_min = 20</span>
+<span class="sd">        &gt;&gt;&gt; find_object.settings.area_max = 350</span>
+<span class="sd">        &gt;&gt;&gt; find_object.settings.eccen_max = 0.65</span>
+<span class="sd">        &gt;&gt;&gt; find_object.settings.circle_size = 350</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_objects</span></div>
+
+
+<div class="viewcode-block" id="References"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.References">[docs]</a><span class="k">class</span> <span class="nc">References</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create reference spectra.</span>
+
+<span class="sd">    There are three methods to load images into the this class:</span>
+<span class="sd">    Method 1 - Provide a dictionaries with folders and filenames.</span>
+<span class="sd">    Method 2 - Provide a dictionary with numpy arrays.</span>
+<span class="sd">    Method 3 - Provide a file with spectra data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    folders : dict</span>
+<span class="sd">        Dictionary with keywords (e.g. &#39;Dy&#39;, &#39;bkg&#39;) and folders.</span>
+<span class="sd">        Must correspond with files parameter.</span>
+<span class="sd">    files : dict</span>
+<span class="sd">        Dictionary with keywords (e.g. &#39;Dy&#39;, &#39;bkg&#39;) and filenames.</span>
+<span class="sd">        Must correspond with folders parameter.</span>
+<span class="sd">    object_channel : str</span>
+<span class="sd">        Channel to be used for finding MRBLEs</span>
+<span class="sd">    reference_channels : list</span>
+<span class="sd">        List of channel names to be used for generating reference spectra.</span>
+<span class="sd">    bead_size : int</span>
+<span class="sd">        Bead diamater set in pixels.</span>
+<span class="sd">        Defaults to 16.</span>
+<span class="sd">    dark_noise : int</span>
+<span class="sd">        Dark noise of the camera used for the images.</span>
+<span class="sd">        Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    background : str</span>
+<span class="sd">        Name of the background spectrum.</span>
+<span class="sd">        Defaults to &#39;bkg&#39;.</span>
+<span class="sd">    crop_x : slice</span>
+<span class="sd">        Crop X slice. Set with slice().</span>
+<span class="sd">    crop_y : slice</span>
+<span class="sd">        Crop Y slice. Set with slice().</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folders</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">object_channel</span><span class="p">,</span> <span class="n">reference_channels</span><span class="p">,</span>
+                 <span class="n">bead_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">dark_noise</span><span class="o">=</span><span class="mi">99</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">References</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_channel</span> <span class="o">=</span> <span class="n">object_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_channels</span> <span class="o">=</span> <span class="n">reference_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dark_noise</span> <span class="o">=</span> <span class="n">dark_noise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">(</span><span class="n">folders</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_find</span> <span class="o">=</span> <span class="n">Find</span><span class="p">(</span><span class="n">bead_size</span><span class="o">=</span><span class="n">bead_size</span><span class="p">,</span>
+                          <span class="n">border_clear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">circle_size</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bkg_image</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="o">=</span> <span class="s1">&#39;bkg&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crop_x</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crop_y</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span>
+        <span class="c1"># Settings options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;icp&#39;</span><span class="p">,</span> <span class="s1">&#39;gmm&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Return Images and Find objects for settings purposes.</span>
+
+<span class="s2">        Attributes</span>
+<span class="s2">        ----------</span>
+<span class="s2">        images : Images() object</span>
+<span class="s2">            Returns Images() object for settings puproses.</span>
+<span class="s2">            See class documentation for more information.</span>
+<span class="s2">        find : Find() object</span>
+<span class="s2">            Returns Find() object for settings puproses.</span>
+<span class="s2">            See class documentation for more information.</span>
+
+<span class="s2">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="References.load"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.References.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Process all images and generate reference spectra.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="n">spectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">bkg_images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bkg_images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_channels</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bkg_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_channel</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bkg_roi</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">spec_images</span> <span class="o">=</span> <span class="n">ImageDataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">spec_images</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">spec_images</span><span class="o">.</span><span class="n">crop_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_x</span>
+        <span class="n">spec_images</span><span class="o">.</span><span class="n">crop_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">spec_images</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_channel</span><span class="p">])</span>
+        <span class="n">ref_channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span>
+            <span class="n">spectra</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_channels</span><span class="p">]</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dark_noise</span><span class="p">,</span>
+                                  <span class="n">spec_images</span><span class="p">[</span><span class="n">x_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_channels</span><span class="p">],</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="p">[</span><span class="n">x_set</span><span class="p">,</span> <span class="s1">&#39;mask_inside&#39;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">x_set</span> <span class="ow">in</span> <span class="n">spectra</span> <span class="k">if</span> <span class="n">x_set</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="ow">in</span> <span class="n">spectra</span><span class="p">:</span>
+            <span class="n">spectra</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">)</span>
+            <span class="n">spectra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_back</span><span class="p">(</span><span class="n">bkg_images</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                       <span class="n">columns</span><span class="o">=</span><span class="n">spectra</span><span class="p">,</span>
+                                       <span class="n">index</span><span class="o">=</span><span class="n">ref_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;channels&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clean_up</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_clean_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_back</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkg_images</span><span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">bkg_images</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                        <span class="n">bkg_images</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="n">bkg_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_spectrum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bkg_images</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bkg_data</span>
+
+<div class="viewcode-block" id="References.plot"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.References.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">75</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot Reference spectra.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Background slice&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bkg_image</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="References.get_spectrum"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.References.get_spectrum">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_spectrum</span><span class="p">(</span><span class="n">dark_noise</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get spectrum from image set using mask.</span>
+
+<span class="sd">        The median of the masked area is extracted, the camera dark noise</span>
+<span class="sd">        subtracted, and normalized.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dark_noise : int</span>
+<span class="sd">            Intrinsic dark noise of camera. Image taken when shutter closed.</span>
+<span class="sd">        channels : slice, list</span>
+<span class="sd">            Slice of channels</span>
+<span class="sd">        mask : NumPy array</span>
+<span class="sd">            Labeled mask.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ndi</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">])</span>
+        <span class="n">data</span> <span class="o">-=</span> <span class="n">dark_noise</span>  <span class="c1"># Dark noise subtract</span>
+        <span class="n">data</span> <span class="o">/=</span> <span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># Normalize to 1.</span>
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="Ratio"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Ratio">[docs]</a><span class="k">class</span> <span class="nc">Ratio</span><span class="p">(</span><span class="n">ImageDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate spectrally unmix ratio images.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reference_spectra : list, ndarray, References object</span>
+<span class="sd">        List, array, or References object of reference spectra for linear</span>
+<span class="sd">        spectral unmixing.</span>
+<span class="sd">    background : string</span>
+<span class="sd">        Background key label.</span>
+<span class="sd">        Defaults to &#39;bkg&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_spectra</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s1">&#39;bkg&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Ratio</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_spectra</span> <span class="o">=</span> <span class="n">reference_spectra</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="o">=</span> <span class="n">background</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spec_unmix</span> <span class="o">=</span> <span class="n">SpectralUnmixing</span><span class="p">(</span><span class="n">reference_spectra</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Ratio.get"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Ratio.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_sets</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">combine_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate unmixed and ratio images.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image_set : Xarray DataArray, mblres ImageDataFrame</span>
+<span class="sd">            These are the images (emission channels) to be unmixed.</span>
+<span class="sd">        reference : string</span>
+<span class="sd">            Reference key label, e.g. &#39;Eu&#39;, used for ratio images.</span>
+<span class="sd">        comb_data : Xarray DataArray, mblres ImageDataFrame</span>
+<span class="sd">            These are the images that are combined with &#39;image_set&#39;.</span>
+<span class="sd">            Must be same dimensions and type as &#39;image_set&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image_sets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_multi_set</span><span class="p">(</span><span class="n">image_sets</span><span class="p">,</span> <span class="n">reference</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_return_data</span><span class="p">(</span><span class="n">image_sets</span><span class="p">,</span> <span class="n">reference</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">combine_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">combine_data</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_find_multi_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_sets</span><span class="p">,</span> <span class="n">reference</span><span class="p">):</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image_sets</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_return_data</span><span class="p">(</span><span class="n">image_sets</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">reference</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sets</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">sets</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_return_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">reference</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spec_unmix</span><span class="o">.</span><span class="n">unmix</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+        <span class="n">unmix_images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_unmix</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="n">ImageDataFrame</span><span class="o">.</span><span class="n">get_dim_names</span><span class="p">(</span><span class="n">unmix_images</span><span class="p">,</span> <span class="n">set_dim</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">)</span>
+        <span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">reference</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">background</span><span class="p">)</span>
+        <span class="n">ratio_images</span> <span class="o">=</span> <span class="n">unmix_images</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">channels</span><span class="p">)]</span> <span class="o">/</span> \
+            <span class="n">unmix_images</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">reference</span><span class="p">)]</span>
+        <span class="n">ratio_images</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="o">+</span> <span class="s1">&#39;_ratio&#39;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">unmix_images</span><span class="p">,</span> <span class="n">ratio_images</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Extract"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Extract">[docs]</a><span class="k">class</span> <span class="nc">Extract</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract data from images using masks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    function : function</span>
+<span class="sd">        This is the function used to extract data from each bead region. This</span>
+<span class="sd">        can be replaced with any 1 parameter function, e.g. np.mean.</span>
+<span class="sd">        Defaults to np.median.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Extract</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span> <span class="o">=</span> <span class="n">function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_filt</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Extract.get"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Extract.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">combine_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract data from images using masks.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        images : Xarray DataArray, mrbles ImageDataFrame</span>
+<span class="sd">            Images of which to take values from using provided labeled masks.</span>
+<span class="sd">            Must be same number of dimensions as masks.</span>
+<span class="sd">        masks : Xarray DataArray, mrbles ImageDataFrame</span>
+<span class="sd">            Labeled mask of regions to take values from the provided images.</span>
+<span class="sd">            Must be same number of dimensions as images, even if one dimension</span>
+<span class="sd">            is only singular. Therefore, use [] around mask selection, even</span>
+<span class="sd">            when only using a single channel: [&#39;inside&#39;].</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; per_mrble_data = mrbles.Extract(np.median)</span>
+<span class="sd">        &gt;&gt;&gt; per_mrble_data.run(images[&#39;100  nM&#39;, :, [&#39;Cy5&#39;, &#39;Cy3&#39;]],</span>
+<span class="sd">                               masks[&#39;100 nM&#39;, :, [&#39;ring&#39;]])</span>
+<span class="sd">        &gt;&gt;&gt; per_mrble_data.data</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">images</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">f_list</span> <span class="o">=</span> <span class="n">ImageDataFrame</span><span class="o">.</span><span class="n">get_dim_names</span><span class="p">(</span>
+                    <span class="n">images</span><span class="p">,</span> <span class="n">set_dim</span><span class="o">=</span><span class="n">images</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_data_images</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">f</span><span class="p">],</span> <span class="n">masks</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">f_list</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">f_list</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_get_data_images</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">masks</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_append</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">s_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">set_x</span> <span class="ow">in</span> <span class="n">s_list</span><span class="p">:</span>
+                <span class="n">f_list</span> <span class="o">=</span> <span class="n">ImageDataFrame</span><span class="o">.</span><span class="n">get_dim_names</span><span class="p">(</span>
+                    <span class="n">images</span><span class="p">[</span><span class="n">set_x</span><span class="p">],</span> <span class="n">set_dim</span><span class="o">=</span><span class="n">images</span><span class="p">[</span><span class="n">set_x</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_data_images</span><span class="p">(</span><span class="n">images</span><span class="p">[</span><span class="n">set_x</span><span class="p">][</span><span class="n">f</span><span class="p">],</span>
+                                              <span class="n">masks</span><span class="p">[</span><span class="n">set_x</span><span class="p">][</span><span class="n">f</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">f_list</span><span class="p">]</span>
+                <span class="n">data_append</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">f_list</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data_append</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">s_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">flag_name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                <span class="p">[</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="s1">&#39;bead_index&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">rename</span><span class="p">([</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;bead_no&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">combine_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">combine_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_data_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">masks</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="n">images</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_data_masks</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span>
+        <span class="p">}</span>
+        <span class="n">data_flatten</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_dict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data_flatten</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_data_masks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">masks</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">masks</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">masks</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="n">masks</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_get_data</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">masks</span><span class="p">[</span><span class="n">masks</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_get_data</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;mask_lbl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="c1"># idx = cls._get_index(mask)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">labeled_comprehension</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
+                                             <span class="n">mask</span><span class="p">,</span>
+                                             <span class="n">idx</span><span class="p">,</span>
+                                             <span class="n">func</span><span class="p">,</span>
+                                             <span class="nb">float</span><span class="p">,</span>
+                                             <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_index</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">num</span>
+
+<div class="viewcode-block" id="Extract.background_subtract"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Extract.background_subtract">[docs]</a>    <span class="k">def</span> <span class="nf">background_subtract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">bkg_data</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="n">bkg_data</span></div>
+
+<div class="viewcode-block" id="Extract.filter"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Extract.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkg_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">ref_factor</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+               <span class="n">bkg</span><span class="o">=</span><span class="s1">&#39;bkg.mask_full&#39;</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;Eu.mask_inside&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Filter and flag based on unmixed background and reference signal.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bkg_factor : float</span>
+<span class="sd">            Filter factor of Standard Deviations away from mean background</span>
+<span class="sd">            signal.</span>
+<span class="sd">            Defaults to 2.0</span>
+<span class="sd">        ref_factor : float</span>
+<span class="sd">            Filter factor of Standard Deviations within mean of reference</span>
+<span class="sd">            signal.</span>
+<span class="sd">            Defaults to 2.0</span>
+<span class="sd">        bkg : string</span>
+<span class="sd">            Background signal column name.</span>
+<span class="sd">            Defaults to &#39;bkg.mask_full&#39;</span>
+<span class="sd">        ref : string</span>
+<span class="sd">            Reference signal column name.</span>
+<span class="sd">            Defaults to &#39;Eu.mask_inside&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bkg_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">bkg</span><span class="p">]</span>
+        <span class="n">bkg_mean</span> <span class="o">=</span> <span class="n">bkg_data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">bkg_sd</span> <span class="o">=</span> <span class="n">bkg_data</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">mask_bkg</span> <span class="o">=</span> <span class="p">((</span><span class="n">bkg_data</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">bkg_mean</span> <span class="o">-</span> <span class="n">bkg_factor</span> <span class="o">*</span> <span class="n">bkg_sd</span><span class="p">))</span> <span class="o">&amp;</span>
+                    <span class="p">(</span><span class="n">bkg_data</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">bkg_mean</span> <span class="o">+</span> <span class="n">bkg_factor</span> <span class="o">*</span> <span class="n">bkg_sd</span><span class="p">)))</span>
+        <span class="n">ref_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span>
+        <span class="n">ref_mean</span> <span class="o">=</span> <span class="n">ref_data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">ref_sd</span> <span class="o">=</span> <span class="n">ref_data</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">mask_ref</span> <span class="o">=</span> <span class="p">((</span><span class="n">ref_data</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">ref_mean</span> <span class="o">-</span> <span class="n">ref_factor</span> <span class="o">*</span> <span class="n">ref_sd</span><span class="p">))</span> <span class="o">&amp;</span>
+                    <span class="p">(</span><span class="n">ref_data</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">ref_mean</span> <span class="o">+</span> <span class="n">ref_factor</span> <span class="o">*</span> <span class="n">ref_sd</span><span class="p">)))</span>
+        <span class="n">filter_all</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask_bkg</span> <span class="o">&amp;</span> <span class="n">mask_ref</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">flag_name</span><span class="p">]</span> <span class="o">=</span> <span class="o">~</span><span class="n">filter_all</span>
+        <span class="n">num_out</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">flag</span> <span class="o">==</span> <span class="kc">True</span><span class="p">])</span>  <span class="c1"># NOQA</span>
+        <span class="n">num_remain</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">flag</span> <span class="o">==</span> <span class="kc">False</span><span class="p">])</span>  <span class="c1"># NOQA</span>
+        <span class="n">num_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">)</span>
+        <span class="n">num_percentage</span> <span class="o">=</span> <span class="p">((</span><span class="n">num_out</span> <span class="o">/</span> <span class="n">num_total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pre-filter: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num_total</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Post-filter: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num_remain</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filtered: </span><span class="si">%i</span><span class="s2"> (</span><span class="si">%0.1f%%</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_out</span><span class="p">,</span> <span class="n">num_percentage</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Decode"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Decode">[docs]</a><span class="k">class</span> <span class="nc">Decode</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decode MRBLEs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    target : list</span>
+<span class="sd">        List of target ratios</span>
+<span class="sd">    seq_list : Pandas DataFrame</span>
+<span class="sd">        Columns with sequence information.</span>
+<span class="sd">        Defaults to None.</span>
+<span class="sd">    decode_channels : list</span>
+<span class="sd">        Channel names.</span>
+<span class="sd">        Defaults to None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">seq_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decode_channels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Decode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decode_channels</span> <span class="o">=</span> <span class="n">decode_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span> <span class="o">=</span> <span class="n">seq_list</span>
+        <span class="c1"># Instantiate ICP and GMM with default settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icp</span> <span class="o">=</span> <span class="n">ICP</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span> <span class="o">=</span> <span class="n">Classify</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cluster_check</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Setup settings object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_icp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;icp&#39;</span><span class="p">,</span> <span class="s1">&#39;gmm&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            Return Decode object for settings purposes.</span>
+
+<span class="s2">            See ICP and Classify documentation for detailed settings.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Decode.decode"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Decode.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">combine_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decode MRBLEs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : Pandas DataFrame</span>
+<span class="sd">            Data that contains decoding data.</span>
+<span class="sd">        combine_data : Pandas DataFrame</span>
+<span class="sd">            Data to be combined from previous pipeline steps.</span>
+<span class="sd">            Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decode_channels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">icp_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_icp</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">icp_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gmm_qc</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span><span class="o">.</span><span class="n">output</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">icp_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">combine_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">combine_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cluster_check</span> <span class="o">=</span> <span class="n">ClusterCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Decode.plot_clusters_3D"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Decode.plot_clusters_3D">[docs]</a>    <span class="k">def</span> <span class="nf">plot_clusters_3D</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_prob</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot ratio clusters in 3D.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        min_prob : float</span>
+<span class="sd">            Set minimal probability level from 0 to 1, e.g. 0.95.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cluster_check</span><span class="o">.</span><span class="n">plot_3D</span><span class="p">(</span><span class="n">min_prob</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Decode.plot_clusters_2D"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Decode.plot_clusters_2D">[docs]</a>    <span class="k">def</span> <span class="nf">plot_clusters_2D</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">ci_trace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_prob</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot ratio clusters in 2D.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        colors : list</span>
+<span class="sd">            List of color (NPL) names.</span>
+<span class="sd">        ci_trace : float</span>
+<span class="sd">            Set trace confidence line around clusters.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        min_prob : float</span>
+<span class="sd">            Set minimal probability level from 0 to 1, e.g. 0.95.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cluster_check</span><span class="o">.</span><span class="n">plot_2D</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="n">ci_trace</span><span class="p">,</span> <span class="n">min_prob</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_gmm_qc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of unique codes found:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span><span class="o">.</span><span class="n">found</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Missing codes:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span><span class="o">.</span><span class="n">missing</span><span class="p">)</span>
+        <span class="n">s_score</span> <span class="o">=</span> <span class="n">silhouette_score</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmm</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Silhouette Coefficient:&quot;</span><span class="p">,</span> <span class="n">s_score</span><span class="p">)</span></div>
+        <span class="c1"># print(&quot;AIC:&quot;, self._gmm._gmix.aic(data))</span>
+        <span class="c1"># print(&quot;BIC:&quot;, self._gmm._gmix.bic(data))</span>
+
+
+<div class="viewcode-block" id="Analyze"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze">[docs]</a><span class="k">class</span> <span class="nc">Analyze</span><span class="p">(</span><span class="n">TableDataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Analyze data MRBLE data and return per-code statistics.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    seq_list : list, Pandas DataFrame</span>
+<span class="sd">        List (one column) or Pandas DataFrame with additional per-code</span>
+<span class="sd">        information. In the case of a Pandas DataFrame all provided columns</span>
+<span class="sd">        will be added, based on the row number, which corresponds to its code.</span>
+<span class="sd">    flag_filt : boolean</span>
+<span class="sd">        Sets if the flagged data is automatically filtered out.</span>
+<span class="sd">        Defaults to True.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    functions : dict</span>
+<span class="sd">        Dictionary of functions and their corresponding names.</span>
+<span class="sd">        Default: {&#39;mean&#39;: np.mean,</span>
+<span class="sd">                  &#39;median&#39;: np.median,</span>
+<span class="sd">                  &#39;sd&#39;: np.std,</span>
+<span class="sd">                  &#39;se&#39;: sp.stats.sem,</span>
+<span class="sd">                  &#39;N&#39;: len,</span>
+<span class="sd">                  &#39;CV&#39;: sp.stats.variation}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">seq_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Analyze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="p">(</span><span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Extract</span><span class="p">,</span>
+                                  <span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Decode</span><span class="p">,</span>
+                                  <span class="n">mrbles</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TableDataFrame</span><span class="p">)):</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span> <span class="o">=</span> <span class="n">dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span> <span class="o">=</span> <span class="n">seq_list</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="p">(</span><span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Images</span><span class="p">,</span>
+                               <span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Ratio</span><span class="p">,</span>
+                               <span class="n">mrbles</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ImageDataFrame</span><span class="p">)):</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">images</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="p">(</span><span class="n">mrbles</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">Find</span><span class="p">,</span>
+                              <span class="n">mrbles</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ImageDataFrame</span><span class="p">)):</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_masks</span> <span class="o">=</span> <span class="n">masks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_norm_data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_filt</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># Default set of functions</span>
+            <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+            <span class="s1">&#39;median&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+            <span class="s1">&#39;sd&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">,</span>
+            <span class="s1">&#39;se&#39;</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">,</span>
+            <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">,</span>
+            <span class="s1">&#39;CV&#39;</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">variation</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="Analyze.analyze"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.analyze">[docs]</a>    <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">min_prob</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bkg_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate per-code statisics.</span>
+
+<span class="sd">        Paramaters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        assay_channel : str</span>
+<span class="sd">            Assay channel name (column name) to calculate per-code statistics</span>
+<span class="sd">            for.</span>
+<span class="sd">        min_prob: float</span>
+<span class="sd">            Filter by minimum probability interval, e.g. 0.95.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        bkg_data : float/int, string, list, NumPy array, Pandas DataFrame</span>
+<span class="sd">            If float/value is used, this value be subtracted. If string is</span>
+<span class="sd">            used, column from internal dataframe is used. Otherwise, the data</span>
+<span class="sd">            provided is subtracted, which needs to be the same size as the</span>
+<span class="sd">            per-bead data. In the case of Pandas DataFrame, do slice the single</span>
+<span class="sd">            exact column. Row number of the data is the code.</span>
+<span class="sd">            Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bkg_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_background</span><span class="p">(</span><span class="n">assay_channel</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">)</span>
+            <span class="n">assay_channel</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span>
+        <span class="k">if</span> <span class="n">min_prob</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="o">.</span><span class="n">prob</span> <span class="o">&gt;=</span> <span class="n">min_prob</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span>
+        <span class="k">if</span> <span class="s1">&#39;set&#39;</span> <span class="ow">in</span> <span class="n">data_filter</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="n">data_filter</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multi</span><span class="p">(</span><span class="n">data_filter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_filter</span> <span class="o">=</span> <span class="n">data_filter</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single</span><span class="p">(</span><span class="n">data_filter</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="n">bkg_data</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_min_bkg&#39;</span> <span class="o">%</span> <span class="n">assay_channel</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="n">assay_channel</span><span class="p">]</span> <span class="o">-</span> <span class="n">bkg_data</span>
+
+<div class="viewcode-block" id="Analyze.normalize"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm_data</span><span class="p">,</span> <span class="n">scaled</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Normalize data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        norm_data : Pandas DataFrame</span>
+<span class="sd">            Dataframe with the per-bead normalization data. Single set only!</span>
+<span class="sd">        scaled : boolean</span>
+<span class="sd">            Scale maximum value normalization data to 1.</span>
+<span class="sd">            Defaults to True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">per_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single</span><span class="p">(</span><span class="n">norm_data</span><span class="p">)</span>
+        <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">index</span>
+        <span class="k">if</span> <span class="n">scaled</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;median_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;sd_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;sd&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;se_scaled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;sd_scaled&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_norm_data</span> <span class="o">=</span> <span class="n">per_code</span>
+        <span class="n">set_codes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">set_codes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scaled</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">norm_mean</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;mean_scaled&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">norm_sd</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;sd_scaled&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">norm_mean</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">norm_sd</span> <span class="o">=</span> <span class="n">per_code</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">per_code</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;sd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="n">data_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">data_median</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">data_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;sd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">data_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="n">mean_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">data_mean</span> <span class="o">/</span> <span class="n">norm_mean</span><span class="p">)</span>
+            <span class="n">median_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">data_median</span> <span class="o">/</span> <span class="n">norm_mean</span><span class="p">)</span>
+            <span class="n">sd_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mean_norm</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">data_sd</span> <span class="o">/</span> <span class="n">data_mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">norm_sd</span> <span class="o">/</span> <span class="n">norm_mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">cv_norm</span> <span class="o">=</span> <span class="n">mean_norm</span> <span class="o">/</span> <span class="n">sd_norm</span>
+            <span class="n">se_norm</span> <span class="o">=</span> <span class="n">sd_norm</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data_n</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;mean_norm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_norm</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;median_norm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">median_norm</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;sd_norm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sd_norm</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;cv_norm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv_norm</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;se_norm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">se_norm</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">norm_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return normalized data.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_norm_data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_per_bead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return (normalized) data per bead.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_per_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return (normalized) data per code.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_name</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flag_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;set&#39;</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;set&#39;</span><span class="p">)</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">code</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_functions</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">data</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">code</span><span class="p">),</span> <span class="n">channel</span><span class="p">])</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq_list</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="n">codes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+
+    <span class="k">def</span> <span class="nf">_multi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">set</span><span class="p">))</span>
+        <span class="c1"># levels.remove(&#39;set&#39;)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_single</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">set</span> <span class="o">==</span> <span class="n">level</span><span class="p">])</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span>
+        <span class="p">]</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">rename</span><span class="p">((</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_norm_per_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_norm_per_bead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_iter_functions</span><span class="p">(</span><span class="n">functions</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">data_na_omit</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">data_na_omit</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span> <span class="ow">in</span> <span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="Analyze.mrble_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.mrble_report">[docs]</a>    <span class="k">def</span> <span class="nf">mrble_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">set_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">codes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">image_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate per-MRBLE PDF image report.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        assay_channel : str</span>
+<span class="sd">            Assay channel name, e.g. &#39;Cy5_FF&#39;</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Filename for generated PDF file.</span>
+<span class="sd">        set_name : str</span>
+<span class="sd">            Name of set, e.g. &#39;Set A&#39;</span>
+<span class="sd">        codes : int, list of int</span>
+<span class="sd">            Integer or list of integers with selected codes.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        files : int, list of int</span>
+<span class="sd">            Integer or list of integers with selected files.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        sort : boolean</span>
+<span class="sd">            Sort by code.</span>
+<span class="sd">            Defaults to True.</span>
+<span class="sd">        image_names : list of str</span>
+<span class="sd">            List of image names.</span>
+<span class="sd">            Defaults to [&#39;Dy&#39;, &#39;Sm&#39;, &#39;Tm&#39;, &#39;bkg&#39;, &#39;Eu&#39;, assay_channel].</span>
+<span class="sd">        mask_names : list of str</span>
+<span class="sd">            List of mask names.</span>
+<span class="sd">            Defaults to [&#39;mask_ring&#39;, &#39;mask_inside&#39;, &#39;mask_full&#39;, &#39;mask_bkg&#39;].</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">image_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">,</span> <span class="s1">&#39;bkg&#39;</span><span class="p">,</span> <span class="s1">&#39;Eu&#39;</span><span class="p">,</span> <span class="n">assay_channel</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mask_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mask_ring&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_inside&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_full&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_bkg&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_masks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Images and/or masks are not loaded into object.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">set_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">image_names</span><span class="p">)</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_masks</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">mask_names</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="n">set_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">image_names</span><span class="p">)</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_masks</span><span class="p">[</span><span class="n">set_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">mask_names</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_per_bead</span><span class="o">.</span><span class="n">set</span> <span class="o">==</span> <span class="n">set_name</span><span class="p">]</span>
+        <span class="n">report</span> <span class="o">=</span> <span class="n">BeadsReport</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                             <span class="n">images</span><span class="p">,</span>
+                             <span class="n">masks</span><span class="p">,</span>
+                             <span class="n">assay_channel</span><span class="p">,</span>
+                             <span class="n">codes</span><span class="p">,</span>
+                             <span class="n">files</span><span class="p">,</span>
+                             <span class="n">sort</span><span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Do you wan to continue (y for yes, or n for no)?: &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">report</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Aborted.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Analyze.qc_report"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Analyze.qc_report">[docs]</a>    <span class="k">def</span> <span class="nf">qc_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate Quality Control PDF report.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Filename to save QC PDF report to.</span>
+<span class="sd">        savefig : boolean</span>
+<span class="sd">            Save figures separately to &#39;report&#39; folder.</span>
+<span class="sd">            Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qc_report</span> <span class="o">=</span> <span class="n">QCReport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_per_bead</span><span class="p">)</span>
+        <span class="n">qc_report</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Bjorn Harink.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>
