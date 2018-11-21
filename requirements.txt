@@ -1,7 +1,8 @@
 future
+six
 numpy>=1.14.0
 scipy
-pandas>=0.23.1
+pandas>=0.23.4
 xarray
 opencv-python>=3.2.0
 scikit-learn
@@ -10,7 +11,6 @@ photutils>=0.4.1
 matplotlib
 plotly
 lmfit
-weightedstats
 xlrd
 packaging
 jupyter

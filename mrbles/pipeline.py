@@ -27,26 +27,20 @@ from builtins import (str, super, range, int, object)
 # General Python
 import os
 import re
-# import warnings
-# import sys
 import gc
 from math import sqrt
 from random import randint
-
 # Other
 import numpy as np
 import scipy as sp
 from scipy import ndimage as ndi
 from sklearn.metrics import silhouette_score
 import pandas as pd
-import weightedstats as ws
 import xarray as xr
 from matplotlib import pyplot as plt
 from skimage.external import tifffile as tff
-
-# # Plotting
-# import plotly.graph_objs as go
-# from plotly.offline import init_notebook_mode, iplot # For plotly offline mode
+# Python 2 compatibility
+from six import string_types
 
 # Intra-Package dependencies
 import mrbles
@@ -229,7 +223,7 @@ class Images(ImageDataFrame):
             Defaults to '_FF'
 
         """
-        if isinstance(ff_image, str):
+        if isinstance(ff_image, string_types):
             flat_field = tff.TiffFile(ff_image).asarray()
         else:
             flat_field = ff_image
@@ -259,7 +253,7 @@ class Images(ImageDataFrame):
         if isinstance(folders, dict):
             files = {key: cls.scan_path(folders[key], pattern)
                      for key, pattern in files.items()}
-        elif isinstance(folders, str):
+        elif isinstance(folders, string_types):
             files = {key: cls.scan_path(folders, pattern)
                      for key, pattern in files.items()}
         else:
@@ -854,7 +848,7 @@ class Extract(TableDataFrame):
         return num
 
     def background_subtract(self, assay_channel, bkg_data):
-        if isinstance(bkg_data, str):
+        if isinstance(bkg_data, string_types):
             self._dataframe['%s_min_bkg' % assay_channel] = \
                 self._dataframe[assay_channel] - self._dataframe[bkg_data]
         elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
@@ -1091,7 +1085,7 @@ class Analyze(TableDataFrame):
             self._dataframe = self._single(data_filter)
 
     def _background(self, assay_channel, bkg_data):
-        if isinstance(bkg_data, str):
+        if isinstance(bkg_data, string_types):
             self._data_per_bead['%s_min_bkg' % assay_channel] = \
                 self._data_per_bead[assay_channel] - \
                     self._data_per_bead[bkg_data]

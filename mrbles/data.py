@@ -21,7 +21,6 @@ from builtins import (str, super, object)
 
 # [Modules]
 # General Python
-# import sys
 import os
 import warnings
 import re
@@ -33,7 +32,8 @@ import pandas as pd
 import xarray as xr
 # File import
 from skimage.external import tifffile as tff
-
+# Python 2 compatibility
+from six import string_types
 
 # Descriptor classes
 
@@ -187,7 +187,7 @@ class ImageDataFrame(object):
 
     def __getitem__(self, index=None):
         """Get method."""
-        if isinstance(index, str):
+        if isinstance(index, string_types):
             if isinstance(self.data, dict):
                 data = self.data[index]
             else:
@@ -260,6 +260,7 @@ class ImageDataFrame(object):
             Pixels to shift in X dimension.
         y_shift : int
             Pixels to shift in Y dimension.
+
         """
         data_shift = self._dataframe.copy()
         if isinstance(data_shift, dict):

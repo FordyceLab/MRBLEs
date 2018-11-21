@@ -124,7 +124,7 @@ class ClusterCheck(TableDataFrame):
             x += x_origin
             y += y_origin
 
-            elle = go.Scatter(x=x, y=y,
+            elle = go.Scatter(x=x, y=y, mode='lines',
                               name='CI %0.2f' % confidence,
                               showlegend=False,
                               hoverinfo='none',

@@ -80,6 +80,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['future',
+                      'six',
                       'numpy>=1.14.0',
                       'scipy',
                       'pandas>=0.23.1',
@@ -92,7 +93,6 @@ setup(
                       'matplotlib',
                       'plotly',
                       'lmfit',
-                      'weightedstats',
                       'xlrd',
                       'packaging',
                       'jupyter',
