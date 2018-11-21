@@ -545,7 +545,8 @@ class BeadsReport(object):
         y_min, y_max = round(d_y - 2 * d_r), round(d_y + 2 * d_r)
         [self._per_bead_plot(idx, image, index, dim, bead_num, img_num)
          for idx, image in enumerate(
-             figs[d_f, :, slice(y_min, y_max), slice(x_min, x_max)])]
+             figs[d_f,:, slice(int(y_min), int(y_max)),
+                slice(int(x_min), int(x_max))])]
 
     def _per_set_pdf(self, dims_per_step, figs, pdf_object):
         dims_per_step.reset_index(inplace=True, drop=True)
@@ -565,7 +566,7 @@ class BeadsReport(object):
              if(x + dim_step < self.beads_num)
              else self._per_set_pdf(self._dataframe[x:self.beads_num],
                                     self._images, pdf_object)
-             for x in range(0, self.beads_num, dim_step)]
+             for x in range(0, int(self.beads_num), int(dim_step))]
 
 
 class QCReport(object):

@@ -28,7 +28,6 @@ from builtins import (str, super, range, int, object)
 import os
 import re
 import gc
-from math import sqrt
 from random import randint
 # Other
 import numpy as np
@@ -41,6 +40,7 @@ from matplotlib import pyplot as plt
 from skimage.external import tifffile as tff
 # Python 2 compatibility
 from six import string_types
+from six.moves import input
 
 # Intra-Package dependencies
 import mrbles
