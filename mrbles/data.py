@@ -138,11 +138,11 @@ class TableDataFrame(object):
                 codes = np.unique(dataframe['code'].dropna()).astype(int)
                 for code in codes:
                     dataframe.loc[dataframe.code == code, column_names] = \
-                        info_data_prefix.iloc[code].values
+                        info_data_prefix.iloc[int(code)].values
             else:
                 for code in codes:
                     dataframe.loc[code, column_names] = \
-                        info_data_prefix.iloc[code]
+                        info_data_prefix.iloc[int(code)]
         else:
             dataframe.loc[code, 'set.sequence'] = \
                 info_data[code]
