@@ -32,7 +32,6 @@ import warnings
 # Data
 import numpy as np
 import pandas as pd
-import xarray as xr
 # Imaging
 import cv2
 # Image display
@@ -505,9 +504,9 @@ class BeadsReport(object):
         if idx == 0:
             ax_sub.set_ylabel("B#:%i \n F#:%i" % (dim['index'], dim['f']), size=3)
             ax_sub.set_xlabel("Code#:%i" % (dim['code']), size=3)
-            ax_sub.imshow(image.astype(int))
+            ax_sub.imshow(image.astype(np.int))
         elif str(image.c.values) == "mask_check":
-            ax_sub.imshow(image.astype(int))
+            ax_sub.imshow(image.astype(np.int))
         elif "mask" in str(image.c.values):
             ax_sub.set_xlabel(
                 "I: %i" % (dim[self.assay_channel + '.' + str(image.c.values)]),
@@ -519,20 +518,19 @@ class BeadsReport(object):
             ax_sub.imshow(img, vmin=min_mask - 1, vmax=max_mask)
         elif str(image.c.values) == self.assay_channel:
             ax_sub.set_xlabel("I: %i" % (dim[self.assay_channel + '.' + self.assay_mask]), size=3)
-            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_assay)
+            ax_sub.imshow(image.astype(np.int), vmin=0, vmax=self.max_assay)
         elif str(image.c.values) == self.ref_channel:
             ax_sub.set_xlabel("I: %i" % (dim[self.ref_channel + '.' + self.ref_mask]), size=3)
-            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
+            ax_sub.imshow(image.astype(np.int), vmin=0, vmax=self.max_npl)
         elif str(image.c.values) == self.bkg_channel:
             ax_sub.set_xlabel("I: %i" % (dim[self.bkg_channel + '.' + self.bkg_mask]), size=3)
-            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
+            ax_sub.imshow(image.astype(np.int), vmin=0, vmax=self.max_npl)
         elif any(channel in str(image.c.values) for channel in self.npl_channels):
             ax_sub.set_xlabel(
                 "R: %0.3f" % (dim[str(image.c.values) + '_ratio' + '.' + self.npl_mask]),
-                # "R: %0.3f" % (dim[str(image.c.values) + '.' + self.npl_mask]),
                 size=3
             )
-            ax_sub.imshow(image.astype(int), vmin=0, vmax=self.max_npl)
+            ax_sub.imshow(image.astype(np.int), vmin=0, vmax=self.max_npl)
         ax_sub.set_yticklabels([])
         ax_sub.set_xticklabels([])
         ax_sub.tick_params(axis=u'both', which=u'both', length=0)
@@ -545,8 +543,8 @@ class BeadsReport(object):
         y_min, y_max = round(d_y - 2 * d_r), round(d_y + 2 * d_r)
         [self._per_bead_plot(idx, image, index, dim, bead_num, img_num)
          for idx, image in enumerate(
-             figs[d_f,:, slice(int(y_min), int(y_max)),
-                slice(int(x_min), int(x_max))])]
+            figs[d_f, :, slice(int(y_min), int(y_max)),
+                 slice(int(x_min), int(x_max))])]
 
     def _per_set_pdf(self, dims_per_step, figs, pdf_object):
         dims_per_step.reset_index(inplace=True, drop=True)

@@ -378,9 +378,10 @@ class ImageSetRead(ImageDataFrame):
         """Return xarray dataframe representation."""
         return repr([self._dataframe])
 
-    def __getitem__(self, index):
-        """Get method."""
-        return self.data.loc[index]
+    # # TODO: Fix.
+    # def __getitem__(self, index):
+    #     """Get method."""
+    #     return self.data.loc[index]
 
     # Main image load function
     @classmethod
