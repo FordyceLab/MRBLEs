@@ -95,6 +95,7 @@ setup(
                       'lmfit',
                       'xlrd',
                       'packaging',
+                      'notebook>=5.7.2'
                       'jupyter',
                       'seaborn>=0.9.0',
                       'openpyxl',
