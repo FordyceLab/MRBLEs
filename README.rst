@@ -47,8 +47,10 @@ To makes us of `mrbles` follow the following instructions:
 
 
 - Once Python is installed it can be accessed using your systems' terminal, using:
+
   - `> python` or `> python3` depending if only Python 3 installed or both Python 2 & 3.
 
 
 - Now the `mrbles` package can be installed, using the following command in the terminal (exit Python environment first, or start a new terminal):
+
   - `> pip install mrbles` or `> pip3 install mrbles` depending if only Python 3 installed or both Python 2 & 3.
