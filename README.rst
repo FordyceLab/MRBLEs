@@ -66,7 +66,9 @@ This is based on the detailed Mac OSx installation instructions from the Python-
 The installation for Mac OSx is slightly more complicated, but will help you in the future with Python dependencies.
 
 * First, download and install XCode: https://developer.apple.com/xcode/.
+
   - This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.
+
 * Second, install brew using the following command in Mac OSx Terminal:
 
   `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)`
@@ -79,6 +81,7 @@ Once Python is installed it can be accessed using your systems' Command Prompt (
 To install packages one can use the following commands, using the packag name:
 
 * `pip install package_name` or
+
 * `python -m pip install package_name`
 
 Visit the Python Package Index (PyPI) for package names: https://pypi.org/.
@@ -86,6 +89,7 @@ Visit the Python Package Index (PyPI) for package names: https://pypi.org/.
 Now that everything is installed the `mrbles` package can be installed, using the following commands in the terminal:
 
 * `pip install mrbles` (if both Python 2 & 3 are installed this is: `pip3` or `pip`) or
+
 * `python -m pip install mrbles` (if both Python 2 & 3 are installed this is: `pip3` or `pip`)
 
 Using the `mrbles` package
@@ -96,13 +100,22 @@ To test the `mrbles` package download the example Notebook and the data files:
 
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb.
 * Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
+
   - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
+
 * Place the Notebook file in a location at your convenience, e.g. "C:\\docs\\mrbles_test" or "/users/your_name/docs/mrbles_test".
+
 * Place the data files in the sub-folder "data" of the location of the Notebook file.
+
 * Open a Command Prompt or Terminal and navigate to that folder location.
+
 * Now start your Jupyter Notebook environment by using the following command:
 `jupyter notebook`
+
 * This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.
+
 * Click on the downloaded "example-notebook-shipped-data.ipynb", this will open that file.
+
 * Following the instruction in the opened Notebook.
+
 * Fore more information on using Jupyter Notebook: https://jupyter-notebook-beginner-guide.readthedocs.io.
