@@ -65,7 +65,7 @@ This is based on the detailed Mac OSx installation instructions from the Python-
 
 The installation for Mac OSx is slightly more complicated, but will help you in the future with Python dependencies.
 
-- First, download and install XCode.
+- First, download and install XCode: https://developer.apple.com/xcode/.
   * This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.
 - Second, install brew using the following command in Mac OSx Terminal:
 
