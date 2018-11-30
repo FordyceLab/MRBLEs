@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>MRBLEs Analysis Package &#8212; mrbles 0.12.1 documentation</title>
+    <title>MRBLEs Analysis Package &#8212; mrbles 0.12.3 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to mrbles’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">mrbles 0.12.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">mrbles 0.12.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -74,36 +74,80 @@ improve our ability to extract information from single cells.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>The MRBLEs software package is a Python Package available through the Python Package Index (PyPI): <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>.
-To makes us of <cite>mrbles</cite> follow the following instructions:</p>
+To makes us of <cite>mrbles</cite> follow the following instructions.</p>
+<div class="section" id="python-installation">
+<h3>Python installation<a class="headerlink" href="#python-installation" title="Permalink to this headline">¶</a></h3>
+<p>Install (preferably) Python &gt;3.5 <a class="reference external" href="https://www.python.org/downloads/windows/">Windows</a> or <a class="reference external" href="https://www.python.org/downloads/mac-osx/">MacOS</a>. <cite>mrbles</cite> is built to be compatible with Pyhton &gt;2.7,
+but its dependencies (other Python Packages) are getting less and less support for Python 2.7.</p>
+<div class="section" id="id1">
+<h4>Windows<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>This is based on the detailed Windows installation instructions from the official Python page:
+<a class="reference external" href="https://docs.python.org/3/using/windows.html">https://docs.python.org/3/using/windows.html</a></p>
 <ul class="simple">
-<li>Install (preferably) Python &gt;3.5 <a class="reference external" href="https://www.python.org/downloads/windows/">Windows</a> or <a class="reference external" href="https://www.python.org/downloads/mac-osx/">MacOS</a>.</li>
+<li>Install Python by downloading the latest version of Python: <a class="reference external" href="https://www.python.org/downloads/">https://www.python.org/downloads/</a>.</li>
+<li>Execute the installation file and follow the instructions.</li>
+<li>On the first window make sure to tick the box “<em>Add Pyhton x.x to PATH</em>”.</li>
+<li>Preferably, use the “<em>Customize installation</em>”.</li>
+<li>On the second window use the standard selections, or if other people are using the same machine, also select “<em>Install for all users</em>”.</li>
+<li>Preferably, use a custumized installation location, e.g. for Python 3.7 “C:Pyhton37”. This way it is easy to access when necessary.</li>
+<li>Press “<em>Install</em>”.</li>
 </ul>
+<p>To make use of Python packages that do not come with a pre-compiled file (which <cite>mrbles</cite> does), as in they need to be
+compiled on your computer from the source code. It is required to install a C++ compiler.</p>
+<ul class="simple">
+<li>If using Python 2.7, install <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler for Python 2.7</a>.</li>
+<li>If using Python &gt;3.6, install <a class="reference external" href="https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017">Build Tools for Visual Studio 2017</a>.</li>
+<li>More info on <a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers#Which_Microsoft_Visual_C.2B-.2B-_compiler_to_use_with_a_specific_Python_version_.3F">compilers here</a>.</li>
+</ul>
+</div>
+<div class="section" id="mac-osx">
+<h4>Mac OSx<a class="headerlink" href="#mac-osx" title="Permalink to this headline">¶</a></h4>
+<p>This is based on the detailed Mac OSx installation instructions from the Python-Guide page: <a class="reference external" href="https://docs.python-guide.org/starting/install3/osx/#install3-osx">https://docs.python-guide.org/starting/install3/osx/#install3-osx</a></p>
+<p>The installation for Mac OSx is slightly more complicated, but will help you in the future with Python dependencies.</p>
+<ul>
+<li><p class="first">First, download and install XCode.
+- This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.</p>
+</li>
+<li><p class="first">Second, install brew using the following command in Mac OSx Terminal:</p>
+<p><cite>ruby -e “$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</cite></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="the-mrbles-package-installation">
+<h3>The <cite>mrbles</cite> package installation<a class="headerlink" href="#the-mrbles-package-installation" title="Permalink to this headline">¶</a></h3>
+<p>Once Python is installed it can be accessed using your systems’ Command Prompt (Windows) or Terminal (Mac OSx), using: <cite>python</cite> (if both Python 2 &amp; 3 are installed this is: <cite>python3</cite> or <cite>python3</cite>).</p>
+<p>To install packages one can use the following commands, using the packag name:
+- <cite>pip install package_name</cite> or
+- <cite>python -m pip install package_name</cite></p>
+<p>Visit the Python Package Index (PyPI) for package names: <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>.</p>
+<p>Now that everything is installed the <cite>mrbles</cite> package can be installed, using the following commands in the terminal:
+- <cite>pip install mrbles</cite> (if both Python 2 &amp; 3 are installed this is: <cite>pip3</cite> or <cite>pip</cite>) or
+- <cite>python -m pip install mrbles</cite> (if both Python 2 &amp; 3 are installed this is: <cite>pip3</cite> or <cite>pip</cite>)</p>
+</div>
+</div>
+<div class="section" id="using-the-mrbles-package">
+<h2>Using the <cite>mrbles</cite> package<a class="headerlink" href="#using-the-mrbles-package" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>mrbles</cite> package automatically installs the Jupyter Notebook environment: <a class="reference external" href="https://http://jupyter.org/">https://http://jupyter.org/</a>.</p>
+<p>To test the <cite>mrbles</cite> package download the example Notebook and the data files:
+- Notebook: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb">https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb</a>.
+- Data file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/tree/master/data">https://github.com/FordyceLab/MRBLEs/tree/master/data</a>.</p>
 <blockquote>
-<div><dl class="docutils">
-<dt><cite>mrbles</cite> is built to be compatible with Pyhton &gt;2.7, but its dependencies (other Python Packages) are getting less and less support for Python 2.7.</dt>
-<dd><ul class="first last simple">
-<li>Detailed Windows installation: <a class="reference external" href="https://docs.python.org/3/using/windows.html">https://docs.python.org/3/using/windows.html</a>
-- Must have C++ compiler installed to be able to install package from source code. See link above.
-- If using Python 2.7, also install <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler for Python 2.7</a>.
-- If using Python &gt;3.6, also install <a class="reference external" href="https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017">Build Tools for Visual Studio 2017</a>.
-- More info on <a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers#Which_Microsoft_Visual_C.2B-.2B-_compiler_to_use_with_a_specific_Python_version_.3F">compilers here</a>.</li>
-<li>Detailed MacOS installation: <a class="reference external" href="https://docs.python-guide.org/starting/install3/osx/#install3-osx">https://docs.python-guide.org/starting/install3/osx/#install3-osx</a>
-- Must have XCode (or other C++ compiler) installed to be able to install package from source code. See link above.</li>
-<li>During installation make sure to tick the box “Add Pyhton 3.x to PATH” (Windows) or manually add Python root and Scripts to system path.</li>
+<div><ul class="simple">
+<li>The quickest way is to download all the GitHub files in a zip file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/archive/master.zip">https://github.com/FordyceLab/MRBLEs/archive/master.zip</a>.</li>
 </ul>
-</dd>
-</dl>
 </div></blockquote>
 <ul class="simple">
-<li>Once Python is installed it can be accessed using your systems’ terminal, using:<ul>
-<li><cite>&gt; python</cite> or <cite>&gt; python3</cite> depending if only Python 3 installed or both Python 2 &amp; 3.</li>
+<li>Place the Notebook file in a location at your convenience, e.g. “C:docsmrbles_test” or “/users/your_name/docs/mrbles_test”.</li>
+<li>Place the data files in the sub-folder “data” of the location of the Notebook file.</li>
+<li>Open a Command Prompt or Terminal and navigate to that folder location.</li>
+<li>Now start your Jupyter Notebook environment by using the following command:</li>
 </ul>
-</li>
-<li>Now the <cite>mrbles</cite> package can be installed, using the following command in the terminal (exit Python environment first, or start a new terminal):<ul>
-<li><cite>&gt; pip install mrbles</cite> or <cite>&gt; pip3 install mrbles</cite> depending if only Python 3 installed or both Python 2 &amp; 3.</li>
-</ul>
-</li>
-</ul>
+<p><cite>jupyter notebook</cite>
+- This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.
+- Click on the downloaded “example-notebook-shipped-data.ipynb”, this will open that file.
+- Following the instruction in the opened Notebook.
+- Fore more information on using Jupyter Notebook: <a class="reference external" href="https://jupyter-notebook-beginner-guide.readthedocs.io">https://jupyter-notebook-beginner-guide.readthedocs.io</a>.</p>
 </div>
 </div>
 
@@ -118,7 +162,16 @@ To makes us of <cite>mrbles</cite> follow the following instructions:</p>
 <li><a class="reference internal" href="#">MRBLEs Analysis Package</a><ul>
 <li><a class="reference internal" href="#mrbles-project">MRBLEs project</a></li>
 <li><a class="reference internal" href="#links">Links</a></li>
-<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#python-installation">Python installation</a><ul>
+<li><a class="reference internal" href="#id1">Windows</a></li>
+<li><a class="reference internal" href="#mac-osx">Mac OSx</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-mrbles-package-installation">The <cite>mrbles</cite> package installation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-the-mrbles-package">Using the <cite>mrbles</cite> package</a></li>
 </ul>
 </li>
 </ul>
@@ -167,7 +220,7 @@ To makes us of <cite>mrbles</cite> follow the following instructions:</p>
         <li class="right" >
           <a href="index.html" title="Welcome to mrbles’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">mrbles 0.12.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">mrbles 0.12.3 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

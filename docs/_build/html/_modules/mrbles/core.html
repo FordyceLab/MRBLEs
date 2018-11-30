@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.core &#8212; mrbles 0.12.1 documentation</title>
+    <title>mrbles.core &#8212; mrbles 0.12.3 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -423,7 +423,7 @@
         <span class="sd">&quot;&quot;&quot;Apply a circular image ROI.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        ==========</span>
+<span class="sd">        ----------</span>
 <span class="sd">        image : NumPy array image</span>
 
 <span class="sd">        hough_settings : list, int</span>
@@ -607,8 +607,6 @@
                            <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">center_y</span><span class="p">)</span> <span class="o">+</span> <span class="nb">round</span><span class="p">(</span><span class="n">radius</span><span class="p">)))</span>
             <span class="n">line_x</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">center_x</span><span class="p">)</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">radius</span><span class="p">)),</span>
                            <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">center_x</span><span class="p">)</span> <span class="o">+</span> <span class="nb">round</span><span class="p">(</span><span class="n">radius</span><span class="p">)))</span>
-            <span class="c1"># width_x = slice(int(round(center_x)) - 1, int(round(center_x)) + 1)</span>
-            <span class="c1"># width_y = slice(int(round(center_y)) - 1, int(round(center_x)) + 1)</span>
             <span class="n">width_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">center_x</span><span class="p">))</span>
             <span class="n">width_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">center_y</span><span class="p">))</span>
             <span class="n">img</span><span class="p">[</span><span class="n">width_y</span><span class="p">,</span> <span class="n">line_x</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">220</span><span class="p">)</span>
@@ -705,7 +703,7 @@
 
 
 <span class="c1"># TODO: re-write in same way as FindBeadsImaging</span>
-<div class="viewcode-block" id="FindBeadsCircle"><a class="viewcode-back" href="../../source/mrbles.core.html#mrbles.core.FindBeadsCircle">[docs]</a><span class="k">class</span> <span class="nc">FindBeadsCircle</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="FindBeadsCircle"><a class="viewcode-back" href="../../source/mrbles.core.html#mrbles.core.FindBeadsCircle">[docs]</a><span class="k">class</span> <span class="nc">FindBeadsCircle</span><span class="p">(</span><span class="n">FindBeadsImaging</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Find and identify bead objects from image.</span>
 
 <span class="sd">    Parameters changes for each setup/magnification/bead-set.</span>
@@ -739,6 +737,7 @@
                  <span class="n">min_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">enlarge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">auto_filt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">border_clear</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Instantiate FindBeadsCircle.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FindBeadsImaging</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_r</span> <span class="o">=</span> <span class="n">min_r</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_r</span> <span class="o">=</span> <span class="n">max_r</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">annulus_width</span> <span class="o">=</span> <span class="n">annulus_width</span>
@@ -747,7 +746,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">enlarge</span> <span class="o">=</span> <span class="n">enlarge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auto_filt</span> <span class="o">=</span> <span class="n">auto_filt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">border_clear</span> <span class="o">=</span> <span class="n">border_clear</span>
-        <span class="c1"># TO-DO proper method</span>
+        <span class="c1"># TODO: proper method</span>
         <span class="k">if</span> <span class="n">min_dist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">min_dist</span> <span class="o">=</span> <span class="n">min_dist</span>
         <span class="k">else</span><span class="p">:</span>
@@ -755,6 +754,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_annulus_mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_circles_dim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">labeled_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -856,6 +856,21 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_filt</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_filter</span><span class="p">()</span></div>
+        <span class="c1"># self._dataframe = xr.DataArray(data=np.array([mask_bead,</span>
+        <span class="c1">#                                     mask_bead,</span>
+        <span class="c1">#                                     mask_inside,</span>
+        <span class="c1">#                                     mask_outside,</span>
+        <span class="c1">#                                     mask_bkg,</span>
+        <span class="c1">#                                     overlay_image],</span>
+        <span class="c1">#                                    dtype=np.uint16),</span>
+        <span class="c1">#                      dims=[&#39;c&#39;, &#39;y&#39;, &#39;x&#39;],</span>
+        <span class="c1">#                      coords={&#39;c&#39;: [&#39;mask_full&#39;,</span>
+        <span class="c1">#                                    &#39;mask_ring&#39;,</span>
+        <span class="c1">#                                    &#39;mask_inside&#39;,</span>
+        <span class="c1">#                                    &#39;mask_outside&#39;,</span>
+        <span class="c1">#                                    &#39;mask_bkg&#39;,</span>
+        <span class="c1">#                                    &#39;mask_check&#39;]},</span>
+        <span class="c1">#                      encoding={&#39;dtype&#39;: np.uint16})</span>
 
 <div class="viewcode-block" id="FindBeadsCircle.create_annulus_mask"><a class="viewcode-back" href="../../source/mrbles.core.html#mrbles.core.FindBeadsCircle.create_annulus_mask">[docs]</a>    <span class="k">def</span> <span class="nf">create_annulus_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labeled_mask</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create annulus mask from regular mask.&quot;&quot;&quot;</span>
@@ -1420,7 +1435,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

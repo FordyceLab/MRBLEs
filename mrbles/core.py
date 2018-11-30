@@ -383,7 +383,7 @@ class FindBeadsImaging(ImageDataFrame):
         """Apply a circular image ROI.
 
         Parameters
-        ==========
+        ----------
         image : NumPy array image
 
         hough_settings : list, int
@@ -567,8 +567,6 @@ class FindBeadsImaging(ImageDataFrame):
                            int(round(center_y) + round(radius)))
             line_x = slice(int(round(center_x) - round(radius)),
                            int(round(center_x) + round(radius)))
-            # width_x = slice(int(round(center_x)) - 1, int(round(center_x)) + 1)
-            # width_y = slice(int(round(center_y)) - 1, int(round(center_x)) + 1)
             width_x = int(round(center_x))
             width_y = int(round(center_y))
             img[width_y, line_x] = (20, 20, 220)
@@ -665,7 +663,7 @@ class FindBeadsImaging(ImageDataFrame):
 
 
 # TODO: re-write in same way as FindBeadsImaging
-class FindBeadsCircle(object):
+class FindBeadsCircle(FindBeadsImaging):
     """Find and identify bead objects from image.
 
     Parameters changes for each setup/magnification/bead-set.
@@ -699,6 +697,7 @@ class FindBeadsCircle(object):
                  min_dist=None, enlarge=1,
                  auto_filt=True, border_clear=False):
         """Instantiate FindBeadsCircle."""
+        super(FindBeadsImaging, self).__init__()
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width
@@ -707,7 +706,7 @@ class FindBeadsCircle(object):
         self.enlarge = enlarge
         self.auto_filt = auto_filt
         self.border_clear = border_clear
-        # TO-DO proper method
+        # TODO: proper method
         if min_dist is not None:
             self.min_dist = min_dist
         else:
@@ -715,6 +714,7 @@ class FindBeadsCircle(object):
         self._labeled_mask = None
         self._labeled_annulus_mask = None
         self._circles_dim = None
+        self._dataframe = None
 
     @property
     def labeled_mask(self):
@@ -816,6 +816,21 @@ class FindBeadsCircle(object):
             self._labeled_mask)
         if self.auto_filt is True:
             self._filter()
+        # self._dataframe = xr.DataArray(data=np.array([mask_bead,
+        #                                     mask_bead,
+        #                                     mask_inside,
+        #                                     mask_outside,
+        #                                     mask_bkg,
+        #                                     overlay_image],
+        #                                    dtype=np.uint16),
+        #                      dims=['c', 'y', 'x'],
+        #                      coords={'c': ['mask_full',
+        #                                    'mask_ring',
+        #                                    'mask_inside',
+        #                                    'mask_outside',
+        #                                    'mask_bkg',
+        #                                    'mask_check']},
+        #                      encoding={'dtype': np.uint16})
 
     def create_annulus_mask(self, labeled_mask):
         """Create annulus mask from regular mask."""
