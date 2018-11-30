@@ -66,7 +66,7 @@ This is based on the detailed Mac OSx installation instructions from the Python-
 The installation for Mac OSx is slightly more complicated, but will help you in the future with Python dependencies.
 
 - First, download and install XCode.
-  - This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.
+  * This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.
 - Second, install brew using the following command in Mac OSx Terminal:
 
   `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)`
@@ -93,8 +93,8 @@ The `mrbles` package automatically installs the Jupyter Notebook environment: ht
 To test the `mrbles` package download the example Notebook and the data files:
 - Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb.
 - Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
-  - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
-- Place the Notebook file in a location at your convenience, e.g. "C:\docs\mrbles_test" or "/users/your_name/docs/mrbles_test".
+  * The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
+- Place the Notebook file in a location at your convenience, e.g. "C:\\docs\\mrbles_test" or "/users/your_name/docs/mrbles_test".
 - Place the data files in the sub-folder "data" of the location of the Notebook file.
 - Open a Command Prompt or Terminal and navigate to that folder location.
 - Now start your Jupyter Notebook environment by using the following command:
