@@ -105,8 +105,10 @@ compiled on your computer from the source code. It is required to install a C++ 
 <p>This is based on the detailed Mac OSx installation instructions from the Python-Guide page: <a class="reference external" href="https://docs.python-guide.org/starting/install3/osx/#install3-osx">https://docs.python-guide.org/starting/install3/osx/#install3-osx</a></p>
 <p>The installation for Mac OSx is slightly more complicated, but will help you in the future with Python dependencies.</p>
 <ul>
-<li><p class="first">First, download and install XCode.
-- This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.</p>
+<li><p class="first">First, download and install XCode: <a class="reference external" href="https://developer.apple.com/xcode/">https://developer.apple.com/xcode/</a>.</p>
+<ul class="simple">
+<li>This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.</li>
+</ul>
 </li>
 <li><p class="first">Second, install brew using the following command in Mac OSx Terminal:</p>
 <p><cite>ruby -e “$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</cite></p>
@@ -117,37 +119,41 @@ compiled on your computer from the source code. It is required to install a C++ 
 <div class="section" id="the-mrbles-package-installation">
 <h3>The <cite>mrbles</cite> package installation<a class="headerlink" href="#the-mrbles-package-installation" title="Permalink to this headline">¶</a></h3>
 <p>Once Python is installed it can be accessed using your systems’ Command Prompt (Windows) or Terminal (Mac OSx), using: <cite>python</cite> (if both Python 2 &amp; 3 are installed this is: <cite>python3</cite> or <cite>python3</cite>).</p>
-<p>To install packages one can use the following commands, using the packag name:
-- <cite>pip install package_name</cite> or
-- <cite>python -m pip install package_name</cite></p>
+<p>To install packages one can use the following commands, using the packag name:</p>
+<ul class="simple">
+<li><cite>pip install package_name</cite> or</li>
+<li><cite>python -m pip install package_name</cite></li>
+</ul>
 <p>Visit the Python Package Index (PyPI) for package names: <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>.</p>
-<p>Now that everything is installed the <cite>mrbles</cite> package can be installed, using the following commands in the terminal:
-- <cite>pip install mrbles</cite> (if both Python 2 &amp; 3 are installed this is: <cite>pip3</cite> or <cite>pip</cite>) or
-- <cite>python -m pip install mrbles</cite> (if both Python 2 &amp; 3 are installed this is: <cite>pip3</cite> or <cite>pip</cite>)</p>
+<p>Now that everything is installed the <cite>mrbles</cite> package can be installed, using the following commands in the terminal:</p>
+<ul class="simple">
+<li><cite>pip install mrbles</cite> (if both Python 2 &amp; 3 are installed this is: <cite>pip3</cite> or <cite>pip</cite>) or</li>
+<li><cite>python -m pip install mrbles</cite> (if both Python 2 &amp; 3 are installed this is: <cite>pip3</cite> or <cite>pip</cite>)</li>
+</ul>
 </div>
 </div>
 <div class="section" id="using-the-mrbles-package">
 <h2>Using the <cite>mrbles</cite> package<a class="headerlink" href="#using-the-mrbles-package" title="Permalink to this headline">¶</a></h2>
 <p>The <cite>mrbles</cite> package automatically installs the Jupyter Notebook environment: <a class="reference external" href="https://http://jupyter.org/">https://http://jupyter.org/</a>.</p>
-<p>To test the <cite>mrbles</cite> package download the example Notebook and the data files:
-- Notebook: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb">https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb</a>.
-- Data file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/tree/master/data">https://github.com/FordyceLab/MRBLEs/tree/master/data</a>.</p>
-<blockquote>
-<div><ul class="simple">
+<p>To test the <cite>mrbles</cite> package download the example Notebook and the data files:</p>
+<ul class="simple">
+<li>Notebook: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb">https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb</a>.</li>
+<li>Data file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/tree/master/data">https://github.com/FordyceLab/MRBLEs/tree/master/data</a>.<ul>
 <li>The quickest way is to download all the GitHub files in a zip file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/archive/master.zip">https://github.com/FordyceLab/MRBLEs/archive/master.zip</a>.</li>
 </ul>
-</div></blockquote>
-<ul class="simple">
-<li>Place the Notebook file in a location at your convenience, e.g. “C:docsmrbles_test” or “/users/your_name/docs/mrbles_test”.</li>
+</li>
+<li>Place the Notebook file in a location at your convenience, e.g. “C:\docs\mrbles_test” or “/users/your_name/docs/mrbles_test”.</li>
 <li>Place the data files in the sub-folder “data” of the location of the Notebook file.</li>
 <li>Open a Command Prompt or Terminal and navigate to that folder location.</li>
 <li>Now start your Jupyter Notebook environment by using the following command:</li>
 </ul>
-<p><cite>jupyter notebook</cite>
-- This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.
-- Click on the downloaded “example-notebook-shipped-data.ipynb”, this will open that file.
-- Following the instruction in the opened Notebook.
-- Fore more information on using Jupyter Notebook: <a class="reference external" href="https://jupyter-notebook-beginner-guide.readthedocs.io">https://jupyter-notebook-beginner-guide.readthedocs.io</a>.</p>
+<p><cite>jupyter notebook</cite></p>
+<ul class="simple">
+<li>This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.</li>
+<li>Click on the downloaded “example-notebook-shipped-data.ipynb”, this will open that file.</li>
+<li>Following the instruction in the opened Notebook.</li>
+<li>Fore more information on using Jupyter Notebook: <a class="reference external" href="https://jupyter-notebook-beginner-guide.readthedocs.io">https://jupyter-notebook-beginner-guide.readthedocs.io</a>.</li>
+</ul>
 </div>
 </div>
 
