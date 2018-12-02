@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.core &#8212; mrbles 0.12.3 documentation</title>
+    <title>mrbles.core &#8212; mrbles 0.13.0 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -735,7 +735,8 @@
                  <span class="n">param_1</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">param_2</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                  <span class="n">annulus_width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                  <span class="n">min_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">enlarge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">auto_filt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">border_clear</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                 <span class="n">auto_filt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">border_clear</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">parallelize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Instantiate FindBeadsCircle.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">FindBeadsImaging</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_r</span> <span class="o">=</span> <span class="n">min_r</span>
@@ -746,6 +747,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">enlarge</span> <span class="o">=</span> <span class="n">enlarge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auto_filt</span> <span class="o">=</span> <span class="n">auto_filt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">border_clear</span> <span class="o">=</span> <span class="n">border_clear</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallelize</span> <span class="o">=</span> <span class="n">parallelize</span>
+        <span class="c1"># Default values for local background</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_bkg_size</span> <span class="o">=</span> <span class="mi">11</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_bkg_buffer</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="c1"># TODO: proper method</span>
         <span class="k">if</span> <span class="n">min_dist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">min_dist</span> <span class="o">=</span> <span class="n">min_dist</span>
@@ -815,8 +820,8 @@
             <span class="n">markers_circles</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">circle</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">circle</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">markers</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">markers_circles</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">sk</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">watershed</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">negative</span><span class="p">(</span><span class="n">D</span><span class="p">),</span> <span class="n">markers</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of unique segments found: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># print(&quot;Number of unique segments found: {}&quot;.format(</span>
+        <span class="c1">#     len(np.unique(labels)) - 1))</span>
         <span class="k">return</span> <span class="n">labels</span></div>
 
     <span class="k">def</span> <span class="nf">_get_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
@@ -839,7 +844,29 @@
             <span class="n">circles_dim</span><span class="p">[</span><span class="n">label</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">circles_dim</span>
 
+    <span class="c1"># Main function</span>
 <div class="viewcode-block" id="FindBeadsCircle.find"><a class="viewcode-back" href="../../source/mrbles.core.html#mrbles.core.FindBeadsCircle.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute finding beads image(s).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parallelize</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">mp_worker</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">mp_worker</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+                <span class="n">mp_worker</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">mp_worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="p">,</span> <span class="n">image</span><span class="p">))</span>
+            <span class="n">r_m</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+            <span class="n">r_d</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">r_m</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">r_d</span><span class="p">,</span>
+                                        <span class="n">keys</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r_d</span><span class="p">))),</span>
+                                        <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;bead_no&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bead_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find objects in image and return data.&quot;&quot;&quot;</span>
         <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
         <span class="n">mask</span><span class="p">,</span> <span class="n">circles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">circle_mask</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_dist</span><span class="p">,</span>
@@ -852,25 +879,41 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">circle_separate</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">circles</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_circles_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">)</span>
+        <span class="n">bead_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_annulus_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_annulus_mask</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_filt</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_filter</span><span class="p">()</span></div>
-        <span class="c1"># self._dataframe = xr.DataArray(data=np.array([mask_bead,</span>
-        <span class="c1">#                                     mask_bead,</span>
-        <span class="c1">#                                     mask_inside,</span>
-        <span class="c1">#                                     mask_outside,</span>
-        <span class="c1">#                                     mask_bkg,</span>
-        <span class="c1">#                                     overlay_image],</span>
-        <span class="c1">#                                    dtype=np.uint16),</span>
-        <span class="c1">#                      dims=[&#39;c&#39;, &#39;y&#39;, &#39;x&#39;],</span>
-        <span class="c1">#                      coords={&#39;c&#39;: [&#39;mask_full&#39;,</span>
-        <span class="c1">#                                    &#39;mask_ring&#39;,</span>
-        <span class="c1">#                                    &#39;mask_inside&#39;,</span>
-        <span class="c1">#                                    &#39;mask_outside&#39;,</span>
-        <span class="c1">#                                    &#39;mask_bkg&#39;,</span>
-        <span class="c1">#                                    &#39;mask_check&#39;]},</span>
-        <span class="c1">#                      encoding={&#39;dtype&#39;: np.uint16})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filter</span><span class="p">()</span>
+        <span class="n">mask_outside</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_mask_outside</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">mask_bkg_size</span><span class="p">,</span>
+                                              <span class="n">buffer</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mask_bkg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_mask_outside</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">mask_bkg_size</span><span class="p">,</span>
+                                          <span class="n">buffer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_bkg_buffer</span><span class="p">)</span>
+        <span class="n">mask_inside</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_annulus_mask</span>
+        <span class="n">mask_inside</span><span class="p">[</span><span class="n">mask_inside</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">bead_dims_overlay</span> <span class="o">=</span> <span class="n">bead_dims</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s1">&#39;x_centroid&#39;</span><span class="p">,</span>
+                                              <span class="s1">&#39;y_centroid&#39;</span><span class="p">,</span>
+                                              <span class="s1">&#39;radius&#39;</span><span class="p">)]</span>
+        <span class="n">overlay_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_overlay</span><span class="p">(</span><span class="n">img</span><span class="p">,</span>
+                                           <span class="n">bead_dims_overlay</span><span class="p">,</span>
+                                           <span class="n">color</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_labeled_mask</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">_labeled_annulus_mask</span><span class="p">,</span>
+                                            <span class="n">mask_inside</span><span class="p">,</span>
+                                            <span class="n">mask_outside</span><span class="p">,</span>
+                                            <span class="n">mask_bkg</span><span class="p">,</span>
+                                            <span class="n">overlay_image</span><span class="p">],</span>
+                                           <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">),</span>
+                             <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">],</span>
+                             <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;mask_full&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;mask_ring&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;mask_inside&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;mask_outside&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;mask_bkg&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;mask_check&#39;</span><span class="p">]},</span>
+                             <span class="n">encoding</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">masks</span><span class="p">,</span> <span class="n">bead_dims</span><span class="p">]</span>
 
 <div class="viewcode-block" id="FindBeadsCircle.create_annulus_mask"><a class="viewcode-back" href="../../source/mrbles.core.html#mrbles.core.FindBeadsCircle.create_annulus_mask">[docs]</a>    <span class="k">def</span> <span class="nf">create_annulus_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labeled_mask</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create annulus mask from regular mask.&quot;&quot;&quot;</span>
@@ -1435,7 +1478,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.12.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
