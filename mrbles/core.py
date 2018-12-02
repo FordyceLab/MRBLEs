@@ -695,7 +695,8 @@ class FindBeadsCircle(FindBeadsImaging):
                  param_1=10, param_2=10,
                  annulus_width=2,
                  min_dist=None, enlarge=1,
-                 auto_filt=True, border_clear=False):
+                 auto_filt=True, border_clear=False,
+                 parallelize=True):
         """Instantiate FindBeadsCircle."""
         super(FindBeadsImaging, self).__init__()
         self.min_r = min_r
@@ -706,6 +707,10 @@ class FindBeadsCircle(FindBeadsImaging):
         self.enlarge = enlarge
         self.auto_filt = auto_filt
         self.border_clear = border_clear
+        self.parallelize = parallelize
+        # Default values for local background
+        self.mask_bkg_size = 11
+        self.mask_bkg_buffer = 2
         # TODO: proper method
         if min_dist is not None:
             self.min_dist = min_dist
@@ -775,8 +780,8 @@ class FindBeadsCircle(FindBeadsImaging):
             markers_circles[int(circle[1]), int(circle[0])] = 1
         markers = ndi.label(markers_circles, structure=np.ones((3, 3)))[0]
         labels = sk.morphology.watershed(np.negative(D), markers, mask=mask)
-        print("Number of unique segments found: {}".format(
-            len(np.unique(labels)) - 1))
+        # print("Number of unique segments found: {}".format(
+        #     len(np.unique(labels)) - 1))
         return labels
 
     def _get_dimensions(self, labels):
@@ -799,7 +804,29 @@ class FindBeadsCircle(FindBeadsImaging):
             circles_dim[label - 1, 2] = int(r)
         return circles_dim
 
+    # Main function
     def find(self, image):
+        """Execute finding beads image(s)."""
+        if isinstance(image, xr.DataArray):
+            image = image.values.astype(np.uint8)
+        if image.ndim == 3:
+            if (sys.version_info >= (3, 0)) and (self.parallelize is True):
+                mp_worker = mp.Pool()
+                result = mp_worker.map(self._find, image)
+                mp_worker.close()
+                mp_worker.join()
+            else:
+                result = list(map(self._find, image))
+            r_m = [i[0] for i in result]
+            r_d = [i[1] for i in result]
+            self._dataframe = xr.concat(r_m, dim='f')
+            self._bead_dims = pd.concat(r_d,
+                                        keys=list(range(len(r_d))),
+                                        names=['f', 'bead_no'])
+        else:
+            self._dataframe, self._bead_dims = self._find(image)
+
+    def _find(self, image):
         """Find objects in image and return data."""
         img = self.convert(image)
         mask, circles = self.circle_mask(img, self.min_dist,
@@ -812,25 +839,41 @@ class FindBeadsCircle(FindBeadsImaging):
             return None
         self._labeled_mask = self.circle_separate(mask, circles)
         self._circles_dim = self._get_dimensions(self._labeled_mask)
+        bead_dims = self.get_dimensions(self._labeled_mask)
         self._labeled_annulus_mask = self.create_annulus_mask(
             self._labeled_mask)
         if self.auto_filt is True:
             self._filter()
-        # self._dataframe = xr.DataArray(data=np.array([mask_bead,
-        #                                     mask_bead,
-        #                                     mask_inside,
-        #                                     mask_outside,
-        #                                     mask_bkg,
-        #                                     overlay_image],
-        #                                    dtype=np.uint16),
-        #                      dims=['c', 'y', 'x'],
-        #                      coords={'c': ['mask_full',
-        #                                    'mask_ring',
-        #                                    'mask_inside',
-        #                                    'mask_outside',
-        #                                    'mask_bkg',
-        #                                    'mask_check']},
-        #                      encoding={'dtype': np.uint16})
+        mask_outside = self.make_mask_outside(self._labeled_mask,
+                                              self.mask_bkg_size,
+                                              buffer=0)
+        mask_bkg = self.make_mask_outside(self._labeled_mask,
+                                          self.mask_bkg_size,
+                                          buffer=self.mask_bkg_buffer)
+        mask_inside = self._labeled_mask - self._labeled_annulus_mask
+        mask_inside[mask_inside < 0] = 0
+        bead_dims_overlay = bead_dims.loc[:, ('x_centroid',
+                                              'y_centroid',
+                                              'radius')]
+        overlay_image = self.cross_overlay(img,
+                                           bead_dims_overlay,
+                                           color=False)
+        masks = xr.DataArray(data=np.array([self._labeled_mask,
+                                            self._labeled_annulus_mask,
+                                            mask_inside,
+                                            mask_outside,
+                                            mask_bkg,
+                                            overlay_image],
+                                           dtype=np.uint16),
+                             dims=['c', 'y', 'x'],
+                             coords={'c': ['mask_full',
+                                           'mask_ring',
+                                           'mask_inside',
+                                           'mask_outside',
+                                           'mask_bkg',
+                                           'mask_check']},
+                             encoding={'dtype': np.uint16})
+        return [masks, bead_dims]
 
     def create_annulus_mask(self, labeled_mask):
         """Create annulus mask from regular mask."""

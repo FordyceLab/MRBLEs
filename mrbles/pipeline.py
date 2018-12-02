@@ -44,7 +44,7 @@ from six.moves import input
 
 # Intra-Package dependencies
 import mrbles
-from mrbles.core import FindBeadsImaging, ICP, Classify, SpectralUnmixing
+from mrbles.core import FindBeadsImaging, FindBeadsCircle, ICP, Classify, SpectralUnmixing
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
 from mrbles.report import ClusterCheck, BeadsReport, QCReport
 
@@ -341,6 +341,14 @@ class Find(ImageDataFrame):
         Defaults to True.
     circle_size : int
         Set circle size for auto find circular ROI.
+    min_r : int
+        Minimum size of beads. This is set only when using Circle Finding
+        method.
+    max_r : int
+        Maximum size of beads. This is set only when using Circle Finding
+        method.
+    annulus_width : int
+        Annulus width size. This is set only when using Circle Finding method.
 
     Attributes
     ----------
@@ -356,14 +364,21 @@ class Find(ImageDataFrame):
 
     """
 
-    def __init__(self, bead_size, pixel_size=None,
-                 border_clear=True, circle_size=None):
+    def __init__(self, bead_size, pixel_size=None, border_clear=True,
+                 circle_size=None, min_r=None, max_r=None, annulus_width=None,
+                 **kwargs):
         super(Find, self).__init__()
         self._bead_size = bead_size
         self._pixel_size = pixel_size
-        self._bead_objects = FindBeadsImaging(bead_size=bead_size,
-                                              border_clear=border_clear,
-                                              circle_size=circle_size)
+        if (min_r and max_r and annulus_width) is None:
+            self._bead_objects = FindBeadsImaging(bead_size=bead_size,
+                                                  border_clear=border_clear,
+                                                  circle_size=circle_size)
+        else:
+            self._bead_objects = FindBeadsCircle(min_r=min_r,
+                                                 max_r=max_r,
+                                                 annulus_width=annulus_width,
+                                                 **kwargs)
         self._dataframe = None
         self._bead_dims = None
 
@@ -430,21 +445,30 @@ class Find(ImageDataFrame):
         return TableDataFrame.get_set_names(self._bead_dims)
 
     def plot_size_dist(self):
+        """Plot size distribution."""
         plt.figure(dpi=150)
         if 'diameter_conv' in self.bead_dims.columns:
             b_std = self.bead_dims.diameter_conv.std()
             b_mean = self.bead_dims.diameter_conv.mean()
         else:
             b_std = self.bead_dims.diameter.std()
-            b_mean = self.bead_dims.diameter.mean
+            b_mean = self.bead_dims.diameter.mean()
         x_left = b_mean - (5 * b_std)
         x_right = b_mean + (5 * b_std)
-        self.bead_dims.diameter_conv.plot(
-            kind='hist', bins=100, color='lightgray').set_xlim(
-                left=x_left, right=x_right);
-        self.bead_dims.diameter_conv.plot(
-            kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(
-                bottom=0);
+        if 'diameter_conv' in self.bead_dims.columns:
+            self.bead_dims.diameter_conv.plot(
+                kind='hist', bins=100, color='lightgray').set_xlim(
+                    left=x_left, right=x_right);  # NOQA
+            self.bead_dims.diameter_conv.plot(
+                kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(
+                    bottom=0);  # NOQA
+        else:
+            self.bead_dims.diameter.plot(
+                kind='hist', bins=100, color='lightgray').set_xlim(
+                    left=x_left, right=x_right);  # NOQA
+            self.bead_dims.diameter.plot(
+                kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(
+                    bottom=0);  # NOQA
 
     def inspect(self, set_name=None, fig_num=3):
         """Display random images from set for inspection."""
