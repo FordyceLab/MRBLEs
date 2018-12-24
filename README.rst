@@ -97,17 +97,17 @@ Using the ``mrbles`` package
 ----------------------------
 The ``mrbles`` package automatically installs the Jupyter Notebook environment: https://http://jupyter.org/.
 
-To test the ``mrbles`` package download the example Notebook and the data files:
+To test the ``mrbles`` package download the example Notebook and all the data, reference, library (.xlsx), and flat-field files:
 
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-GitHub-data.ipynb.
-* Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
+* Data files: https://github.com/FordyceLab/MRBLEs/tree/master/data.
 
  - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
 
-The set used for the publication can be found here:
+The set used for the publication can be found on a OSF repository. Make sure to download all the data, reference, library (.xlsx), and flat-field files:
 
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
-* Data file: https://osf.io/8kv35/.
+* Data files: https://osf.io/8kv35/.
 
 To start using the these notebooks:
 
