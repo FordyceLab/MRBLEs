@@ -109,6 +109,8 @@ The set used for the publication can be found here:
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
 * Data file: https://osf.io/8kv35/.
 
+To start using the these notebooks:
+
 * Place the Notebook file in a location at your convenience, e.g. "C:\\docs\\mrbles_test" or "/users/your_name/docs/mrbles_test".
 * Place the data files in the sub-folder "data" of the location of the Notebook file.
 * Open a Command Prompt or Terminal and navigate to that folder location.
