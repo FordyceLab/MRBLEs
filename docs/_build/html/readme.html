@@ -74,11 +74,11 @@ improve our ability to extract information from single cells.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>The MRBLEs software package is a Python Package available through the Python Package Index (PyPI): <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>.
-To makes us of <cite>mrbles</cite> follow the following instructions.</p>
+To makes us of <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> follow the following instructions.</p>
 <div class="section" id="python-installation">
 <h3>Python installation<a class="headerlink" href="#python-installation" title="Permalink to this headline">¶</a></h3>
 <p>Install (preferably) Python &gt;3.5 Windows (<a class="reference external" href="https://www.python.org/downloads/windows/">https://www.python.org/downloads/windows/</a>) or MacOS
-(<a class="reference external" href="https://www.python.org/downloads/mac-osx/">https://www.python.org/downloads/mac-osx/</a>). <a href="#id1"><span class="problematic" id="id2">:bash:`mrbles`</span></a> is built to be compatible with Pyhton &gt;2.7,
+(<a class="reference external" href="https://www.python.org/downloads/mac-osx/">https://www.python.org/downloads/mac-osx/</a>). <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> is built to be compatible with Pyhton &gt;2.7,
 but its dependencies (other Python Packages) are getting less and less support for Python 2.7.</p>
 <div class="section" id="windows">
 <h4>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h4>
@@ -115,33 +115,33 @@ compiled on your computer from the source code. It is required to install a C++ 
 </div></blockquote>
 <ul>
 <li><p class="first">Second, install brew using the following command in Mac OSx Terminal:</p>
-<p><a href="#id3"><span class="problematic" id="id4">:bash:`ruby -e &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)`</span></a></p>
+<p><code class="docutils literal notranslate"><span class="pre">ruby</span> <span class="pre">-e</span> <span class="pre">&quot;$(curl</span> <span class="pre">-fsSL</span> <span class="pre">https://raw.githubusercontent.com/Homebrew/install/master/install)</span></code></p>
 </li>
 </ul>
 </div>
 </div>
-<div class="section" id="the-bash-mrbles-package-installation">
-<h3>The <a href="#id5"><span class="problematic" id="id6">:bash:`mrbles`</span></a> package installation<a class="headerlink" href="#the-bash-mrbles-package-installation" title="Permalink to this headline">¶</a></h3>
-<p>Once Python is installed it can be accessed using your systems’ Command Prompt (Windows) or Terminal (Mac OSx), using: <a href="#id7"><span class="problematic" id="id8">:bash:`python`</span></a> (if both Python 2 &amp; 3 are installed this is: <a href="#id9"><span class="problematic" id="id10">:bash:`python3`</span></a> or <a href="#id11"><span class="problematic" id="id12">:bash:`python3`</span></a>).</p>
+<div class="section" id="the-mrbles-package-installation">
+<h3>The <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package installation<a class="headerlink" href="#the-mrbles-package-installation" title="Permalink to this headline">¶</a></h3>
+<p>Once Python is installed it can be accessed using your systems’ Command Prompt (Windows) or Terminal (Mac OSx), using: <code class="docutils literal notranslate"><span class="pre">python</span></code> (if both Python 2 &amp; 3 are installed this is: <code class="docutils literal notranslate"><span class="pre">python3</span></code> or <code class="docutils literal notranslate"><span class="pre">python3</span></code>).</p>
 <p>To install packages one can use the following commands, using the package name:</p>
 <ul class="simple">
-<li><a href="#id13"><span class="problematic" id="id14">:bash:`pip install package_name`</span></a> or</li>
-<li><a href="#id15"><span class="problematic" id="id16">:bash:`python -m pip install package_name`</span></a></li>
+<li><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">package_name</span></code> or</li>
+<li><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">package_name</span></code></li>
 </ul>
 <p>Visit the Python Package Index (PyPI) for package names: <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>.</p>
-<p>Now that everything is installed the <a href="#id17"><span class="problematic" id="id18">:bash:`mrbles`</span></a> package can be installed, using the following commands in the terminal:</p>
+<p>Now that everything is installed the <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package can be installed, using the following commands in the terminal:</p>
 <ul class="simple">
-<li><a href="#id19"><span class="problematic" id="id20">:bash:`pip install mrbles`</span></a> (if both Python 2 &amp; 3 are installed this is: <a href="#id21"><span class="problematic" id="id22">:bash:`pip3`</span></a> or <a href="#id23"><span class="problematic" id="id24">:bash:`pip`</span></a>) or</li>
-<li><a href="#id25"><span class="problematic" id="id26">:bash:`python -m pip install mrbles`</span></a> (if both Python 2 &amp; 3 are installed this is: <a href="#id27"><span class="problematic" id="id28">:bash:`pip3`</span></a> or <a href="#id29"><span class="problematic" id="id30">:bash:`pip`</span></a>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">mrbles</span></code> (if both Python 2 &amp; 3 are installed this is: <code class="docutils literal notranslate"><span class="pre">pip3</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code>) or</li>
+<li><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">mrbles</span></code> (if both Python 2 &amp; 3 are installed this is: <code class="docutils literal notranslate"><span class="pre">pip3</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code>)</li>
 </ul>
 </div>
 </div>
-<div class="section" id="using-the-bash-mrbles-package">
-<h2>Using the <a href="#id31"><span class="problematic" id="id32">:bash:`mrbles`</span></a> package<a class="headerlink" href="#using-the-bash-mrbles-package" title="Permalink to this headline">¶</a></h2>
-<p>The <a href="#id33"><span class="problematic" id="id34">:bash:`mrbles`</span></a> package automatically installs the Jupyter Notebook environment: <a class="reference external" href="https://http://jupyter.org/">https://http://jupyter.org/</a>.</p>
-<p>To test the <a href="#id35"><span class="problematic" id="id36">:bash:`mrbles`</span></a> package download the example Notebook and the data files:</p>
+<div class="section" id="using-the-mrbles-package">
+<h2>Using the <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package<a class="headerlink" href="#using-the-mrbles-package" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package automatically installs the Jupyter Notebook environment: <a class="reference external" href="https://http://jupyter.org/">https://http://jupyter.org/</a>.</p>
+<p>To test the <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package download the example Notebook and the data files:</p>
 <ul class="simple">
-<li>Notebook: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb">https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb</a>.</li>
+<li>Notebook: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-GitHub-data.ipynb">https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-GitHub-data.ipynb</a>.</li>
 <li>Data file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/tree/master/data">https://github.com/FordyceLab/MRBLEs/tree/master/data</a>.</li>
 </ul>
 <blockquote>
@@ -149,6 +149,12 @@ compiled on your computer from the source code. It is required to install a C++ 
 <li>The quickest way is to download all the GitHub files in a zip file: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/archive/master.zip">https://github.com/FordyceLab/MRBLEs/archive/master.zip</a>.</li>
 </ul>
 </div></blockquote>
+<p>The set used for the publication can be found here:</p>
+<ul class="simple">
+<li>Notebook: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb">https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb</a>.</li>
+<li>Data file: <a class="reference external" href="https://osf.io/8kv35/">https://osf.io/8kv35/</a>.</li>
+</ul>
+<p>To start using the these notebooks:</p>
 <ul>
 <li><p class="first">Place the Notebook file in a location at your convenience, e.g. “C:\docs\mrbles_test” or “/users/your_name/docs/mrbles_test”.</p>
 </li>
@@ -157,11 +163,11 @@ compiled on your computer from the source code. It is required to install a C++ 
 <li><p class="first">Open a Command Prompt or Terminal and navigate to that folder location.</p>
 </li>
 <li><p class="first">Now start your Jupyter Notebook environment by using the following command:</p>
-<p><a href="#id37"><span class="problematic" id="id38">:bash:`jupyter notebook`</span></a></p>
+<p><code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span></code></p>
 </li>
 <li><p class="first">This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.</p>
 </li>
-<li><p class="first">Click on the downloaded “example-notebook-shipped-data.ipynb”, this will open that file.</p>
+<li><p class="first">Click on the downloaded “example-notebook-Github-data.ipynb”, this will open that file.</p>
 </li>
 <li><p class="first">Following the instruction in the opened Notebook.</p>
 </li>
@@ -188,10 +194,10 @@ compiled on your computer from the source code. It is required to install a C++ 
 <li><a class="reference internal" href="#mac-osx">Mac OSx</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#the-bash-mrbles-package-installation">The :bash:`mrbles` package installation</a></li>
+<li><a class="reference internal" href="#the-mrbles-package-installation">The <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#using-the-bash-mrbles-package">Using the :bash:`mrbles` package</a></li>
+<li><a class="reference internal" href="#using-the-mrbles-package">Using the <code class="docutils literal notranslate"><span class="pre">mrbles</span></code> package</a></li>
 </ul>
 </li>
 </ul>
