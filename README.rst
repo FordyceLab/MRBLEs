@@ -102,10 +102,12 @@ To test the ``mrbles`` package download the example Notebook and the data files:
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-GitHub-data.ipynb.
 * Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
 
+ - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
+
+The set used for the publication can be found here:
+
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
 * Data file: https://osf.io/8kv35/.
-
- - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
 
 * Place the Notebook file in a location at your convenience, e.g. "C:\\docs\\mrbles_test" or "/users/your_name/docs/mrbles_test".
 * Place the data files in the sub-folder "data" of the location of the Notebook file.
