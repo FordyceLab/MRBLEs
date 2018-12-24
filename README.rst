@@ -99,8 +99,11 @@ The ``mrbles`` package automatically installs the Jupyter Notebook environment: 
 
 To test the ``mrbles`` package download the example Notebook and the data files:
 
-* Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
+* Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-GitHub-data.ipynb.
 * Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
+
+* Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
+* Data file: https://osf.io/8kv35/.
 
  - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
 
@@ -112,6 +115,6 @@ To test the ``mrbles`` package download the example Notebook and the data files:
   ``jupyter notebook``
 
 * This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.
-* Click on the downloaded "example-notebook-shipped-data.ipynb", this will open that file.
+* Click on the downloaded "example-notebook-Github-data.ipynb", this will open that file.
 * Following the instruction in the opened Notebook.
 * Fore more information on using Jupyter Notebook: https://jupyter-notebook-beginner-guide.readthedocs.io.
