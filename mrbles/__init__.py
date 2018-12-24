@@ -29,7 +29,7 @@ from future import standard_library
 __name__ = "mrbles"
 __package__ = "mrbles"
 # Copyright and credits
-__copyright__ = ("Copyright 2015-2018 - "
+__copyright__ = ("Copyright 2015-2019 - "
                  "The Encoded Beads Project - "
                  "ThornLab@UCSF and "
                  "FordyceLab@Stanford")
@@ -44,7 +44,7 @@ __maintainer__ = "Bjorn Harink"
 __email__ = "bjorn@harink.info"
 # Software information
 __license__ = "MIT"
-__version__ = '0.13.0'
+__version__ = '0.13.1'
 __status__ = "Development"
 # Package settings
 __all__ = ['core', 'data']
