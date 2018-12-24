@@ -18,11 +18,11 @@ photutils = "==0.4.1"
 matplotlib = "*"
 plotly = "*"
 lmfit = "*"
-xlrd = "*"
+xlrd = ">=1.2.0"
 notebook = ">=5.7.2"
 jupyter = "*"
 seaborn = ">=0.9.0"
-openpyxl = "*"
+openpyxl = ">=2.5.12"
 "pep8" = "*"
 
 [dev-packages]

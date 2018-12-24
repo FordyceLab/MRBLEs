@@ -16,5 +16,5 @@ packaging
 notebook>=5.7.1
 jupyter
 seaborn>=0.9.0
-openpyxl
-xlrd
+openpyxl>=2.5.12
+xlrd>=1.2.0
