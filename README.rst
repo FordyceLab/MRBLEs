@@ -31,12 +31,12 @@ Source code: https://github.com/FordyceLab/MRBLEs/
 Installation
 ------------
 The MRBLEs software package is a Python Package available through the Python Package Index (PyPI): https://pypi.org/.
-To makes us of `mrbles` follow the following instructions.
+To makes us of ``mrbles`` follow the following instructions.
 
 Python installation
 ~~~~~~~~~~~~~~~~~~~
 Install (preferably) Python >3.5 Windows (https://www.python.org/downloads/windows/) or MacOS
-(https://www.python.org/downloads/mac-osx/). :bash:`mrbles` is built to be compatible with Pyhton >2.7,
+(https://www.python.org/downloads/mac-osx/). ``mrbles`` is built to be compatible with Pyhton >2.7,
 but its dependencies (other Python Packages) are getting less and less support for Python 2.7.
 
 Windows
@@ -71,33 +71,33 @@ The installation for Mac OSx is slightly more complicated, but will help you in 
 
 * Second, install brew using the following command in Mac OSx Terminal:
 
-  :bash:`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)`
+  ``ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)``
 
 
-The :bash:`mrbles` package installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Once Python is installed it can be accessed using your systems' Command Prompt (Windows) or Terminal (Mac OSx), using: :bash:`python` (if both Python 2 & 3 are installed this is: :bash:`python3` or :bash:`python3`).
+The ``mrbles`` package installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Once Python is installed it can be accessed using your systems' Command Prompt (Windows) or Terminal (Mac OSx), using: ``python`` (if both Python 2 & 3 are installed this is: ``python3`` or ``python3``).
 
 To install packages one can use the following commands, using the package name:
 
-* :bash:`pip install package_name` or
+* ``pip install package_name`` or
 
-* :bash:`python -m pip install package_name`
+* ``python -m pip install package_name``
 
 Visit the Python Package Index (PyPI) for package names: https://pypi.org/.
 
-Now that everything is installed the :bash:`mrbles` package can be installed, using the following commands in the terminal:
+Now that everything is installed the ``mrbles`` package can be installed, using the following commands in the terminal:
 
-* :bash:`pip install mrbles` (if both Python 2 & 3 are installed this is: :bash:`pip3` or :bash:`pip`) or
+* ``pip install mrbles`` (if both Python 2 & 3 are installed this is: ``pip3`` or ``pip``) or
 
-* :bash:`python -m pip install mrbles` (if both Python 2 & 3 are installed this is: :bash:`pip3` or :bash:`pip`)
+* ``python -m pip install mrbles`` (if both Python 2 & 3 are installed this is: ``pip3`` or ``pip``)
 
 
-Using the :bash:`mrbles` package
---------------------------------
-The :bash:`mrbles` package automatically installs the Jupyter Notebook environment: https://http://jupyter.org/.
+Using the ``mrbles`` package
+----------------------------
+The ``mrbles`` package automatically installs the Jupyter Notebook environment: https://http://jupyter.org/.
 
-To test the :bash:`mrbles` package download the example Notebook and the data files:
+To test the ``mrbles`` package download the example Notebook and the data files:
 
 * Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
 * Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
@@ -109,7 +109,7 @@ To test the :bash:`mrbles` package download the example Notebook and the data fi
 * Open a Command Prompt or Terminal and navigate to that folder location.
 * Now start your Jupyter Notebook environment by using the following command:
 
-  :bash:`jupyter notebook`
+  ``jupyter notebook``
 
 * This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.
 * Click on the downloaded "example-notebook-shipped-data.ipynb", this will open that file.
