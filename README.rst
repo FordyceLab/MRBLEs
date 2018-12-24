@@ -35,8 +35,8 @@ To makes us of `mrbles` follow the following instructions.
 
 Python installation
 ~~~~~~~~~~~~~~~~~~~
-Install (preferably) Python >3.5 `Windows <https://www.python.org/downloads/windows/>`_ or `MacOS
-<https://www.python.org/downloads/mac-osx/>`_. `mrbles` is built to be compatible with Pyhton >2.7,
+Install (preferably) Python >3.5 Windows (https://www.python.org/downloads/windows/) or MacOS
+(https://www.python.org/downloads/mac-osx/). :bash:`mrbles` is built to be compatible with Pyhton >2.7,
 but its dependencies (other Python Packages) are getting less and less support for Python 2.7.
 
 Windows
@@ -55,9 +55,9 @@ https://docs.python.org/3/using/windows.html
 To make use of Python packages that do not come with a pre-compiled file (which `mrbles` does), as in they need to be
 compiled on your computer from the source code. It is required to install a C++ compiler.
 
-* If using Python 2.7, install `Microsoft Visual C++ Compiler for Python 2.7 <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_.
-* If using Python >3.6, install `Build Tools for Visual Studio 2017 <https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017>`_.
-* More info on `compilers here <https://wiki.python.org/moin/WindowsCompilers#Which_Microsoft_Visual_C.2B-.2B-_compiler_to_use_with_a_specific_Python_version_.3F>`_.
+* If using Python 2.7, install Microsoft Visual C++ Compiler for Python 2.7: https://www.microsoft.com/en-us/download/details.aspx?id=44266.
+* If using Python >3.6, install Build Tools for Visual Studio 2017: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017.
+* More info on compilers here: https://wiki.python.org/moin/WindowsCompilers#Which_Microsoft_Visual_C.2B-.2B-_compiler_to_use_with_a_specific_Python_version_.3F.
 
 Mac OSx
 _______
@@ -70,7 +70,7 @@ The installation for Mac OSx is slightly more complicated, but will help you in 
  - This is required for the installation of Python packages (C++ compiler) and for the installation of Brew, which is software that makes installing Python and dependencies much easier.
 
 * Second, install brew using the following command in Mac OSx Terminal:
-  
+
   :bash:`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)`
 
 
@@ -97,18 +97,18 @@ Using the :bash:`mrbles` package
 --------------------------------
 The :bash:`mrbles` package automatically installs the Jupyter Notebook environment: https://http://jupyter.org/.
 
-To test the `mrbles` package download the example Notebook and the data files:
+To test the :bash:`mrbles` package download the example Notebook and the data files:
 
-* Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-shipped-data.ipynb.
+* Notebook: https://github.com/FordyceLab/MRBLEs/blob/master/examples/example-notebook-publication-data.ipynb.
 * Data file: https://github.com/FordyceLab/MRBLEs/tree/master/data.
- 
+
  - The quickest way is to download all the GitHub files in a zip file: https://github.com/FordyceLab/MRBLEs/archive/master.zip.
 
 * Place the Notebook file in a location at your convenience, e.g. "C:\\docs\\mrbles_test" or "/users/your_name/docs/mrbles_test".
 * Place the data files in the sub-folder "data" of the location of the Notebook file.
 * Open a Command Prompt or Terminal and navigate to that folder location.
-* Now start your Jupyter Notebook environment by using the following command: 
-  
+* Now start your Jupyter Notebook environment by using the following command:
+
   :bash:`jupyter notebook`
 
 * This should open your default browser and display the contents of the folder your started the Jupyter Notebook environment from.
