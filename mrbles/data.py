@@ -102,7 +102,7 @@ class TableDataFrame(object):
             index = data.index
             self._dataframe = pd.concat([data.reset_index(drop=True),
                                          self.data.reset_index(drop=True)],
-                                        axis=1)
+                                        axis=1, sort=False)
             self._dataframe.index = index
             if 'index' in self._dataframe.index:
                 self._dataframe.drop(index='index')

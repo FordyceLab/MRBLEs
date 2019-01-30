@@ -185,7 +185,7 @@ class FindBeadsImaging(ImageDataFrame):
             self._dataframe = xr.concat(r_m, dim='f')
             self._bead_dims = pd.concat(r_d,
                                         keys=list(range(len(r_d))),
-                                        names=['f', 'bead_no'])
+                                        names=['f', 'bead_index'])
         else:
             self._dataframe, self._bead_dims = self._find(image)
 
@@ -822,7 +822,7 @@ class FindBeadsCircle(FindBeadsImaging):
             self._dataframe = xr.concat(r_m, dim='f')
             self._bead_dims = pd.concat(r_d,
                                         keys=list(range(len(r_d))),
-                                        names=['f', 'bead_no'])
+                                        names=['f', 'bead_index'])
         else:
             self._dataframe, self._bead_dims = self._find(image)
 

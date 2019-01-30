@@ -811,7 +811,7 @@ class Extract(TableDataFrame):
             self._dataframe.index.rename(
                 ['set', 'file', 'bead_index'], inplace=True)
         else:
-            self._dataframe.index.rename(['f', 'bead_no'], inplace=True)
+            self._dataframe.index.rename(['f', 'bead_index'], inplace=True)
         if combine_data is not None:
             self.combine(combine_data)
         self._dataframe.reset_index(inplace=True)
