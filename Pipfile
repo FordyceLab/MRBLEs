@@ -24,6 +24,8 @@ jupyter = "*"
 seaborn = ">=0.9.0"
 openpyxl = ">=2.5.12"
 "pep8" = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [dev-packages]
 
