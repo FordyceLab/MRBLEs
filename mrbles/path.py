@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-MRBLE-Path Classes and Functions
-================================
+"""MRBLE-Path Classes and Functions.
 
 This file stores the MRBLE-Path classes and functions for the MRBLEs Analysis
 module.
@@ -11,7 +9,6 @@ module.
 
 # [Future imports]
 from __future__ import (absolute_import, division, print_function)
-from builtins import (object)
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : path.py
@@ -69,6 +66,7 @@ class PathUnmix(TableDataFrame):
             Convert to Z-score if set to True, or uses mean and SD values of
             provided list position 0 is mean, position 1 is SD.
             Defaults to True.
+
         """
         data_conv = pd.DataFrame(
             {'signal': data.groupby(["set", "code"])[signal].median()}
@@ -114,8 +112,8 @@ class PathUnmix(TableDataFrame):
             Defaults to True.
         """
         data = np.zeros((channels))
-        for ch in range(channels):
-            data[ch] = randrange(0, signal_max)
+        for channel in range(channels):
+            data[channel] = randrange(0, signal_max)
         if spike_channel is not None:
             for sp_ch in spike_channel:
                 data[sp_ch] = data[sp_ch] * randrange(1, 10)

@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Pipeline Classes and functions
-==============================
+"""Pipeline Classes and functions.
 
 This files contains the pipeline for the MRBLEs analysis.
 
@@ -44,7 +42,8 @@ from six.moves import input
 
 # Intra-Package dependencies
 import mrbles
-from mrbles.core import FindBeadsImaging, FindBeadsCircle, ICP, Classify, SpectralUnmixing
+from mrbles.core import (FindBeadsImaging, FindBeadsCircle, ICP, Classify,
+                         SpectralUnmixing)
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
 from mrbles.report import ClusterCheck, BeadsReport, QCReport
 
@@ -295,11 +294,13 @@ class Find(ImageDataFrame):
     This class provides the method to find MRBLEs and segment regions for each
     MRBLE in brightfield images, provided by mrbles.Images.
 
-    Mask output: mask_full, mask_ring, mask_inside, mask_outside, mask_bkg, mask_check.
+    Mask output: mask_full, mask_ring, mask_inside, mask_outside, mask_bkg,
+    mask_check.
 
     Examples
     --------
-    >>> find_mrbles = mrbles.Find(bead_size=18, pixel_size=3.5, border_clear=True, circle_size=350)
+    >>> find_mrbles = mrbles.Find(bead_size=18, pixel_size=3.5,
+                                  border_clear=True, circle_size=350)
     >>> find_mrbles.settings.parallelize = True
     >>> find_mrbles.find(assay_images[:, : , 'Brightfield'])
         Bead diameter AVG: 54.36
@@ -342,13 +343,14 @@ class Find(ImageDataFrame):
     circle_size : int
         Set circle size for auto find circular ROI.
     min_r : int
-        Minimum size of beads. This is set only when using Circle Finding
-        method.
+        Minimum size of beads. Also set max_r and annulus_width.
+        When this is set Circle Finding method is used!
     max_r : int
-        Maximum size of beads. This is set only when using Circle Finding
-        method.
+        Maximum size of beads. Also set min_r and annulus_width.
+        When this is set Circle Finding method is used!
     annulus_width : int
-        Annulus width size. This is set only when using Circle Finding method.
+        Annulus width size. Also set min_r and max_r.
+        When this is set Circle Finding method is used!
 
     Attributes
     ----------
@@ -375,7 +377,8 @@ class Find(ImageDataFrame):
                                                   border_clear=border_clear,
                                                   circle_size=circle_size)
         else:
-            self._bead_objects = FindBeadsCircle(min_r=min_r,
+            self._bead_objects = FindBeadsCircle(bead_size=bead_size,
+                                                 min_r=min_r,
                                                  max_r=max_r,
                                                  annulus_width=annulus_width,
                                                  **kwargs)
@@ -433,8 +436,9 @@ class Find(ImageDataFrame):
     def beads_per_set(self):
         """Return total bead count in set(s)."""
         if self.sets is not None:
-            bead_no_list = {set_x: self._bead_dims.loc[self._bead_dims['set'] == set_x].shape[0]
-                            for set_x in self.sets}
+            bead_no_list = {
+                set_x: self._bead_dims.loc[self._bead_dims['set'] == set_x].shape[0]  # NOQA
+                for set_x in self.sets}
         else:
             bead_no_list = None
         return bead_no_list
@@ -872,6 +876,16 @@ class Extract(TableDataFrame):
         return num
 
     def background_subtract(self, assay_channel, bkg_data):
+        """Subtract background signal.
+
+        Parameters
+        ----------
+        assay_channel : str
+            Name of assay channel.
+        bkg_data : list, NumPy arrar, Pandas DataFrame
+            Data to be subtracted.
+
+        """
         if isinstance(bkg_data, string_types):
             self._dataframe['%s_min_bkg' % assay_channel] = \
                 self._dataframe[assay_channel] - self._dataframe[bkg_data]
@@ -989,6 +1003,7 @@ class Decode(TableDataFrame):
         min_prob : float
             Set minimal probability level from 0 to 1, e.g. 0.95.
             Defaults to None.
+
         """
         self._cluster_check.plot_3D(min_prob)
 
@@ -1005,6 +1020,7 @@ class Decode(TableDataFrame):
         min_prob : float
             Set minimal probability level from 0 to 1, e.g. 0.95.
             Defaults to None.
+
         """
         self._cluster_check.plot_2D(colors, ci_trace, min_prob)
 
@@ -1112,7 +1128,7 @@ class Analyze(TableDataFrame):
         if isinstance(bkg_data, string_types):
             self._data_per_bead['%s_min_bkg' % assay_channel] = \
                 self._data_per_bead[assay_channel] - \
-                    self._data_per_bead[bkg_data]
+                self._data_per_bead[bkg_data]
         elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
             self._data_per_bead['%s_min_bkg' % assay_channel] = \
                 self._data_per_bead[assay_channel] - bkg_data
@@ -1288,6 +1304,7 @@ class Analyze(TableDataFrame):
         savefig : boolean
             Save figures separately to 'report' folder.
             Defaults to False.
+
         """
         qc_report = QCReport(self.data_per_bead)
-        qc_report.generate(filename, savefig=False)
+        qc_report.generate(filename, savefig=savefig)

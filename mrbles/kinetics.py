@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Kinetics Classes and Functions
-================================
+"""Kinetics Classes and Functions.
 
 This file stores the kinetics classes and functions for the MRBLEs Analysis
 module.

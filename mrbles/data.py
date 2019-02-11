@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Data Classes and Functions
-==========================
+"""Data Classes and Functions.
 
 This file stores the data classes and functions for the MRBLEs Analysis module.
 """
@@ -378,11 +376,6 @@ class ImageSetRead(ImageDataFrame):
         """Return xarray dataframe representation."""
         return repr([self._dataframe])
 
-    # # TODO: Fix.
-    # def __getitem__(self, index):
-    #     """Get method."""
-    #     return self.data.loc[index]
-
     # Main image load function
     @classmethod
     def load(cls, file_path, series=0):
@@ -548,7 +541,7 @@ class ImageSetRead(ImageDataFrame):
         """
         image_files = []
         r = re.compile(pattern)
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             file_list = [os.path.join(root, x) for x in files if r.match(x)]
             if file_list:
                 image_files.append(file_list)
@@ -587,7 +580,8 @@ class ImageSetRead(ImageDataFrame):
         else:
             # Added check if using newer version of Scikit-Image
             try:
-                if isinstance(metadata['series'][0], tff.tifffile.TiffPageSeries):
+                if isinstance(metadata['series'][0],
+                              tff.tifffile.TiffPageSeries):
                     dims = [letter.lower()
                             for letter in metadata['series'][0].axes]
             except DeprecationWarning:

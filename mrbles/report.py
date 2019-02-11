@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Quality Control Report Classes and Functions
-============================================
+"""Quality Control Report Classes and Functions.
 
 This file stores the quality control report classes and functions for the MRBLEs Analysis
 module.
@@ -57,8 +55,9 @@ def circle_overlay(image, dims=None, ring=None):
         for dim_idx, dim in enumerate(dims):
             if ring is not None:
                 if type(ring) is int:
-                    cv2.circle(img, (int(ring[dim_idx][0]), int(ring[dim_idx][1])), int(
-                        ceil(ring[dim_idx][2])), (0, 255, 0), 1)
+                    cv2.circle(img,
+                               (int(ring[dim_idx][0]), int(ring[dim_idx][1])),
+                               int(ceil(ring[dim_idx][2])), (0, 255, 0), 1)
                 else:
                     for dim_r in ring:
                         cv2.circle(img, (int(dim_r[0]), int(dim_r[1])), int(
@@ -115,8 +114,8 @@ class ClusterCheck(TableDataFrame):
             y = b * (np.sin(theta))
             rtheta = np.radians(angle + 90)
             R = np.array([
-                 [np.cos(rtheta), -np.sin(rtheta)],
-                 [np.sin(rtheta), np.cos(rtheta)]
+                [np.cos(rtheta), -np.sin(rtheta)],
+                [np.sin(rtheta), np.cos(rtheta)]
                 ])
 
             x, y = np.dot(R, np.array([x, y]))

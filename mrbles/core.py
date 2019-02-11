@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Core Classes and Functions
-==========================
+"""Core Classes and Functions.
 
 This file stores the core classes and functions for the MRBLEs Analysis module.
 """
@@ -55,14 +53,9 @@ if version.parse(np.__version__) < version.parse("1.14.0"):
     RCOND = -1
 else:
     RCOND = None
-# Photutils compatibility issue
-if version.parse(photutils.__version__) < version.parse("0.4.0"):
-    warnings.warn("mrbles: Please upgrade module photutils >0.4.0!.")
 
 
 # Decorators
-
-
 def accepts(*types):  # NOQA
     """Check input parameters for data types."""
     def _check_accepts(func):
@@ -79,8 +72,6 @@ def accepts(*types):  # NOQA
 
 
 # Classes
-
-# TODO: Make compatible with Eu channel bead finding
 class FindBeadsImaging(ImageDataFrame):
     """Find and identify beads and their regions using imaging.
 
@@ -223,7 +214,6 @@ class FindBeadsImaging(ImageDataFrame):
                 mask_bkg[~roi_mask] = 0
                 mask_bkg[mask_bkg < 0] = 0
             bead_dims = self.get_dimensions(mask_bead)
-            # TODO: Make better - Below
             if bead_dims is None:
                 blank_img = np.zeros_like(bin_img)
                 mask_bead = blank_img
@@ -240,7 +230,6 @@ class FindBeadsImaging(ImageDataFrame):
                 overlay_image = self.cross_overlay(img,
                                                    bead_dims_overlay,
                                                    color=False)
-            # TODO: Make better - Above
         masks = xr.DataArray(data=np.array([mask_bead,
                                             mask_ring,
                                             mask_inside,
@@ -334,6 +323,7 @@ class FindBeadsImaging(ImageDataFrame):
         mask_outside[mask_min > 0] = 0
         return mask_outside
 
+    @classmethod
     def img2bin(cls, image, thr_block=15, thr_c=11):
         """Convert and adaptive threshold image."""
         img = cls._img2ubyte(image)
@@ -472,22 +462,22 @@ class FindBeadsImaging(ImageDataFrame):
         """
         if isinstance(filter_param, list):
             if slice_type == 'outside':
-                lbls_out = properties[(properties[filter_name] <
-                                       filter_param[0]) |
-                                      (properties[filter_name] >
-                                       filter_param[1])].label.values
+                lbls_out = properties[(properties[filter_name]
+                                       < filter_param[0])
+                                      | (properties[filter_name]
+                                         > filter_param[1])].label.values
             elif slice_type == 'inside':
-                lbls_out = properties[(properties[filter_name] >=
-                                       filter_param[0]) &
-                                      (properties[filter_name] <=
-                                       filter_param[1])].label.values
+                lbls_out = properties[(properties[filter_name]
+                                       >= filter_param[0])
+                                      & (properties[filter_name]
+                                         <= filter_param[1])].label.values
         else:
             if slice_type == 'up':
-                lbls_out = properties[properties[filter_name] >
-                                      filter_param].label.values
+                lbls_out = properties[properties[filter_name]
+                                      > filter_param].label.values
             elif slice_type == 'down':
-                lbls_out = properties[properties[filter_name] <
-                                      filter_param].label.values
+                lbls_out = properties[properties[filter_name]
+                                      < filter_param].label.values
         return lbls_out
 
     @staticmethod
@@ -523,17 +513,13 @@ class FindBeadsImaging(ImageDataFrame):
         seg_img = ndi.label(image, structure=ellipse_kernel)[0]
         return seg_img
 
-    # TODO: Get rid of photutils
     @staticmethod
     def get_dimensions(mask):
         """Get dimensions of labeled regions in labeled mask."""
         properties = photutils.source_properties(mask, mask)
         if not properties:
             return None
-        if version.parse(photutils.__version__) < version.parse("0.4.0"):
-            tbl = photutils.properties_table(properties)
-        else:
-            tbl = properties.to_table()  # Convert to table
+        tbl = properties.to_table()  # Convert to table
         lbl = np.array(tbl['min_value'], dtype=np.int16)
         reg_x = tbl['xcentroid']
         reg_y = tbl['ycentroid']
@@ -650,7 +636,8 @@ class FindBeadsImaging(ImageDataFrame):
     def eccentricity(axis_a, axis_b):
         """Return eccentricity by major axes.
 
-        Parameters:
+        Parameters
+        ----------
         axis_a : float
             Size major axis a.
         axis_b : float
@@ -691,14 +678,14 @@ class FindBeadsCircle(FindBeadsImaging):
 
     """
 
-    def __init__(self, min_r, max_r,
-                 param_1=10, param_2=10,
+    def __init__(self, bead_size, min_r, max_r,
+                 param_1=99, param_2=7,
                  annulus_width=2,
                  min_dist=None, enlarge=1,
                  auto_filt=True, border_clear=False,
                  parallelize=True):
         """Instantiate FindBeadsCircle."""
-        super(FindBeadsImaging, self).__init__()
+        super(FindBeadsCircle, self).__init__(bead_size)
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width
@@ -711,7 +698,6 @@ class FindBeadsCircle(FindBeadsImaging):
         # Default values for local background
         self.mask_bkg_size = 11
         self.mask_bkg_buffer = 2
-        # TODO: proper method
         if min_dist is not None:
             self.min_dist = min_dist
         else:
@@ -721,36 +707,36 @@ class FindBeadsCircle(FindBeadsImaging):
         self._circles_dim = None
         self._dataframe = None
 
-    @property
-    def labeled_mask(self):
-        """Return labeled mask."""
-        return self._labeled_mask
+    # @property
+    # def labeled_mask(self):
+    #     """Return labeled mask."""
+    #     return self._labeled_mask
 
-    @property
-    def labeled_annulus_mask(self):
-        """Return labeled annulus mask."""
-        return self._labeled_annulus_mask
+    # @property
+    # def labeled_annulus_mask(self):
+    #     """Return labeled annulus mask."""
+    #     return self._labeled_annulus_mask
 
-    @property
-    def circles_dim(self):
-        """Return circle dimensions."""
-        return self._circles_dim
+    # @property
+    # def circles_dim(self):
+    #     """Return circle dimensions."""
+    #     return self._circles_dim
 
-    @staticmethod
-    def convert(image):
-        """8 Bit Convert.
+    # @staticmethod
+    # def convert(image):
+    #     """8 Bit Convert.
 
-        Checks image data type and converts if necessary to uint8 array.
-        image : M x N image array
-        """
-        try:
-            img_type = image.dtype
-        except ValueError:
-            print("Not a NumPy array of image: %s" % image)
-        else:
-            if img_type == 'uint16':
-                image = np.array(((image / 2**16) * 2**8), dtype='uint8')
-        return image
+    #     Checks image data type and converts if necessary to uint8 array.
+    #     image : M x N image array
+    #     """
+    #     try:
+    #         img_type = image.dtype
+    #     except ValueError:
+    #         print("Not a NumPy array of image: %s" % image)
+    #     else:
+    #         if img_type == 'uint16':
+    #             image = np.array(((image / 2**16) * 2**8), dtype='uint8')
+    #     return image
 
     @staticmethod
     def circle_mask(image, min_dist, min_r, max_r, param_1, param_2, enlarge):
@@ -776,7 +762,7 @@ class FindBeadsCircle(FindBeadsImaging):
         """Find and separate circles using watershed on initial mask."""
         D = ndi.distance_transform_edt(mask, sampling=1)
         markers_circles = np.zeros_like(mask)
-        for idx, circle in enumerate(circles):
+        for _, circle in enumerate(circles):
             markers_circles[int(circle[1]), int(circle[0])] = 1
         markers = ndi.label(markers_circles, structure=np.ones((3, 3)))[0]
         labels = sk.morphology.watershed(np.negative(D), markers, mask=mask)
@@ -808,7 +794,7 @@ class FindBeadsCircle(FindBeadsImaging):
     def find(self, image):
         """Execute finding beads image(s)."""
         if isinstance(image, xr.DataArray):
-            image = image.values.astype(np.uint8)
+            image = image.values
         if image.ndim == 3:
             if (sys.version_info >= (3, 0)) and (self.parallelize is True):
                 mp_worker = mp.Pool()
@@ -828,7 +814,7 @@ class FindBeadsCircle(FindBeadsImaging):
 
     def _find(self, image):
         """Find objects in image and return data."""
-        img = self.convert(image)
+        img = self._img2ubyte(image)
         mask, circles = self.circle_mask(img, self.min_dist,
                                          self.min_r,
                                          self.max_r,
@@ -933,7 +919,7 @@ class SpectralUnmixing(ImageDataFrame):
     to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for
     each dye.
 
-    parameters
+    Parameters
     ----------
     ref_data : list, ndarray, Pandas DataFrame, mrbles.data.References
         Reference spectra for each dye channel as Numpy Array: N x M, where N
@@ -963,10 +949,6 @@ class SpectralUnmixing(ImageDataFrame):
     def __repr__(self):
         """Return Xarray dataframe representation."""
         return repr([self._dataframe])
-
-    def __getitem__(self, index):
-        """Get method."""
-        return self.data.loc[index]
 
     def unmix(self, images):
         """Unmix images based on initiated reference data.
@@ -1142,7 +1124,7 @@ class ICP(object):
         input1 : list, ndarray
         input2 : list, ndarray
 
-        returns
+        Returns
         -------
         matrix : ndarray
             Returns func(input1/input2)
@@ -1245,7 +1227,7 @@ class Classify(object):
         Minimum covariance.
         Defaults to 1e-7.
     sigma : float
-        ...
+        Minimum significance.
         Defaults to 1e-5.
     train : boolean
         Sets training mode. Remembers covariance matrix or resets to initial
@@ -1254,7 +1236,6 @@ class Classify(object):
 
     """
 
-    # TODO Change to **kwargs structure
     def __init__(self, target,
                  sigma=1e-5, train=False, **kwargs):
         """Instantiate Classification object."""
@@ -1379,7 +1360,6 @@ class Classify(object):
             missing = None
         return missing
 
-    # TODO
     def code_metrics(self, nsigma=3, resolution=100):
         """Return code metrics."""
         data = pd.DataFrame()
