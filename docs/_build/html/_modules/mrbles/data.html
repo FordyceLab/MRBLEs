@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.data &#8212; mrbles 0.13.3 documentation</title>
+    <title>mrbles.data &#8212; mrbles 0.13.4 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.13.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.13.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -42,9 +42,7 @@
 <span></span><span class="c1"># !/usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Data Classes and Functions</span>
-<span class="sd">==========================</span>
+<span class="sd">&quot;&quot;&quot;Data Classes and Functions.</span>
 
 <span class="sd">This file stores the data classes and functions for the MRBLEs Analysis module.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -419,11 +417,6 @@
         <span class="sd">&quot;&quot;&quot;Return xarray dataframe representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">repr</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">])</span>
 
-    <span class="c1"># # TODO: Fix.</span>
-    <span class="c1"># def __getitem__(self, index):</span>
-    <span class="c1">#     &quot;&quot;&quot;Get method.&quot;&quot;&quot;</span>
-    <span class="c1">#     return self.data.loc[index]</span>
-
     <span class="c1"># Main image load function</span>
 <div class="viewcode-block" id="ImageSetRead.load"><a class="viewcode-back" href="../../source/mrbles.data.html#mrbles.data.ImageSetRead.load">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -589,7 +582,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">image_files</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
             <span class="n">file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
             <span class="k">if</span> <span class="n">file_list</span><span class="p">:</span>
                 <span class="n">image_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span>
@@ -628,7 +621,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Added check if using newer version of Scikit-Image</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">tff</span><span class="o">.</span><span class="n">tifffile</span><span class="o">.</span><span class="n">TiffPageSeries</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                              <span class="n">tff</span><span class="o">.</span><span class="n">tifffile</span><span class="o">.</span><span class="n">TiffPageSeries</span><span class="p">):</span>
                     <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">letter</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                             <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axes</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">DeprecationWarning</span><span class="p">:</span>
@@ -703,13 +697,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.13.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 0.13.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2018, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

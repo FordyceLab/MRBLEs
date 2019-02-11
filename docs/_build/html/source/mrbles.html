@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles package &#8212; mrbles 0.13.3 documentation</title>
+    <title>mrbles package &#8212; mrbles 0.13.4 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.13.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.13.4 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -44,8 +44,7 @@
 </div>
 <div class="section" id="module-mrbles.core">
 <span id="mrbles-core-module"></span><h2>mrbles.core module<a class="headerlink" href="#module-mrbles.core" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="core-classes-and-functions">
-<h3>Core Classes and Functions<a class="headerlink" href="#core-classes-and-functions" title="Permalink to this headline">¶</a></h3>
+<p>Core Classes and Functions.</p>
 <p>This file stores the core classes and functions for the MRBLEs Analysis module.</p>
 <dl class="class">
 <dt id="mrbles.core.Classify">
@@ -62,7 +61,7 @@
 Defaults to 1e-5.</li>
 <li><strong>min_covar</strong> (<em>float</em>) – Minimum covariance.
 Defaults to 1e-7.</li>
-<li><strong>sigma</strong> (<em>float</em>) – …
+<li><strong>sigma</strong> (<em>float</em>) – Minimum significance.
 Defaults to 1e-5.</li>
 <li><strong>train</strong> (<em>boolean</em>) – Sets training mode. Remembers covariance matrix or resets to initial
 covariance matrix.
@@ -154,7 +153,7 @@ Defaults to False.</li>
 
 <dl class="class">
 <dt id="mrbles.core.FindBeadsCircle">
-<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">FindBeadsCircle</code><span class="sig-paren">(</span><em>min_r</em>, <em>max_r</em>, <em>param_1=10</em>, <em>param_2=10</em>, <em>annulus_width=2</em>, <em>min_dist=None</em>, <em>enlarge=1</em>, <em>auto_filt=True</em>, <em>border_clear=False</em>, <em>parallelize=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">FindBeadsCircle</code><span class="sig-paren">(</span><em>bead_size</em>, <em>min_r</em>, <em>max_r</em>, <em>param_1=99</em>, <em>param_2=7</em>, <em>annulus_width=2</em>, <em>min_dist=None</em>, <em>enlarge=1</em>, <em>auto_filt=True</em>, <em>border_clear=False</em>, <em>parallelize=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging" title="mrbles.core.FindBeadsImaging"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.core.FindBeadsImaging</span></code></a></p>
 <p>Find and identify bead objects from image.</p>
 <p>Parameters changes for each setup/magnification/bead-set.</p>
@@ -191,20 +190,6 @@ Defaults to 1, no enlarging/shrinking.</li>
 <dd><p>Find and separate circles using watershed on initial mask.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="mrbles.core.FindBeadsCircle.circles_dim">
-<code class="descname">circles_dim</code><a class="headerlink" href="#mrbles.core.FindBeadsCircle.circles_dim" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return circle dimensions.</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="mrbles.core.FindBeadsCircle.convert">
-<em class="property">static </em><code class="descname">convert</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>8 Bit Convert.</p>
-<p>Checks image data type and converts if necessary to uint8 array.
-image : M x N image array</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="mrbles.core.FindBeadsCircle.create_annulus_mask">
 <code class="descname">create_annulus_mask</code><span class="sig-paren">(</span><em>labeled_mask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.create_annulus_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.create_annulus_mask" title="Permalink to this definition">¶</a></dt>
@@ -215,18 +200,6 @@ image : M x N image array</p>
 <dt id="mrbles.core.FindBeadsCircle.find">
 <code class="descname">find</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.find" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute finding beads image(s).</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mrbles.core.FindBeadsCircle.labeled_annulus_mask">
-<code class="descname">labeled_annulus_mask</code><a class="headerlink" href="#mrbles.core.FindBeadsCircle.labeled_annulus_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return labeled annulus mask.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mrbles.core.FindBeadsCircle.labeled_mask">
-<code class="descname">labeled_mask</code><a class="headerlink" href="#mrbles.core.FindBeadsCircle.labeled_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return labeled mask.</p>
 </dd></dl>
 
 <dl class="method">
@@ -354,14 +327,18 @@ list[0] = dp, list[1] = param1, list[2] = param2</li>
 <dt id="mrbles.core.FindBeadsImaging.eccentricity">
 <em class="property">static </em><code class="descname">eccentricity</code><span class="sig-paren">(</span><em>axis_a</em>, <em>axis_b</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.eccentricity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.eccentricity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return eccentricity by major axes.</p>
-<p>Parameters:
-axis_a : float</p>
-<blockquote>
-<div>Size major axis a.</div></blockquote>
-<dl class="docutils">
-<dt>axis_b <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Size major axis b.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axis_a</strong> (<em>float</em>) – Size major axis a.</li>
+<li><strong>axis_b</strong> (<em>float</em>) – Size major axis b.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="classmethod">
@@ -427,9 +404,9 @@ If provided a value it filter up or down that value.</li>
 <dd><p>Get all unique positive values from labeled mask.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="classmethod">
 <dt id="mrbles.core.FindBeadsImaging.img2bin">
-<code class="descname">img2bin</code><span class="sig-paren">(</span><em>image</em>, <em>thr_block=15</em>, <em>thr_c=11</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.img2bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.img2bin" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">img2bin</code><span class="sig-paren">(</span><em>image</em>, <em>thr_block=15</em>, <em>thr_c=11</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.img2bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.img2bin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert and adaptive threshold image.</p>
 </dd></dl>
 
@@ -612,11 +589,9 @@ where N are the spectral channels and M x P the image pixels
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-mrbles.data">
 <span id="mrbles-data-module"></span><h2>mrbles.data module<a class="headerlink" href="#module-mrbles.data" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="data-classes-and-functions">
-<h3>Data Classes and Functions<a class="headerlink" href="#data-classes-and-functions" title="Permalink to this headline">¶</a></h3>
+<p>Data Classes and Functions.</p>
 <p>This file stores the data classes and functions for the MRBLEs Analysis module.</p>
 <dl class="class">
 <dt id="mrbles.data.ImageDataFrame">
@@ -990,11 +965,9 @@ regular expressions (regex).</li>
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-mrbles.kinetics">
 <span id="mrbles-kinetics-module"></span><h2>mrbles.kinetics module<a class="headerlink" href="#module-mrbles.kinetics" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="kinetics-classes-and-functions">
-<h3>Kinetics Classes and Functions<a class="headerlink" href="#kinetics-classes-and-functions" title="Permalink to this headline">¶</a></h3>
+<p>Kinetics Classes and Functions.</p>
 <p>This file stores the kinetics classes and functions for the MRBLEs Analysis
 module.</p>
 <dl class="class">
@@ -1146,11 +1119,9 @@ Defaults to 1E-4.</li>
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-mrbles.path">
 <span id="mrbles-path-module"></span><h2>mrbles.path module<a class="headerlink" href="#module-mrbles.path" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="mrble-path-classes-and-functions">
-<h3>MRBLE-Path Classes and Functions<a class="headerlink" href="#mrble-path-classes-and-functions" title="Permalink to this headline">¶</a></h3>
+<p>MRBLE-Path Classes and Functions.</p>
 <p>This file stores the MRBLE-Path classes and functions for the MRBLEs Analysis
 module.</p>
 <dl class="class">
@@ -1217,11 +1188,9 @@ Defaults to True.</li>
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-mrbles.pipeline">
 <span id="mrbles-pipeline-module"></span><h2>mrbles.pipeline module<a class="headerlink" href="#module-mrbles.pipeline" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="pipeline-classes-and-functions">
-<h3>Pipeline Classes and functions<a class="headerlink" href="#pipeline-classes-and-functions" title="Permalink to this headline">¶</a></h3>
+<p>Pipeline Classes and functions.</p>
 <p>This files contains the pipeline for the MRBLEs analysis.</p>
 <div class="figure align-center">
 <img alt="../_images/pipeline-diagram1.png" src="../_images/pipeline-diagram1.png" />
@@ -1461,7 +1430,20 @@ Defaults to np.median.</td>
 <dl class="method">
 <dt id="mrbles.pipeline.Extract.background_subtract">
 <code class="descname">background_subtract</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>bkg_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract.background_subtract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract.background_subtract" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Subtract background signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>assay_channel</strong> (<em>str</em>) – Name of assay channel.</li>
+<li><strong>bkg_data</strong> (<em>list, NumPy arrar, Pandas DataFrame</em>) – Data to be subtracted.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Extract.filter">
@@ -1527,9 +1509,11 @@ when only using a single channel: [‘inside’].</li>
 <p>Find MRBLEs in brightfield images.</p>
 <p>This class provides the method to find MRBLEs and segment regions for each
 MRBLE in brightfield images, provided by mrbles.Images.</p>
-<p>Mask output: mask_full, mask_ring, mask_inside, mask_outside, mask_bkg, mask_check.</p>
+<p>Mask output: mask_full, mask_ring, mask_inside, mask_outside, mask_bkg,
+mask_check.</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_mrbles</span> <span class="o">=</span> <span class="n">mrbles</span><span class="o">.</span><span class="n">Find</span><span class="p">(</span><span class="n">bead_size</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">border_clear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">circle_size</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_mrbles</span> <span class="o">=</span> <span class="n">mrbles</span><span class="o">.</span><span class="n">Find</span><span class="p">(</span><span class="n">bead_size</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+<span class="go">                              border_clear=True, circle_size=350)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">find_mrbles</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">parallelize</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">find_mrbles</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">assay_images</span><span class="p">[:,</span> <span class="p">:</span> <span class="p">,</span> <span class="s1">&#39;Brightfield&#39;</span><span class="p">])</span>
 <span class="go">    Bead diameter AVG: 54.36</span>
@@ -1570,11 +1554,12 @@ Defaults to None.</li>
 <li><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
 Defaults to True.</li>
 <li><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</li>
-<li><strong>min_r</strong> (<em>int</em>) – Minimum size of beads. This is set only when using Circle Finding
-method.</li>
-<li><strong>max_r</strong> (<em>int</em>) – Maximum size of beads. This is set only when using Circle Finding
-method.</li>
-<li><strong>annulus_width</strong> (<em>int</em>) – Annulus width size. This is set only when using Circle Finding method.</li>
+<li><strong>min_r</strong> (<em>int</em>) – Minimum size of beads. Also set max_r and annulus_width.
+When this is set Circle Finding method is used!</li>
+<li><strong>max_r</strong> (<em>int</em>) – Maximum size of beads. Also set min_r and annulus_width.
+When this is set Circle Finding method is used!</li>
+<li><strong>annulus_width</strong> (<em>int</em>) – Annulus width size. Also set min_r and max_r.
+When this is set Circle Finding method is used!</li>
 </ul>
 </td>
 </tr>
@@ -1914,11 +1899,9 @@ subtracted, and normalized.</p>
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-mrbles.report">
 <span id="mrbles-report-module"></span><h2>mrbles.report module<a class="headerlink" href="#module-mrbles.report" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="quality-control-report-classes-and-functions">
-<h3>Quality Control Report Classes and Functions<a class="headerlink" href="#quality-control-report-classes-and-functions" title="Permalink to this headline">¶</a></h3>
+<p>Quality Control Report Classes and Functions.</p>
 <p>This file stores the quality control report classes and functions for the MRBLEs Analysis
 module.</p>
 <dl class="class">
@@ -2283,7 +2266,6 @@ Overlay of 2 images using alpha blend.</p>
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-mrbles">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mrbles" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="mrbles-analysis-package">
@@ -2309,30 +2291,12 @@ affinity information based on titrations of MRBLEs assays.</p>
   <ul>
 <li><a class="reference internal" href="#">mrbles package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-mrbles.core">mrbles.core module</a><ul>
-<li><a class="reference internal" href="#core-classes-and-functions">Core Classes and Functions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mrbles.data">mrbles.data module</a><ul>
-<li><a class="reference internal" href="#data-classes-and-functions">Data Classes and Functions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mrbles.kinetics">mrbles.kinetics module</a><ul>
-<li><a class="reference internal" href="#kinetics-classes-and-functions">Kinetics Classes and Functions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mrbles.path">mrbles.path module</a><ul>
-<li><a class="reference internal" href="#mrble-path-classes-and-functions">MRBLE-Path Classes and Functions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mrbles.pipeline">mrbles.pipeline module</a><ul>
-<li><a class="reference internal" href="#pipeline-classes-and-functions">Pipeline Classes and functions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mrbles.report">mrbles.report module</a><ul>
-<li><a class="reference internal" href="#quality-control-report-classes-and-functions">Quality Control Report Classes and Functions</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#module-mrbles.core">mrbles.core module</a></li>
+<li><a class="reference internal" href="#module-mrbles.data">mrbles.data module</a></li>
+<li><a class="reference internal" href="#module-mrbles.kinetics">mrbles.kinetics module</a></li>
+<li><a class="reference internal" href="#module-mrbles.path">mrbles.path module</a></li>
+<li><a class="reference internal" href="#module-mrbles.pipeline">mrbles.pipeline module</a></li>
+<li><a class="reference internal" href="#module-mrbles.report">mrbles.report module</a></li>
 <li><a class="reference internal" href="#module-mrbles">Module contents</a><ul>
 <li><a class="reference internal" href="#mrbles-analysis-package">MRBLEs Analysis Package</a></li>
 </ul>
@@ -2373,12 +2337,12 @@ affinity information based on titrations of MRBLEs assays.</p>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.13.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 0.13.4 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2018, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>
