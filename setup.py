@@ -94,7 +94,6 @@ setup(
                       'plotly',
                       'lmfit',
                       'xlrd',
-                      'packaging',
                       'notebook>=5.7.1',
                       'jupyter',
                       'seaborn>=0.9.0',
