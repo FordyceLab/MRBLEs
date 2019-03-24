@@ -591,7 +591,7 @@ class ImageSetRead(ImageDataFrame):
                 warnings.warn(
                     "Scikit-Image latest update has changed method to retrieve"
                     "metadata. Please upgrade to latest Scikit-Image package.")
-            if len(metadata['series']) > 1 and (series is 'all'):
+            if len(metadata['series']) > 1 and (series == 'all'):
                 dims.insert(0, 'p')
                 data = np.squeeze(data)
             if 'i' in dims:
@@ -611,7 +611,7 @@ class ImageSetRead(ImageDataFrame):
                 data,
                 dims=dims,
                 coords={'c': channels},
-                encoding={'dtype': np.uint16}
+                encoding={'dtype': np.uint16}  # TODO: Change encoding...
             )
         return panel_data
 
