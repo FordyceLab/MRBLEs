@@ -27,6 +27,7 @@ openpyxl = ">=2.5.12"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 ipykernel = "*"
+twine = "*"
 
 [dev-packages]
 
