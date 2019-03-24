@@ -17,11 +17,10 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'mrbles'
-copyright = '2018, Bjorn Harink'
+copyright = '2019, Bjorn Harink'
 author = 'Bjorn Harink'
 
 # The short X.Y version
@@ -49,6 +48,7 @@ extensions = [
 ]
 # Extenstion settings
 napoleon_google_docstring = False
+napoleon_numpy_docstring = True
 napoleon_use_param = False
 napoleon_use_ivar = True
 autosummary_generate = True

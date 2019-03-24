@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>MRBLEs Analysis Package &#8212; mrbles 0.13.4 documentation</title>
+    <title>MRBLEs Analysis Package &#8212; mrbles 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to mrbles’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">mrbles 0.13.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -66,11 +66,16 @@ lanthanide nanophosphors that can be uniquely identified via imaging alone.
 We are currently developing new assays that use these microspheres to
 understand how signaling proteins recognize their peptide substrates and to
 improve our ability to extract information from single cells.</p>
+<div class="section" id="abstact-on-mrbles-and-the-mrbles-package">
+<h3>Abstact on MRBLEs and the <em>mrbles</em> package<a class="headerlink" href="#abstact-on-mrbles-and-the-mrbles-package" title="Permalink to this headline">¶</a></h3>
+<p>Multiplexed bioassays, in which multiple analytes of interest are probed in parallel within a single small volume, have greatly accelerated the pace of biological discovery. Bead-based multiplexed bioassays have many technical advantages, including near solution-phase kinetics, small sample volume requirements, many within-assay replicates to reduce measurement error, and, for some bead materials, the ability to synthesize analytes directly on beads via solid-phase synthesis. To allow bead-based multiplexing, analytes can be synthesized on spectrally encoded beads with a 1:1 linkage between analyte identity and embedded codes. Bead-bound analyte libraries can then be pooled and incubated with a fluorescently-labeled macromolecule of interest, allowing downstream quantification of interactions between the macromolecule and all analytes simultaneously via imaging alone. Extracting quantitative binding data from these images poses several computational image processing challenges, requiring the ability to identify all beads in each image, quantify bound fluorescent material associated with each bead, and determine their embedded spectral code to reveal analyte identities. Here, we present a novel open-source Python software package (the mrbles analysis package) that provides the necessary tools to: (1) find encoded beads in a bright-field microscopy image; (2) quantify bound fluorescent material associated with bead perimeters; (3) identify embedded ratiometric spectral codes within beads; and (4) return data aggregated by embedded code and for each individual bead. We demonstrate the utility of this package by applying it towards analyzing data generated via multiplexed measurement of calcineurin protein binding to MRBLEs (Microspheres with Ratiometric Barcode Lanthanide Encoding) containing known and mutant binding peptide motifs. We anticipate that this flexible package should be applicable to a wide variety of assays, including simple bead or droplet finding analysis, quantification of binding to non-encoded beads, and analysis of multiplexed assays that use ratiometric, spectrally encoded beads.</p>
 </div>
 <div class="section" id="links">
-<h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
+<h3>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h3>
+<p>Publication: <a class="reference external" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0203725">https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0203725</a></p>
 <p>Documentation: <a class="reference external" href="https://fordycelab.github.io/MRBLEs/">https://fordycelab.github.io/MRBLEs/</a></p>
 <p>Source code: <a class="reference external" href="https://github.com/FordyceLab/MRBLEs/">https://github.com/FordyceLab/MRBLEs/</a></p>
+</div>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
@@ -187,8 +192,11 @@ compiled on your computer from the source code. It is required to install a C++ 
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">MRBLEs Analysis Package</a><ul>
-<li><a class="reference internal" href="#mrbles-project">MRBLEs project</a></li>
+<li><a class="reference internal" href="#mrbles-project">MRBLEs project</a><ul>
+<li><a class="reference internal" href="#abstact-on-mrbles-and-the-mrbles-package">Abstact on MRBLEs and the <em>mrbles</em> package</a></li>
 <li><a class="reference internal" href="#links">Links</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#python-installation">Python installation</a><ul>
 <li><a class="reference internal" href="#windows">Windows</a></li>
@@ -247,11 +255,11 @@ compiled on your computer from the source code. It is required to install a C++ 
         <li class="right" >
           <a href="index.html" title="Welcome to mrbles’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">mrbles 0.13.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2018, Bjorn Harink.
+        &#169; Copyright 2019, Bjorn Harink.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
