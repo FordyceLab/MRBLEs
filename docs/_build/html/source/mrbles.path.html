@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.path module &#8212; mrbles 1.0.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>mrbles.path module &#8212; mrbles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -28,7 +26,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -47,19 +45,15 @@ module.</p>
 <em class="property">class </em><code class="descclassname">mrbles.path.</code><code class="descname">PathUnmix</code><span class="sig-paren">(</span><em>references</em>, <em>blast=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
 <p>MRBLE-Path unmixing algorithm.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>references</strong> (<em>Pandas DataFrame</em>) – Dataframe with reference spectra.</li>
-<li><strong>blast</strong> (<em>bool</em>) – Setting to convert blast E-scores.
-Defaults to True.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>references</strong> (<em>Pandas DataFrame</em>) – Dataframe with reference spectra.</p></li>
+<li><p><strong>blast</strong> (<em>bool</em>) – Setting to convert blast E-scores.
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="staticmethod">
 <dt id="mrbles.path.PathUnmix.blast_convert">
 <em class="property">static </em><code class="descname">blast_convert</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.blast_convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.blast_convert" title="Permalink to this definition">¶</a></dt>
@@ -70,15 +64,15 @@ Defaults to True.</li>
 <dt id="mrbles.path.PathUnmix.generate_test_refs">
 <em class="property">static </em><code class="descname">generate_test_refs</code><span class="sig-paren">(</span><em>channels</em>, <em>spike_channel=None</em>, <em>signal_max=65536</em>, <em>scale=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.generate_test_refs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.generate_test_refs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate test reference spectra.</p>
-<dl class="docutils">
-<dt>spike_channel <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of channel numbers to spike.</dd>
-<dt>signal_max <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Maximum value.
-Defaults to 2**16: 65536.</dd>
-<dt>scale <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>Scale to 1.
-Defaults to True.</dd>
+<dl class="simple">
+<dt>spike_channel<span class="classifier">list</span></dt><dd><p>List of channel numbers to spike.</p>
+</dd>
+<dt>signal_max<span class="classifier">int</span></dt><dd><p>Maximum value.
+Defaults to 2**16: 65536.</p>
+</dd>
+<dt>scale<span class="classifier">bool</span></dt><dd><p>Scale to 1.
+Defaults to True.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -86,21 +80,17 @@ Defaults to True.</dd>
 <dt id="mrbles.path.PathUnmix.unmix">
 <code class="descname">unmix</code><span class="sig-paren">(</span><em>data</em>, <em>signal</em>, <em>z_score=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.unmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.unmix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unmix data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains the various sets.</li>
-<li><strong>signal</strong> (<em>str</em>) – Column with signal data.</li>
-<li><strong>z_score</strong> (<em>bool or list</em>) – Convert to Z-score if set to True, or uses mean and SD values of
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains the various sets.</p></li>
+<li><p><strong>signal</strong> (<em>str</em>) – Column with signal data.</p></li>
+<li><p><strong>z_score</strong> (<em>bool or list</em>) – Convert to Z-score if set to True, or uses mean and SD values of
 provided list position 0 is mean, position 1 is SD.
-Defaults to True.</li>
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -126,8 +116,6 @@ Defaults to True.</li>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -145,12 +133,12 @@ Defaults to True.</li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.0.
     </div>
   </body>
 </html>

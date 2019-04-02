@@ -76,8 +76,10 @@ class Images(ImageDataFrame):
     For loading OME-TIFF image it uses mrbles.data.ImageSetRead.
     Please see this class documentation for more information.
 
-    Method 1 - Example
-    ------------------
+    Examples
+    --------
+    Method 1.
+
     >>> assay_folder = '../data'
     >>> assay_folders = {'Set 1': '../data1',
                          'Set 2': '../data2'}
@@ -87,15 +89,15 @@ class Images(ImageDataFrame):
         Found 12 files in Set 1
         Found 11 files in Set 2
 
-    Method 2 - Example
-    ------------------
+    Method 2.
+
     >>> image_arrays = {'Set 1': numpy_array_1,
                         'Set 2': numpy_array_2}
     >>> channel_names = ['Brightfield', 'Cy5', 'l-435', 'l-546', 'l-620']
     >>> assay_images = mrbles.Images(data=image_arrays, channels=channel_names)
 
-    Output - Example
-    ----------------
+    Output - Example.
+
     >>> assay_images
         {'Set 1': <xarray.DataArray (f: 12, c: 5, y: 1024, x: 1024)>
             array([[[[169., ..., 166.],
@@ -1049,12 +1051,14 @@ class Analyze(TableDataFrame):
     ----------
     functions : dict
         Dictionary of functions and their corresponding names.
-        Default: {'mean': np.mean,
-                  'median': np.median,
-                  'sd': np.std,
-                  'se': sp.stats.sem,
-                  'N': len,
-                  'CV': sp.stats.variation}
+        Default:
+        {
+            'mean': np.mean,
+            'median': np.median,
+            'sd': np.std,
+            'se': sp.stats.sem,
+            'N': len,
+            'CV': sp.stats.variation}
 
     """
 

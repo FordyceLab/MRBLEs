@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.report &#8212; mrbles 1.0.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>mrbles.report &#8212; mrbles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +26,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -107,6 +105,7 @@
                        <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">2</span><span class="p">])),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">img</span></div>
+
 
 <div class="viewcode-block" id="image_overlay"><a class="viewcode-back" href="../../source/mrbles.report.html#mrbles.report.image_overlay">[docs]</a><span class="k">def</span> <span class="nf">image_overlay</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">image_blend</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">cmap_image</span><span class="o">=</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">,</span> <span class="n">cmap_blend</span><span class="o">=</span><span class="s1">&#39;jet&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Overlay 2 Images.</span>
@@ -421,7 +420,7 @@
 <span class="sd">    This method generates the selected images per-MRBLE.</span>
 
 <span class="sd">    WARNING!</span>
-<span class="sd">    --------</span>
+
 <span class="sd">    This method can take a lot of time, since it will generate images</span>
 <span class="sd">    per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images</span>
 <span class="sd">    each, which makes a total of 11,000 images.</span>
@@ -445,10 +444,6 @@
 <span class="sd">    sort : boolean</span>
 <span class="sd">        Sort by code.</span>
 <span class="sd">        Defaults to True.</span>
-
-<span class="sd">    Methods:</span>
-<span class="sd">    --------</span>
-<span class="sd">    generate() : method</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -1183,8 +1178,6 @@
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -1202,13 +1195,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.0.
     </div>
   </body>
 </html>

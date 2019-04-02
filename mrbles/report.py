@@ -67,6 +67,7 @@ def circle_overlay(image, dims=None, ring=None):
     plt.imshow(img)
     return img
 
+
 def image_overlay(image, image_blend, alpha=0.2, cmap_image='Greys_r', cmap_blend='jet'):
     """Overlay 2 Images.
     Overlay of 2 images using alpha blend.
@@ -380,7 +381,7 @@ class BeadsReport(object):
     This method generates the selected images per-MRBLE.
 
     WARNING!
-    --------
+
     This method can take a lot of time, since it will generate images
     per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
     each, which makes a total of 11,000 images.
@@ -404,10 +405,6 @@ class BeadsReport(object):
     sort : boolean
         Sort by code.
         Defaults to True.
-
-    Methods:
-    --------
-    generate() : method
 
     Attributes
     ----------

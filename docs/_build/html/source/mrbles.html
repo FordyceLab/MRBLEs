@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles package &#8212; mrbles 1.0.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>mrbles package &#8212; mrbles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -28,7 +26,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -51,26 +49,22 @@
 <em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">Classify</code><span class="sig-paren">(</span><em>target</em>, <em>sigma=1e-05</em>, <em>train=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Classification of beads by Gaussian Mixture Model.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>target</strong> (<em>list, NumPy array</em>) – List of target ratios.</li>
-<li><strong>tol</strong> (<em>float</em>) – Tolerance.
-Defaults to 1e-5.</li>
-<li><strong>min_covar</strong> (<em>float</em>) – Minimum covariance.
-Defaults to 1e-7.</li>
-<li><strong>sigma</strong> (<em>float</em>) – Minimum significance.
-Defaults to 1e-5.</li>
-<li><strong>train</strong> (<em>boolean</em>) – Sets training mode. Remembers covariance matrix or resets to initial
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>list, NumPy array</em>) – List of target ratios.</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Tolerance.
+Defaults to 1e-5.</p></li>
+<li><p><strong>min_covar</strong> (<em>float</em>) – Minimum covariance.
+Defaults to 1e-7.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Minimum significance.
+Defaults to 1e-5.</p></li>
+<li><p><strong>train</strong> (<em>boolean</em>) – Sets training mode. Remembers covariance matrix or resets to initial
 covariance matrix.
-Defaults to False.</li>
+Defaults to False.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.core.Classify.code_metrics">
 <code class="descname">code_metrics</code><span class="sig-paren">(</span><em>nsigma=3</em>, <em>resolution=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify.code_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify.code_metrics" title="Permalink to this definition">¶</a></dt>
@@ -157,27 +151,23 @@ Defaults to False.</li>
 <dd><p>Bases: <a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging" title="mrbles.core.FindBeadsImaging"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.core.FindBeadsImaging</span></code></a></p>
 <p>Find and identify bead objects from image.</p>
 <p>Parameters changes for each setup/magnification/bead-set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>min_r</strong> (<em>int</em>) – Sets the minimum diameter of the bead in pixels.</li>
-<li><strong>max_r</strong> (<em>int</em>) – Sets the maximum diameter of the bead in pixels.</li>
-<li><strong>param_1</strong> (<em>int</em>) – Sets the gradient steepness. CHECK</li>
-<li><strong>param_2</strong> (<em>int</em>) – Sets the sparsity. CHECK</li>
-<li><strong>annulus_width</strong> (<em>int, optional</em>) – Sets the width of the annulus in pixels.
-Defaults to 2 pixels.</li>
-<li><strong>min_dist</strong> (<em>int, optional</em>) – Sets the minimal distance between the centers of the beads in pixels.
-Defaults to 2x of the minimum diameter (min_r).</li>
-<li><strong>enlarge</strong> (<em>float, optional</em>) – Enlarges the found diameter by this factor.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_r</strong> (<em>int</em>) – Sets the minimum diameter of the bead in pixels.</p></li>
+<li><p><strong>max_r</strong> (<em>int</em>) – Sets the maximum diameter of the bead in pixels.</p></li>
+<li><p><strong>param_1</strong> (<em>int</em>) – Sets the gradient steepness. CHECK</p></li>
+<li><p><strong>param_2</strong> (<em>int</em>) – Sets the sparsity. CHECK</p></li>
+<li><p><strong>annulus_width</strong> (<em>int, optional</em>) – Sets the width of the annulus in pixels.
+Defaults to 2 pixels.</p></li>
+<li><p><strong>min_dist</strong> (<em>int, optional</em>) – Sets the minimal distance between the centers of the beads in pixels.
+Defaults to 2x of the minimum diameter (min_r).</p></li>
+<li><p><strong>enlarge</strong> (<em>float, optional</em>) – Enlarges the found diameter by this factor.
 1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
-Defaults to 1, no enlarging/shrinking.</li>
+Defaults to 1, no enlarging/shrinking.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="staticmethod">
 <dt id="mrbles.core.FindBeadsCircle.circle_mask">
 <em class="property">static </em><code class="descname">circle_mask</code><span class="sig-paren">(</span><em>image</em>, <em>min_dist</em>, <em>min_r</em>, <em>max_r</em>, <em>param_1</em>, <em>param_2</em>, <em>enlarge</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.circle_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.circle_mask" title="Permalink to this definition">¶</a></dt>
@@ -216,31 +206,27 @@ Defaults to 1, no enlarging/shrinking.</li>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame" title="mrbles.data.ImageDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.ImageDataFrame</span></code></a></p>
 <p>Find and identify beads and their regions using imaging.</p>
 <p>Parallel computing version.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</li>
-<li><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
-Defaults to True.</li>
-<li><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</p></li>
+<li><p><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
+Defaults to True.</p></li>
+<li><p><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.area_min" title="mrbles.core.FindBeadsImaging.area_min"><strong>area_min</strong></a> (<em>float</em>) – Sets the minimum area in pixels. Set to minimum size inside of ring.
-Defaults to 0.1 * area of set bead_size.</li>
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.area_max" title="mrbles.core.FindBeadsImaging.area_max"><strong>area_max</strong></a> (<em>float</em>) – Sets the maximum area in pixels. Set maximum size outside of ring.
-Defaults to 1.5 * area of set bead_size.</li>
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.eccen_max" title="mrbles.core.FindBeadsImaging.eccen_max"><strong>eccen_max</strong></a> (<em>float</em>) – Get or set maximum eccentricity of beads in value 0 to 1, where a
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.area_min" title="mrbles.core.FindBeadsImaging.area_min"><strong>area_min</strong></a> (<em>float</em>) – Sets the minimum area in pixels. Set to minimum size inside of ring.
+Defaults to 0.1 * area of set bead_size.</p></li>
+<li><p><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.area_max" title="mrbles.core.FindBeadsImaging.area_max"><strong>area_max</strong></a> (<em>float</em>) – Sets the maximum area in pixels. Set maximum size outside of ring.
+Defaults to 1.5 * area of set bead_size.</p></li>
+<li><p><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.eccen_max" title="mrbles.core.FindBeadsImaging.eccen_max"><strong>eccen_max</strong></a> (<em>float</em>) – Get or set maximum eccentricity of beads in value 0 to 1, where a
 perfect circle is 0.
-Defaults to 0.65.</li>
+Defaults to 0.65.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="attribute">
 <dt id="mrbles.core.FindBeadsImaging.area_max">
 <code class="descname">area_max</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.area_max" title="Permalink to this definition">¶</a></dt>
@@ -281,33 +267,26 @@ Defaults to 0.65.</li>
 <dt id="mrbles.core.FindBeadsImaging.circle_area">
 <em class="property">static </em><code class="descname">circle_area</code><span class="sig-paren">(</span><em>diameter</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.circle_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.circle_area" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return area of circle.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>diameter</strong> (<em>float</em>) – Diameter of circle.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>diameter</strong> (<em>float</em>) – Diameter of circle.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="mrbles.core.FindBeadsImaging.circle_roi">
 <em class="property">classmethod </em><code class="descname">circle_roi</code><span class="sig-paren">(</span><em>image</em>, <em>circle_size</em>, <em>hough_settings=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.circle_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.circle_roi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a circular image ROI.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>image</strong> (<em>NumPy array image</em>)</li>
-<li><strong>hough_settings</strong> (<em>list, int</em>) – Settings for HoughCircles in list.
-list[0] = dp, list[1] = param1, list[2] = param2</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>NumPy array image</em>)</p></li>
+<li><p><strong>hough_settings</strong> (<em>list, int</em>) – Settings for HoughCircles in list.
+list[0] = dp, list[1] = param1, list[2] = param2</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -327,18 +306,14 @@ list[0] = dp, list[1] = param1, list[2] = param2</li>
 <dt id="mrbles.core.FindBeadsImaging.eccentricity">
 <em class="property">static </em><code class="descname">eccentricity</code><span class="sig-paren">(</span><em>axis_a</em>, <em>axis_b</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.eccentricity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.eccentricity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return eccentricity by major axes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axis_a</strong> (<em>float</em>) – Size major axis a.</li>
-<li><strong>axis_b</strong> (<em>float</em>) – Size major axis b.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axis_a</strong> (<em>float</em>) – Size major axis a.</p></li>
+<li><p><strong>axis_b</strong> (<em>float</em>) – Size major axis b.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
@@ -357,27 +332,23 @@ list[0] = dp, list[1] = param1, list[2] = param2</li>
 <dt id="mrbles.core.FindBeadsImaging.filter_property">
 <em class="property">static </em><code class="descname">filter_property</code><span class="sig-paren">(</span><em>properties</em>, <em>filter_param</em>, <em>filter_name</em>, <em>slice_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.filter_property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.filter_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get labels of beads outside/inside/up/down of propert limits.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>properties</strong> (<em>photutils table</em>) – Table with feature properties from labeled mask.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>properties</strong> (<em>photutils table</em>) – Table with feature properties from labeled mask.
 &gt;&gt;&gt; from photutils import source_properties, properties_table
 &gt;&gt;&gt; tbl = properties_table(properties)
-&gt;&gt;&gt; properties = source_properties(mask, mask)</li>
-<li><strong>filter_param</strong> (<em>float, int, list</em>) – Parameters to filter by.
+&gt;&gt;&gt; properties = source_properties(mask, mask)</p></li>
+<li><p><strong>filter_param</strong> (<em>float, int, list</em>) – Parameters to filter by.
 If provided a list it will filter by range, inside or outside).
-If provided a value it filter up or down that value.</li>
-<li><strong>slice_type</strong> (<em>string</em>) – ‘outside’ : &lt; &gt;
+If provided a value it filter up or down that value.</p></li>
+<li><p><strong>slice_type</strong> (<em>string</em>) – ‘outside’ : &lt; &gt;
 ‘inside’  : &gt;= &lt;=
 ‘up’      : &gt;
-‘down’    : &lt;</li>
+‘down’    : &lt;</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -438,22 +409,18 @@ If provided a value it filter up or down that value.</li>
 <dt id="mrbles.core.FindBeadsImaging.show_image_overlay">
 <em class="property">static </em><code class="descname">show_image_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>image_blend</em>, <em>alpha=0.3</em>, <em>cmap1='Greys_r'</em>, <em>cmap2='jet'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.show_image_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.show_image_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay of 2 images using alpha blend.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>image</strong> (<em>NumPy array</em>) – Base image.</li>
-<li><strong>image_blend</strong> (<em>NumPy arra</em>) – Image to blend over base image.</li>
-<li><strong>aplha</strong> (<em>float</em>) – Amount of blending. Value between 0 and 1.
-Defaults to 0.3.</li>
-<li><strong>c_map1</strong> (<em>cmap</em>) – Color scheme using cmap. See matplotlib for color schemes.
-Defaults to ‘Greys_r’, which are reversed grey values.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>NumPy array</em>) – Base image.</p></li>
+<li><p><strong>image_blend</strong> (<em>NumPy arra</em>) – Image to blend over base image.</p></li>
+<li><p><strong>aplha</strong> (<em>float</em>) – Amount of blending. Value between 0 and 1.
+Defaults to 0.3.</p></li>
+<li><p><strong>c_map1</strong> (<em>cmap</em>) – Color scheme using cmap. See matplotlib for color schemes.
+Defaults to ‘Greys_r’, which are reversed grey values.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -465,45 +432,41 @@ Defaults to ‘Greys_r’, which are reversed grey values.</li>
 <p>Iterative Closest Point (ICP).</p>
 <p>Iterative Closest Point (ICP) algorithm to minimize the difference
 between two clouds of points.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix_method</strong> (<em>string/function/list, optional</em>) – Transformation matrix method. Standard methods: ‘max’, ‘mean’, ‘std’.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix_method</strong> (<em>string/function/list, optional</em>) – Transformation matrix method. Standard methods: ‘max’, ‘mean’, ‘std’.
 Other options: own function or list of initial guesses.
-Defaults to ‘std’.</li>
-<li><strong>offset</strong> (<em>list of float, optional</em>)</li>
-<li><strong>max_iter</strong> (<em>int, optional</em>) – Maximum number of iterations.
-Defaults to 100.</li>
-<li><strong>tol</strong> (<em>float, optional</em>) – Convergence threshold. ICP will stop after delta &lt; tol.
-Defaults to 1e-4.</li>
-<li><strong>outlier_pct</strong> (<em>float, optional</em>) – Discard percentile 0.x of furthest distance from target. Percentile
+Defaults to ‘std’.</p></li>
+<li><p><strong>offset</strong> (<em>list of float, optional</em>)</p></li>
+<li><p><strong>max_iter</strong> (<em>int, optional</em>) – Maximum number of iterations.
+Defaults to 100.</p></li>
+<li><p><strong>tol</strong> (<em>float, optional</em>) – Convergence threshold. ICP will stop after delta &lt; tol.
+Defaults to 1e-4.</p></li>
+<li><p><strong>outlier_pct</strong> (<em>float, optional</em>) – Discard percentile 0.x of furthest distance from target. Percentile
 given in fraction [0-1], e.g. ‘0.001’.
-Defaults to 0.</li>
-<li><strong>train</strong> (<em>boolean</em>) – Turn on (True) or off (False) traning mode.
+Defaults to 0.</p></li>
+<li><p><strong>train</strong> (<em>boolean</em>) – Turn on (True) or off (False) traning mode.
 This will keep the current tranformation from resetting to default
 initial values.
-Defaults to True.</li>
-<li><strong>echo</strong> (<em>boolean</em>) – Turn on (True) or off (False) printing information while in process.
+Defaults to True.</p></li>
+<li><p><strong>echo</strong> (<em>boolean</em>) – Turn on (True) or off (False) printing information while in process.
 Prints the delta for each iteration, the final number of iterations,
-and the final transformation and offset matrices.</li>
+and the final transformation and offset matrices.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>matrix</strong> (<em>NumPy array</em>) – This stores the transformation matrix.</li>
-<li><strong>offset</strong> (<em>NumPy vector</em>) – This stores the offset vector.</li>
-<li><strong>Functions</strong> – </li>
-<li><strong>---------</strong> – </li>
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.ICP.fit" title="mrbles.core.ICP.fit"><strong>fit</strong></a> (<em>function</em>) – Function to find ICP using set parameters and attributes.</li>
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.ICP.transform" title="mrbles.core.ICP.transform"><strong>transform</strong></a> (<em>function</em>) – Function to apply transformat data using current transformation matrix
-and offset vector.</li>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>matrix</strong> (<em>NumPy array</em>) – This stores the transformation matrix.</p></li>
+<li><p><strong>offset</strong> (<em>NumPy vector</em>) – This stores the offset vector.</p></li>
+<li><p><strong>Functions</strong> – </p></li>
+<li><p><strong>---------</strong> – </p></li>
+<li><p><a class="reference internal" href="mrbles.core.html#mrbles.core.ICP.fit" title="mrbles.core.ICP.fit"><strong>fit</strong></a> (<em>function</em>) – Function to find ICP using set parameters and attributes.</p></li>
+<li><p><a class="reference internal" href="mrbles.core.html#mrbles.core.ICP.transform" title="mrbles.core.ICP.transform"><strong>transform</strong></a> (<em>function</em>) – Function to apply transformat data using current transformation matrix
+and offset vector.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.core.ICP.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>data</em>, <em>target=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.fit" title="Permalink to this definition">¶</a></dt>
@@ -514,26 +477,22 @@ and offset vector.</li>
 <dt id="mrbles.core.ICP.matrix_create">
 <em class="property">static </em><code class="descname">matrix_create</code><span class="sig-paren">(</span><em>func</em>, <em>input1</em>, <em>input2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.matrix_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.matrix_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create identity matrix and set values with function on inputs e.g ‘np.mean’.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>func</strong> (<em>function</em>) – Function to apply on input1 divided by input2, e.g. ‘np.std’.
-Insert function without function call: ().</li>
-<li><strong>input1</strong> (<em>list, ndarray</em>)</li>
-<li><strong>input2</strong> (<em>list, ndarray</em>)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – Function to apply on input1 divided by input2, e.g. ‘np.std’.
+Insert function without function call: ().</p></li>
+<li><p><strong>input1</strong> (<em>list, ndarray</em>)</p></li>
+<li><p><strong>input2</strong> (<em>list, ndarray</em>)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matrix</strong> – Returns func(input1/input2)</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>matrix</strong> – Returns func(input1/input2)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -552,15 +511,12 @@ Insert function without function call: ().</li>
 <p>Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images
 to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for
 each dye.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ref_data</strong> (<em>list, ndarray, Pandas DataFrame, mrbles.data.References</em>) – Reference spectra for each dye channel as Numpy Array: N x M, where N
-are the spectral channels and M the dye channels.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ref_data</strong> (<em>list, ndarray, Pandas DataFrame, mrbles.data.References</em>) – Reference spectra for each dye channel as Numpy Array: N x M, where N
+are the spectral channels and M the dye channels.</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.core.SpectralUnmixing.unmix">
 <code class="descname">unmix</code><span class="sig-paren">(</span><em>images</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#SpectralUnmixing.unmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.SpectralUnmixing.unmix" title="Permalink to this definition">¶</a></dt>
@@ -568,16 +524,13 @@ are the spectral channels and M the dye channels.</td>
 <p>Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm
 images to Dy, Sm and Tm nanophospohorous lanthanides using reference
 spectra for each dye.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image_data</strong> (<em>NumPy array, Xarry DataArray, mrbles.Images</em>) – Spectral images as NumPy array: N x M x P,
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image_data</strong> (<em>NumPy array, Xarry DataArray, mrbles.Images</em>) – Spectral images as NumPy array: N x M x P,
 where N are the spectral channels and M x P the image pixels
-(Y x X).</td>
-</tr>
-</tbody>
-</table>
+(Y x X).</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -598,33 +551,26 @@ where N are the spectral channels and M x P the image pixels
 <em class="property">class </em><code class="descclassname">mrbles.data.</code><code class="descname">ImageDataFrame</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageDataFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageDataFrame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Xarray based dataframe object for images.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="mrbles.data.html#module-mrbles.data" title="mrbles.data"><strong>data</strong></a> (<em>Xarray DataArray</em>) – Returns (cropped, if crop_x and/or crop_y is set) Xarray DataArray.</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.xdata" title="mrbles.data.ImageDataFrame.xdata"><strong>xdata</strong></a> (<em>Xarray DataArray</em>) – Returns uncropped Xarray DataArray.</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.sets" title="mrbles.data.ImageDataFrame.sets"><strong>sets</strong></a> (<em>list</em>) – Returns a list of all set names, if ‘set’ column is present.</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_x" title="mrbles.data.ImageDataFrame.crop_x"><strong>crop_x</strong></a> (<em>slice</em>) – Crop X slice. Set with slice().</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_y" title="mrbles.data.ImageDataFrame.crop_y"><strong>crop_y</strong></a> (<em>slice</em>) – Crop Y slice. Set with slice().</li>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.data" title="mrbles.data.ImageDataFrame.data"><strong>data</strong></a> (<em>Xarray DataArray</em>) – Returns (cropped, if crop_x and/or crop_y is set) Xarray DataArray.</p></li>
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.xdata" title="mrbles.data.ImageDataFrame.xdata"><strong>xdata</strong></a> (<em>Xarray DataArray</em>) – Returns uncropped Xarray DataArray.</p></li>
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.sets" title="mrbles.data.ImageDataFrame.sets"><strong>sets</strong></a> (<em>list</em>) – Returns a list of all set names, if ‘set’ column is present.</p></li>
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_x" title="mrbles.data.ImageDataFrame.crop_x"><strong>crop_x</strong></a> (<em>slice</em>) – Crop X slice. Set with slice().</p></li>
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_y" title="mrbles.data.ImageDataFrame.crop_y"><strong>crop_y</strong></a> (<em>slice</em>) – Crop Y slice. Set with slice().</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.data.ImageDataFrame.combine">
 <code class="descname">combine</code><span class="sig-paren">(</span><em>images</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageDataFrame.combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageDataFrame.combine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Combine iamges with dataframe.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>images</strong> (<em>Xarray DataArray, dict of Xarray DataArrays</em>)</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>images</strong> (<em>Xarray DataArray, dict of Xarray DataArrays</em>)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -669,19 +615,15 @@ where N are the spectral channels and M x P the image pixels
 <dd><p>Shift images of channel by x and y pixels.</p>
 <p>WARNING: This will shift the images permanently and sets inbound pixels
 to 0. Reload images to reset.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>channel</strong> (<em>str</em>) – Channel name to shift.</li>
-<li><strong>x_shift</strong> (<em>int</em>) – Pixels to shift in X dimension.</li>
-<li><strong>y_shift</strong> (<em>int</em>) – Pixels to shift in Y dimension.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> (<em>str</em>) – Channel name to shift.</p></li>
+<li><p><strong>x_shift</strong> (<em>int</em>) – Pixels to shift in X dimension.</p></li>
+<li><p><strong>y_shift</strong> (<em>int</em>) – Pixels to shift in Y dimension.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -697,35 +639,31 @@ to 0. Reload images to reset.</p>
 <em class="property">class </em><code class="descclassname">mrbles.data.</code><code class="descname">ImageSetRead</code><span class="sig-paren">(</span><em>file_path</em>, <em>series=0</em>, <em>output='xr'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame" title="mrbles.data.ImageDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.ImageDataFrame</span></code></a></p>
 <p>Image set data object that loads image set from file(s).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>file_path</strong> (<em>string/list [string, string, …]</em>) – File path as string, e.g. ‘C:/folder/file.tif’, or as list of file
-paths, e.g. [‘C:/folder/file.tif’, ‘C:/folder/file.tif’].</li>
-<li><strong>series</strong> (<em>int, optional</em>) – Sets the series number if file has multiple series.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>string/list [string, string, …]</em>) – File path as string, e.g. ‘C:/folder/file.tif’, or as list of file
+paths, e.g. [‘C:/folder/file.tif’, ‘C:/folder/file.tif’].</p></li>
+<li><p><strong>series</strong> (<em>int, optional</em>) – Sets the series number if file has multiple series.
 To Loads all series set to series=’all’.
-Defaults to 0.</li>
-<li><strong>output</strong> (<em>str, optional</em>) – Sets default output method. Options: ‘nd’ for NumPy ndarray or ‘xd’
+Defaults to 0.</p></li>
+<li><p><strong>output</strong> (<em>str, optional</em>) – Sets default output method. Options: ‘nd’ for NumPy ndarray or ‘xd’
 for xarray.
-Defaults to ‘ndarray’.</li>
+Defaults to ‘ndarray’.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first"><strong>function descriptions.</strong> (<em>See</em>) – </p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>_dataframe</strong> (<em>xarray dataframe</em>) – Returned when calling the instance.</li>
-<li><strong>_dataframe[idx]</strong> (<em>NumPy ndarray</em>) – Returns the index value or slice values: [start:stop:stride]. Warning:
-when using column names stop values are included.</li>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>function descriptions.</strong> (<em>See</em>) – </p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>_dataframe</strong> (<em>xarray dataframe</em>) – Returned when calling the instance.</p></li>
+<li><p><strong>_dataframe[idx]</strong> (<em>NumPy ndarray</em>) – Returns the index value or slice values: [start:stop:stride]. Warning:
+when using column names stop values are included.</p></li>
 </ul>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">image_data_object</span> <span class="o">=</span> <span class="n">ImageSetRead</span><span class="p">(</span><span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">image_files</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">]</span>
@@ -738,17 +676,15 @@ when using column names stop values are included.</li>
 <dt id="mrbles.data.ImageSetRead.axes">
 <code class="descname">axes</code><a class="headerlink" href="#mrbles.data.ImageSetRead.axes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return data order.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>data_order</strong> – Returns order as string with: P for position; F for file; T for
-timepoint, C for channel; Y for Y-axis; X for X-axis.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>data_order</strong> – Returns order as string with: P for position; F for file; T for
+timepoint, C for channel; Y for Y-axis; X for X-axis.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">image_data_object</span> <span class="o">=</span> <span class="n">ImageSetRead</span><span class="p">(</span><span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">image_data_object</span><span class="o">.</span><span class="n">axes</span>
@@ -798,21 +734,17 @@ timepoint, C for channel; Y for Y-axis; X for X-axis.</td>
 <em class="property">classmethod </em><code class="descname">load</code><span class="sig-paren">(</span><em>file_path</em>, <em>series=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load image files into data structures.</p>
 <p>Class method. Can be used without instantiating.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>file_path</strong> (<em>string/list [string, string, …]</em>) – File path as string, e.g. ‘C:/folder/file.tif’, or as list of file
-paths, e.g. [‘C:/folder/file.tif’, ‘C:/folder/file.tif’].</li>
-<li><strong>series</strong> (<em>int, optional</em>) – Sets the series number if file has multiple series (or positions).
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>string/list [string, string, …]</em>) – File path as string, e.g. ‘C:/folder/file.tif’, or as list of file
+paths, e.g. [‘C:/folder/file.tif’, ‘C:/folder/file.tif’].</p></li>
+<li><p><strong>series</strong> (<em>int, optional</em>) – Sets the series number if file has multiple series (or positions).
 Use series=’all’ for loading all series.
-Defaults to 0.</li>
+Defaults to 0.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ImageSetRead</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">image_files</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;C:/folder/file.tif&#39;</span><span class="p">]</span>
@@ -837,39 +769,31 @@ Defaults to 0.</li>
 <dt id="mrbles.data.ImageSetRead.scan_path">
 <em class="property">static </em><code class="descname">scan_path</code><span class="sig-paren">(</span><em>path</em>, <em>pattern='.*.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.scan_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.scan_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scan folder recursively for files matching the pattern.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>path</strong> (<em>string</em>) – Folder path as string, e.g. r’C:/folder/file.tif’.</li>
-<li><strong>pattern</strong> (<em>string</em>) – General file pattern as search string, e.g. ‘20160728_MOL_*’, using
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>string</em>) – Folder path as string, e.g. r’C:/folder/file.tif’.</p></li>
+<li><p><strong>pattern</strong> (<em>string</em>) – General file pattern as search string, e.g. ‘20160728_MOL_*’, using
 regular expressions (regex).
-Defaults to ‘.*.tif’.</li>
+Defaults to ‘.*.tif’.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="mrbles.data.ImageSetRead.scan_paths">
 <em class="property">classmethod </em><code class="descname">scan_paths</code><span class="sig-paren">(</span><em>paths</em>, <em>pattern='.*.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#ImageSetRead.scan_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.ImageSetRead.scan_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scan folders recursively for files matching the pattern.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>paths</strong> (<em>list</em>) – Folder paths as list, e.g. [‘C:/folder/file.tif’, …].</li>
-<li><strong>pattern</strong> (<em>string</em>) – General file pattern as search string, e.g. ‘20160728_MOL_*’, using
-regular expressions (regex).</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>list</em>) – Folder paths as list, e.g. [‘C:/folder/file.tif’, …].</p></li>
+<li><p><strong>pattern</strong> (<em>string</em>) – General file pattern as search string, e.g. ‘20160728_MOL_*’, using
+regular expressions (regex).</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -911,31 +835,24 @@ regular expressions (regex).</li>
 <em class="property">class </em><code class="descclassname">mrbles.data.</code><code class="descname">TableDataFrame</code><span class="sig-paren">(</span><em>data=None</em>, <em>flag_filt=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#TableDataFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.TableDataFrame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Pandas based dataframe object for table data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="mrbles.data.html#module-mrbles.data" title="mrbles.data"><strong>data</strong></a> (<em>Pandas DataFrame</em>) – Returns (filtered, if ‘filter’ column is present) Pandas DataFrame.</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame.pdata" title="mrbles.data.TableDataFrame.pdata"><strong>pdata</strong></a> (<em>Pandas DataFrame</em>) – Returns unfiltered Pandas DataFrame</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.sets" title="mrbles.data.ImageDataFrame.sets"><strong>sets</strong></a> (<em>list</em>) – Returns a list of all set names, if ‘set’ column is present.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame.data" title="mrbles.data.TableDataFrame.data"><strong>data</strong></a> (<em>Pandas DataFrame</em>) – Returns (filtered, if ‘filter’ column is present) Pandas DataFrame.</p></li>
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame.pdata" title="mrbles.data.TableDataFrame.pdata"><strong>pdata</strong></a> (<em>Pandas DataFrame</em>) – Returns unfiltered Pandas DataFrame</p></li>
+<li><p><a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame.sets" title="mrbles.data.TableDataFrame.sets"><strong>sets</strong></a> (<em>list</em>) – Returns a list of all set names, if ‘set’ column is present.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.data.TableDataFrame.combine">
 <code class="descname">combine</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/data.html#TableDataFrame.combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.data.TableDataFrame.combine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Combine data with dataframe.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>Pandas DataFrame</em>)</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Pandas DataFrame</em>)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -1003,24 +920,21 @@ For mor information and functionalilty, please visit:
 <p>Assuming protein [M]total in excess model: [M] ≈ [M]total = [MP]+[M].</p>
 <p>Model -&gt; [MP] := ([M]total * Rmax) / (Kd + [M]total)</p>
 <blockquote>
-<div>[M]total * Rmax</div></blockquote>
-<dl class="docutils">
-<dt>[MP] := ——————-</dt>
-<dd>Kd + [M]total</dd>
+<div><p>[M]total * Rmax</p>
+</div></blockquote>
+<dl class="simple">
+<dt>[MP] := ——————-</dt><dd><p>Kd + [M]total</p>
+</dd>
 </dl>
 <p>All concentrations must be in the same units!</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>Mt</strong> (<em>float</em>) – Total protein [M] concentration: [M]total = [M]free+[MP].</li>
-<li><strong>Rmax</strong> (<em>float</em>) – Maximum response level in abitrary units.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Mt</strong> (<em>float</em>) – Total protein [M] concentration: [M]total = [M]free+[MP].</p></li>
+<li><p><strong>Rmax</strong> (<em>float</em>) – Maximum response level in abitrary units.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
@@ -1051,25 +965,23 @@ For mor information and functionalilty, please visit:
 <p>Kurt’s white paper for competive binding.</p>
 <p>Assuming substrate (peptide on bead) or complex (protein) concentration in
 excess.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>c_substrate</strong> (<em>array</em>) – NumPy array of substrate (peptide) concentrations.</li>
-<li><strong>c_complex</strong> (<em>array</em>) – NumPy array of complex (protein) concentrations.</li>
-<li><strong>kd_init</strong> (<em>int</em>) – Set range max for Kd’s starting from 0.</li>
-<li><strong>tol</strong> (<em>float</em>) – Set tolerance error.
-Defaults to 1E-4.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c_substrate</strong> (<em>array</em>) – NumPy array of substrate (peptide) concentrations.</p></li>
+<li><p><strong>c_complex</strong> (<em>array</em>) – NumPy array of complex (protein) concentrations.</p></li>
+<li><p><strong>kd_init</strong> (<em>int</em>) – Set range max for Kd’s starting from 0.</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Set tolerance error.
+Defaults to 1E-4.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="mrbles.kinetics.html#mrbles.kinetics.GlobalFit.result" title="mrbles.kinetics.GlobalFit.result"><strong>result</strong></a> (<em>array</em>) – Returns NumPy array of fit.</li>
-<li><strong>Functions</strong> – </li>
-<li><strong>---------</strong> – </li>
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.ICP.fit" title="mrbles.core.ICP.fit"><strong>fit</strong></a> (<em>function</em>) – Function to fit parameters.</li>
-<li><strong>Examples</strong> – <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Mmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  <span class="c1"># Matrix of protein concentrations,</span>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="mrbles.kinetics.html#mrbles.kinetics.KModelSim.result" title="mrbles.kinetics.KModelSim.result"><strong>result</strong></a> (<em>array</em>) – Returns NumPy array of fit.</p></li>
+<li><p><strong>Functions</strong> – </p></li>
+<li><p><strong>---------</strong> – </p></li>
+<li><p><a class="reference internal" href="mrbles.kinetics.html#mrbles.kinetics.KModelSim.fit" title="mrbles.kinetics.KModelSim.fit"><strong>fit</strong></a> (<em>function</em>) – Function to fit parameters.</p></li>
+<li><p><strong>Examples</strong> – <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Mmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  <span class="c1"># Matrix of protein concentrations,</span>
 <span class="go">    e.g. 20x between 0 to 3 uM.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(([</span><span class="mi">10</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">))</span>      <span class="c1"># Concentrations of each peptide,</span>
 <span class="go">    e.g. 10x 10 uM.</span>
@@ -1079,12 +991,10 @@ Defaults to 1E-4.</li>
 <span class="gp">...</span>
 </pre></div>
 </div>
-</li>
+</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="staticmethod">
 <dt id="mrbles.kinetics.KModelSim.comp_excess">
 <em class="property">static </em><code class="descname">comp_excess</code><span class="sig-paren">(</span><em>Mmat</em>, <em>Pt</em>, <em>Kd</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/kinetics.html#KModelSim.comp_excess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.kinetics.KModelSim.comp_excess" title="Permalink to this definition">¶</a></dt>
@@ -1129,19 +1039,15 @@ module.</p>
 <em class="property">class </em><code class="descclassname">mrbles.path.</code><code class="descname">PathUnmix</code><span class="sig-paren">(</span><em>references</em>, <em>blast=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
 <p>MRBLE-Path unmixing algorithm.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>references</strong> (<em>Pandas DataFrame</em>) – Dataframe with reference spectra.</li>
-<li><strong>blast</strong> (<em>bool</em>) – Setting to convert blast E-scores.
-Defaults to True.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>references</strong> (<em>Pandas DataFrame</em>) – Dataframe with reference spectra.</p></li>
+<li><p><strong>blast</strong> (<em>bool</em>) – Setting to convert blast E-scores.
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="staticmethod">
 <dt id="mrbles.path.PathUnmix.blast_convert">
 <em class="property">static </em><code class="descname">blast_convert</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.blast_convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.blast_convert" title="Permalink to this definition">¶</a></dt>
@@ -1152,15 +1058,15 @@ Defaults to True.</li>
 <dt id="mrbles.path.PathUnmix.generate_test_refs">
 <em class="property">static </em><code class="descname">generate_test_refs</code><span class="sig-paren">(</span><em>channels</em>, <em>spike_channel=None</em>, <em>signal_max=65536</em>, <em>scale=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.generate_test_refs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.generate_test_refs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate test reference spectra.</p>
-<dl class="docutils">
-<dt>spike_channel <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of channel numbers to spike.</dd>
-<dt>signal_max <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Maximum value.
-Defaults to 2**16: 65536.</dd>
-<dt>scale <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>Scale to 1.
-Defaults to True.</dd>
+<dl class="simple">
+<dt>spike_channel<span class="classifier">list</span></dt><dd><p>List of channel numbers to spike.</p>
+</dd>
+<dt>signal_max<span class="classifier">int</span></dt><dd><p>Maximum value.
+Defaults to 2**16: 65536.</p>
+</dd>
+<dt>scale<span class="classifier">bool</span></dt><dd><p>Scale to 1.
+Defaults to True.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1168,21 +1074,17 @@ Defaults to True.</dd>
 <dt id="mrbles.path.PathUnmix.unmix">
 <code class="descname">unmix</code><span class="sig-paren">(</span><em>data</em>, <em>signal</em>, <em>z_score=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/path.html#PathUnmix.unmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.path.PathUnmix.unmix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unmix data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains the various sets.</li>
-<li><strong>signal</strong> (<em>str</em>) – Column with signal data.</li>
-<li><strong>z_score</strong> (<em>bool or list</em>) – Convert to Z-score if set to True, or uses mean and SD values of
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains the various sets.</p></li>
+<li><p><strong>signal</strong> (<em>str</em>) – Column with signal data.</p></li>
+<li><p><strong>z_score</strong> (<em>bool or list</em>) – Convert to Z-score if set to True, or uses mean and SD values of
 provided list position 0 is mean, position 1 is SD.
-Defaults to True.</li>
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1200,51 +1102,49 @@ Defaults to True.</li>
 <em class="property">class </em><code class="descclassname">mrbles.pipeline.</code><code class="descname">Analyze</code><span class="sig-paren">(</span><em>dataframe</em>, <em>seq_list=None</em>, <em>images=None</em>, <em>masks=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
 <p>Analyze data MRBLE data and return per-code statistics.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>seq_list</strong> (<em>list, Pandas DataFrame</em>) – List (one column) or Pandas DataFrame with additional per-code
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq_list</strong> (<em>list, Pandas DataFrame</em>) – List (one column) or Pandas DataFrame with additional per-code
 information. In the case of a Pandas DataFrame all provided columns
-will be added, based on the row number, which corresponds to its code.</li>
-<li><strong>flag_filt</strong> (<em>boolean</em>) – Sets if the flagged data is automatically filtered out.
-Defaults to True.</li>
+will be added, based on the row number, which corresponds to its code.</p></li>
+<li><p><strong>flag_filt</strong> (<em>boolean</em>) – Sets if the flagged data is automatically filtered out.
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><p class="first last"><strong>functions</strong> (<em>dict</em>) – <p>Dictionary of functions and their corresponding names.
-Default: {‘mean’: np.mean,</p>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>functions</strong> (<em>dict</em>) – <p>Dictionary of functions and their corresponding names.
+Default:
+{</p>
 <blockquote>
-<div><p>’median’: np.median,
+<div><p>’mean’: np.mean,
+‘median’: np.median,
 ‘sd’: np.std,
 ‘se’: sp.stats.sem,
 ‘N’: len,
 ‘CV’: sp.stats.variation}</p>
 </div></blockquote>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.pipeline.Analyze.analyze">
 <code class="descname">analyze</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>min_prob=None</em>, <em>bkg_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.analyze"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.analyze" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate per-code statisics.</p>
-<dl class="docutils">
-<dt>assay_channel <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Assay channel name (column name) to calculate per-code statistics
-for.</dd>
-<dt>min_prob: float</dt>
-<dd>Filter by minimum probability interval, e.g. 0.95.
-Defaults to None.</dd>
-<dt>bkg_data <span class="classifier-delimiter">:</span> <span class="classifier">float/int, string, list, NumPy array, Pandas DataFrame</span></dt>
-<dd>If float/value is used, this value be subtracted. If string is
+<dl class="simple">
+<dt>assay_channel<span class="classifier">str</span></dt><dd><p>Assay channel name (column name) to calculate per-code statistics
+for.</p>
+</dd>
+<dt>min_prob: float</dt><dd><p>Filter by minimum probability interval, e.g. 0.95.
+Defaults to None.</p>
+</dd>
+<dt>bkg_data<span class="classifier">float/int, string, list, NumPy array, Pandas DataFrame</span></dt><dd><p>If float/value is used, this value be subtracted. If string is
 used, column from internal dataframe is used. Otherwise, the data
 provided is subtracted, which needs to be the same size as the
 per-bead data. In the case of Pandas DataFrame, do slice the single
 exact column. Row number of the data is the code.
-Defaults to None.</dd>
+Defaults to None.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1264,29 +1164,25 @@ Defaults to None.</dd>
 <dt id="mrbles.pipeline.Analyze.mrble_report">
 <code class="descname">mrble_report</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>filename</em>, <em>set_name=None</em>, <em>codes=None</em>, <em>files=None</em>, <em>sort=True</em>, <em>image_names=None</em>, <em>mask_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.mrble_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.mrble_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate per-MRBLE PDF image report.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</li>
-<li><strong>filename</strong> (<em>str</em>) – Filename for generated PDF file.</li>
-<li><strong>set_name</strong> (<em>str</em>) – Name of set, e.g. ‘Set A’</li>
-<li><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
-Defaults to None.</li>
-<li><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
-Defaults to None.</li>
-<li><strong>sort</strong> (<em>boolean</em>) – Sort by code.
-Defaults to True.</li>
-<li><strong>image_names</strong> (<em>list of str</em>) – List of image names.
-Defaults to [‘Dy’, ‘Sm’, ‘Tm’, ‘bkg’, ‘Eu’, assay_channel].</li>
-<li><strong>mask_names</strong> (<em>list of str</em>) – List of mask names.
-Defaults to [‘mask_ring’, ‘mask_inside’, ‘mask_full’, ‘mask_bkg’].</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Filename for generated PDF file.</p></li>
+<li><p><strong>set_name</strong> (<em>str</em>) – Name of set, e.g. ‘Set A’</p></li>
+<li><p><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
+Defaults to None.</p></li>
+<li><p><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
+Defaults to None.</p></li>
+<li><p><strong>sort</strong> (<em>boolean</em>) – Sort by code.
+Defaults to True.</p></li>
+<li><p><strong>image_names</strong> (<em>list of str</em>) – List of image names.
+Defaults to [‘Dy’, ‘Sm’, ‘Tm’, ‘bkg’, ‘Eu’, assay_channel].</p></li>
+<li><p><strong>mask_names</strong> (<em>list of str</em>) – List of mask names.
+Defaults to [‘mask_ring’, ‘mask_inside’, ‘mask_full’, ‘mask_bkg’].</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -1299,38 +1195,30 @@ Defaults to [‘mask_ring’, ‘mask_inside’, ‘mask_full’, ‘mask_bkg’
 <dt id="mrbles.pipeline.Analyze.normalize">
 <code class="descname">normalize</code><span class="sig-paren">(</span><em>norm_data</em>, <em>scaled=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.normalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>norm_data</strong> (<em>Pandas DataFrame</em>) – Dataframe with the per-bead normalization data. Single set only!</li>
-<li><strong>scaled</strong> (<em>boolean</em>) – Scale maximum value normalization data to 1.
-Defaults to True.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>norm_data</strong> (<em>Pandas DataFrame</em>) – Dataframe with the per-bead normalization data. Single set only!</p></li>
+<li><p><strong>scaled</strong> (<em>boolean</em>) – Scale maximum value normalization data to 1.
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Analyze.qc_report">
 <code class="descname">qc_report</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Analyze.qc_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Analyze.qc_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Quality Control PDF report.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</li>
-<li><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
-Defaults to False.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</p></li>
+<li><p><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
+Defaults to False.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1340,74 +1228,59 @@ Defaults to False.</li>
 <em class="property">class </em><code class="descclassname">mrbles.pipeline.</code><code class="descname">Decode</code><span class="sig-paren">(</span><em>target</em>, <em>seq_list=None</em>, <em>decode_channels=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
 <p>Decode MRBLEs.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>target</strong> (<em>list</em>) – List of target ratios</li>
-<li><strong>seq_list</strong> (<em>Pandas DataFrame</em>) – Columns with sequence information.
-Defaults to None.</li>
-<li><strong>decode_channels</strong> (<em>list</em>) – Channel names.
-Defaults to None.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>list</em>) – List of target ratios</p></li>
+<li><p><strong>seq_list</strong> (<em>Pandas DataFrame</em>) – Columns with sequence information.
+Defaults to None.</p></li>
+<li><p><strong>decode_channels</strong> (<em>list</em>) – Channel names.
+Defaults to None.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.pipeline.Decode.decode">
 <code class="descname">decode</code><span class="sig-paren">(</span><em>data</em>, <em>combine_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.decode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decode MRBLEs.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains decoding data.</li>
-<li><strong>combine_data</strong> (<em>Pandas DataFrame</em>) – Data to be combined from previous pipeline steps.
-Defaults to None.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Data that contains decoding data.</p></li>
+<li><p><strong>combine_data</strong> (<em>Pandas DataFrame</em>) – Data to be combined from previous pipeline steps.
+Defaults to None.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Decode.plot_clusters_2D">
 <code class="descname">plot_clusters_2D</code><span class="sig-paren">(</span><em>colors</em>, <em>ci_trace=None</em>, <em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.plot_clusters_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.plot_clusters_2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot ratio clusters in 2D.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>colors</strong> (<em>list</em>) – List of color (NPL) names.</li>
-<li><strong>ci_trace</strong> (<em>float</em>) – Set trace confidence line around clusters.
-Defaults to None.</li>
-<li><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level from 0 to 1, e.g. 0.95.
-Defaults to None.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>colors</strong> (<em>list</em>) – List of color (NPL) names.</p></li>
+<li><p><strong>ci_trace</strong> (<em>float</em>) – Set trace confidence line around clusters.
+Defaults to None.</p></li>
+<li><p><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level from 0 to 1, e.g. 0.95.
+Defaults to None.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Decode.plot_clusters_3D">
 <code class="descname">plot_clusters_3D</code><span class="sig-paren">(</span><em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Decode.plot_clusters_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Decode.plot_clusters_3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot ratio clusters in 3D.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level from 0 to 1, e.g. 0.95.
-Defaults to None.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level from 0 to 1, e.g. 0.95.
+Defaults to None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1417,80 +1290,65 @@ Defaults to None.</td>
 <em class="property">class </em><code class="descclassname">mrbles.pipeline.</code><code class="descname">Extract</code><span class="sig-paren">(</span><em>function=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.TableDataFrame" title="mrbles.data.TableDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.TableDataFrame</span></code></a></p>
 <p>Extract data from images using masks.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>function</strong> (<em>function</em>) – This is the function used to extract data from each bead region. This
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>function</strong> (<em>function</em>) – This is the function used to extract data from each bead region. This
 can be replaced with any 1 parameter function, e.g. np.mean.
-Defaults to np.median.</td>
-</tr>
-</tbody>
-</table>
+Defaults to np.median.</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.pipeline.Extract.background_subtract">
 <code class="descname">background_subtract</code><span class="sig-paren">(</span><em>assay_channel</em>, <em>bkg_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract.background_subtract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract.background_subtract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subtract background signal.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>assay_channel</strong> (<em>str</em>) – Name of assay channel.</li>
-<li><strong>bkg_data</strong> (<em>list, NumPy arrar, Pandas DataFrame</em>) – Data to be subtracted.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>assay_channel</strong> (<em>str</em>) – Name of assay channel.</p></li>
+<li><p><strong>bkg_data</strong> (<em>list, NumPy arrar, Pandas DataFrame</em>) – Data to be subtracted.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Extract.filter">
 <code class="descname">filter</code><span class="sig-paren">(</span><em>bkg_factor=2.0</em>, <em>ref_factor=2.0</em>, <em>bkg='bkg.mask_full'</em>, <em>ref='Eu.mask_inside'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract.filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter and flag based on unmixed background and reference signal.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>bkg_factor</strong> (<em>float</em>) – Filter factor of Standard Deviations away from mean background
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bkg_factor</strong> (<em>float</em>) – Filter factor of Standard Deviations away from mean background
 signal.
-Defaults to 2.0</li>
-<li><strong>ref_factor</strong> (<em>float</em>) – Filter factor of Standard Deviations within mean of reference
+Defaults to 2.0</p></li>
+<li><p><strong>ref_factor</strong> (<em>float</em>) – Filter factor of Standard Deviations within mean of reference
 signal.
-Defaults to 2.0</li>
-<li><strong>bkg</strong> (<em>string</em>) – Background signal column name.
-Defaults to ‘bkg.mask_full’</li>
-<li><strong>ref</strong> (<em>string</em>) – Reference signal column name.
-Defaults to ‘Eu.mask_inside’</li>
+Defaults to 2.0</p></li>
+<li><p><strong>bkg</strong> (<em>string</em>) – Background signal column name.
+Defaults to ‘bkg.mask_full’</p></li>
+<li><p><strong>ref</strong> (<em>string</em>) – Reference signal column name.
+Defaults to ‘Eu.mask_inside’</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mrbles.pipeline.Extract.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>images</em>, <em>masks</em>, <em>combine_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Extract.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Extract.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract data from images using masks.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>images</strong> (<em>Xarray DataArray, mrbles ImageDataFrame</em>) – Images of which to take values from using provided labeled masks.
-Must be same number of dimensions as masks.</li>
-<li><strong>masks</strong> (<em>Xarray DataArray, mrbles ImageDataFrame</em>) – Labeled mask of regions to take values from the provided images.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>images</strong> (<em>Xarray DataArray, mrbles ImageDataFrame</em>) – Images of which to take values from using provided labeled masks.
+Must be same number of dimensions as masks.</p></li>
+<li><p><strong>masks</strong> (<em>Xarray DataArray, mrbles ImageDataFrame</em>) – Labeled mask of regions to take values from the provided images.
 Must be same number of dimensions as images, even if one dimension
 is only singular. Therefore, use [] around mask selection, even
-when only using a single channel: [‘inside’].</li>
+when only using a single channel: [‘inside’].</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">per_mrble_data</span> <span class="o">=</span> <span class="n">mrbles</span><span class="o">.</span><span class="n">Extract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">per_mrble_data</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">images</span><span class="p">[</span><span class="s1">&#39;100  nM&#39;</span><span class="p">,</span> <span class="p">:,</span> <span class="p">[</span><span class="s1">&#39;Cy5&#39;</span><span class="p">,</span> <span class="s1">&#39;Cy3&#39;</span><span class="p">]],</span>
@@ -1526,7 +1384,7 @@ mask_check.</p>
 <span class="go">                  ...,</span>
 <span class="go">                 [0, ..., 0]]]], dtype=uint16)</span>
 <span class="go">        Coordinates:</span>
-<span class="go">        * c        (c) &lt;U12 &#39;mask_full&#39; &#39;mask_ring&#39; &#39;mask_inside&#39; &#39;mask_outside&#39; ...</span>
+<span class="go">        * c        (c) &lt;U12 &#39;mask_full&#39; &#39;mask_ring&#39; &#39;mask_inside&#39; ...</span>
 <span class="go">        Dimensions without coordinates: f, y, x,</span>
 <span class="go">    &#39;Set 2&#39;: ...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">find_mrbles</span><span class="p">[</span><span class="s1">&#39;Set 2&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;mask_ring&#39;</span><span class="p">]</span>
@@ -1541,39 +1399,35 @@ mask_check.</p>
 </div>
 <p>Super-Class wrapper for mrbles.core.FindBeadsImaging.
 Please see this class documentation for more information.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</li>
-<li><strong>pixel_size</strong> (<em>float</em>) – Optional setting for image pixel size. Outputs dimensions using
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</p></li>
+<li><p><strong>pixel_size</strong> (<em>float</em>) – Optional setting for image pixel size. Outputs dimensions using
 provided conversion value. Adds additional converted to database with
 affic ‘_conv’.
-Defaults to None.</li>
-<li><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
-Defaults to True.</li>
-<li><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</li>
-<li><strong>min_r</strong> (<em>int</em>) – Minimum size of beads. Also set max_r and annulus_width.
-When this is set Circle Finding method is used!</li>
-<li><strong>max_r</strong> (<em>int</em>) – Maximum size of beads. Also set min_r and annulus_width.
-When this is set Circle Finding method is used!</li>
-<li><strong>annulus_width</strong> (<em>int</em>) – Annulus width size. Also set min_r and max_r.
-When this is set Circle Finding method is used!</li>
+Defaults to None.</p></li>
+<li><p><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
+Defaults to True.</p></li>
+<li><p><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</p></li>
+<li><p><strong>min_r</strong> (<em>int</em>) – Minimum size of beads. Also set max_r and annulus_width.
+When this is set Circle Finding method is used!</p></li>
+<li><p><strong>max_r</strong> (<em>int</em>) – Maximum size of beads. Also set min_r and annulus_width.
+When this is set Circle Finding method is used!</p></li>
+<li><p><strong>annulus_width</strong> (<em>int</em>) – Annulus width size. Also set min_r and max_r.
+When this is set Circle Finding method is used!</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="mrbles.core.html#mrbles.core.FindBeadsImaging.bead_dims" title="mrbles.core.FindBeadsImaging.bead_dims"><strong>bead_dims</strong></a> (<em>Pandas DataFrame</em>) – Dataframe with individual MRBLE dimensions.</li>
-<li><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.beads_total" title="mrbles.pipeline.Find.beads_total"><strong>beads_total</strong></a> (<em>int</em>) – Total number of MRBLEs found.</li>
-<li><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.beads_per_set" title="mrbles.pipeline.Find.beads_per_set"><strong>beads_per_set</strong></a> (<em>list of int</em>) – Number of MRBLEs per set.</li>
-<li><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.settings" title="mrbles.pipeline.Find.settings"><strong>settings</strong></a> (<em>property</em>) – Property provinding access to settings of mrbles.core.FindBeadsImaging.
-See property documentation for more information.</li>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.bead_dims" title="mrbles.pipeline.Find.bead_dims"><strong>bead_dims</strong></a> (<em>Pandas DataFrame</em>) – Dataframe with individual MRBLE dimensions.</p></li>
+<li><p><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.beads_total" title="mrbles.pipeline.Find.beads_total"><strong>beads_total</strong></a> (<em>int</em>) – Total number of MRBLEs found.</p></li>
+<li><p><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.beads_per_set" title="mrbles.pipeline.Find.beads_per_set"><strong>beads_per_set</strong></a> (<em>list of int</em>) – Number of MRBLEs per set.</p></li>
+<li><p><a class="reference internal" href="mrbles.pipeline.html#mrbles.pipeline.Find.settings" title="mrbles.pipeline.Find.settings"><strong>settings</strong></a> (<em>property</em>) – Property provinding access to settings of mrbles.core.FindBeadsImaging.
+See property documentation for more information.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="attribute">
 <dt id="mrbles.pipeline.Find.bead_dims">
 <code class="descname">bead_dims</code><a class="headerlink" href="#mrbles.pipeline.Find.bead_dims" title="Permalink to this definition">¶</a></dt>
@@ -1645,6 +1499,8 @@ Method 2 - Provide a dictionary with numpy arrays.</p>
 Please see this class documentation for more information.</p>
 <p>For loading OME-TIFF image it uses mrbles.data.ImageSetRead.
 Please see this class documentation for more information.</p>
+<p class="rubric">Examples</p>
+<p>Method 1.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assay_folder</span> <span class="o">=</span> <span class="s1">&#39;../data&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">assay_folders</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Set 1&#39;</span><span class="p">:</span> <span class="s1">&#39;../data1&#39;</span><span class="p">,</span>
 <span class="go">                     &#39;Set 2&#39;: &#39;../data2&#39;}</span>
@@ -1655,12 +1511,14 @@ Please see this class documentation for more information.</p>
 <span class="go">    Found 11 files in Set 2</span>
 </pre></div>
 </div>
+<p>Method 2.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">image_arrays</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Set 1&#39;</span><span class="p">:</span> <span class="n">numpy_array_1</span><span class="p">,</span>
 <span class="go">                    &#39;Set 2&#39;: numpy_array_2}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">channel_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Brightfield&#39;</span><span class="p">,</span> <span class="s1">&#39;Cy5&#39;</span><span class="p">,</span> <span class="s1">&#39;l-435&#39;</span><span class="p">,</span> <span class="s1">&#39;l-546&#39;</span><span class="p">,</span> <span class="s1">&#39;l-620&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">assay_images</span> <span class="o">=</span> <span class="n">mrbles</span><span class="o">.</span><span class="n">Images</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">image_arrays</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">channel_names</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Output - Example.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assay_images</span>
 <span class="go">    {&#39;Set 1&#39;: &lt;xarray.DataArray (f: 12, c: 5, y: 1024, x: 1024)&gt;</span>
 <span class="go">        array([[[[169., ..., 166.],</span>
@@ -1680,32 +1538,28 @@ Please see this class documentation for more information.</p>
 <span class="go">    Dimensions without coordinates: y, x</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>folders</strong> (<em>str, dict</em>) – String of single folder or dict of multiple folders.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folders</strong> (<em>str, dict</em>) – String of single folder or dict of multiple folders.
 The folder(s) provided will searched recursively.
-Dict keys must match file_patterns dict.</li>
-<li><strong>file_patterns</strong> (<em>dict</em>) – Dict of multiple file patterns.
-Dict keys must match folders keys, if multiple folders.</li>
-<li><strong>data</strong> (<em>NumPy array</em>) – Alternative method to loading OME-Tif files.
+Dict keys must match file_patterns dict.</p></li>
+<li><p><strong>file_patterns</strong> (<em>dict</em>) – Dict of multiple file patterns.
+Dict keys must match folders keys, if multiple folders.</p></li>
+<li><p><strong>data</strong> (<em>NumPy array</em>) – Alternative method to loading OME-Tif files.
 Load a dict of NumPy arrays with dimension order (f, c, y, x):
-files (f), channels (c), Y-dimension (y), X-dimension (x)</li>
-<li><strong>channels</strong> (<em>list of str</em>) – List of channel names.
-Defaults to None. Channels will be numbers.</li>
+files (f), channels (c), Y-dimension (y), X-dimension (x)</p></li>
+<li><p><strong>channels</strong> (<em>list of str</em>) – List of channel names.
+Defaults to None. Channels will be numbers.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_x" title="mrbles.data.ImageDataFrame.crop_x"><strong>crop_x</strong></a> (<em>slice</em>) – Used for setting ROI slice in the X dimension.</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_y" title="mrbles.data.ImageDataFrame.crop_y"><strong>crop_y</strong></a> (<em>slice</em>) – Used for setting ROI slice in the Y dimension.</li>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>crop_x</strong> (<em>slice</em>) – Used for setting ROI slice in the X dimension.</p></li>
+<li><p><strong>crop_y</strong> (<em>slice</em>) – Used for setting ROI slice in the Y dimension.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.pipeline.Images.add_images">
 <code class="descname">add_images</code><span class="sig-paren">(</span><em>images</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Images.add_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Images.add_images" title="Permalink to this definition">¶</a></dt>
@@ -1716,20 +1570,16 @@ Defaults to None. Channels will be numbers.</li>
 <dt id="mrbles.pipeline.Images.flat_field">
 <code class="descname">flat_field</code><span class="sig-paren">(</span><em>ff_image</em>, <em>channel</em>, <em>affix='_FF'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Images.flat_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Images.flat_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flat-Field correction.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ff_image</strong> (<em>str, NumPy array</em>) – Flat-field image file or NumPy array.</li>
-<li><strong>channel</strong> (<em>str</em>) – Channel to apply flat-field correction.</li>
-<li><strong>affix</strong> (<em>str</em>) – Affix for channel name to be appended.
-Defaults to ‘_FF’</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ff_image</strong> (<em>str, NumPy array</em>) – Flat-field image file or NumPy array.</p></li>
+<li><p><strong>channel</strong> (<em>str</em>) – Channel to apply flat-field correction.</p></li>
+<li><p><strong>affix</strong> (<em>str</em>) – Affix for channel name to be appended.
+Defaults to ‘_FF’</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -1742,38 +1592,30 @@ Defaults to ‘_FF’</li>
 <dt id="mrbles.pipeline.Images.rename_channel">
 <code class="descname">rename_channel</code><span class="sig-paren">(</span><em>old_name</em>, <em>new_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Images.rename_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Images.rename_channel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rename channel name.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>old_name</strong> (<em>str</em>) – Original name of channel.</li>
-<li><strong>new_name</strong> (<em>str</em>) – New name for old_name channel.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_name</strong> (<em>str</em>) – Original name of channel.</p></li>
+<li><p><strong>new_name</strong> (<em>str</em>) – New name for old_name channel.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
 <dt id="mrbles.pipeline.Images.scan_path">
 <em class="property">static </em><code class="descname">scan_path</code><span class="sig-paren">(</span><em>path</em>, <em>pattern='*.tif'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Images.scan_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Images.scan_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scan folder recursively for files matching the pattern.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>path</strong> (<em>string</em>) – Folder path as string, e.g. r’C:/folder/file.tif’.</li>
-<li><strong>pattern</strong> (<em>string</em>) – File extenstion of general file pattern as search string,
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>string</em>) – Folder path as string, e.g. r’C:/folder/file.tif’.</p></li>
+<li><p><strong>pattern</strong> (<em>string</em>) – File extenstion of general file pattern as search string,
 e.g. ‘peptides_x_([0-9][0-9])_MMStack_Pos0.ome.tif’
-Defaults to ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.tif’.</li>
+Defaults to ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.tif’.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1783,38 +1625,30 @@ Defaults to ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.ti
 <em class="property">class </em><code class="descclassname">mrbles.pipeline.</code><code class="descname">Ratio</code><span class="sig-paren">(</span><em>reference_spectra</em>, <em>background='bkg'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame" title="mrbles.data.ImageDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.ImageDataFrame</span></code></a></p>
 <p>Generate spectrally unmix ratio images.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>reference_spectra</strong> (<em>list, ndarray, References object</em>) – List, array, or References object of reference spectra for linear
-spectral unmixing.</li>
-<li><strong>background</strong> (<em>string</em>) – Background key label.
-Defaults to ‘bkg’.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_spectra</strong> (<em>list, ndarray, References object</em>) – List, array, or References object of reference spectra for linear
+spectral unmixing.</p></li>
+<li><p><strong>background</strong> (<em>string</em>) – Background key label.
+Defaults to ‘bkg’.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.pipeline.Ratio.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>image_sets</em>, <em>reference</em>, <em>combine_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#Ratio.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.Ratio.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate unmixed and ratio images.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>image_set</strong> (<em>Xarray DataArray, mblres ImageDataFrame</em>) – These are the images (emission channels) to be unmixed.</li>
-<li><strong>reference</strong> (<em>string</em>) – Reference key label, e.g. ‘Eu’, used for ratio images.</li>
-<li><strong>comb_data</strong> (<em>Xarray DataArray, mblres ImageDataFrame</em>) – These are the images that are combined with ‘image_set’.
-Must be same dimensions and type as ‘image_set’.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_set</strong> (<em>Xarray DataArray, mblres ImageDataFrame</em>) – These are the images (emission channels) to be unmixed.</p></li>
+<li><p><strong>reference</strong> (<em>string</em>) – Reference key label, e.g. ‘Eu’, used for ratio images.</p></li>
+<li><p><strong>comb_data</strong> (<em>Xarray DataArray, mblres ImageDataFrame</em>) – These are the images that are combined with ‘image_set’.
+Must be same dimensions and type as ‘image_set’.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1828,53 +1662,45 @@ Must be same dimensions and type as ‘image_set’.</li>
 Method 1 - Provide a dictionaries with folders and filenames.
 Method 2 - Provide a dictionary with numpy arrays.
 Method 3 - Provide a file with spectra data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>folders</strong> (<em>dict</em>) – Dictionary with keywords (e.g. ‘Dy’, ‘bkg’) and folders.
-Must correspond with files parameter.</li>
-<li><strong>files</strong> (<em>dict</em>) – Dictionary with keywords (e.g. ‘Dy’, ‘bkg’) and filenames.
-Must correspond with folders parameter.</li>
-<li><strong>object_channel</strong> (<em>str</em>) – Channel to be used for finding MRBLEs</li>
-<li><strong>reference_channels</strong> (<em>list</em>) – List of channel names to be used for generating reference spectra.</li>
-<li><strong>bead_size</strong> (<em>int</em>) – Bead diamater set in pixels.
-Defaults to 16.</li>
-<li><strong>dark_noise</strong> (<em>int</em>) – Dark noise of the camera used for the images.
-Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folders</strong> (<em>dict</em>) – Dictionary with keywords (e.g. ‘Dy’, ‘bkg’) and folders.
+Must correspond with files parameter.</p></li>
+<li><p><strong>files</strong> (<em>dict</em>) – Dictionary with keywords (e.g. ‘Dy’, ‘bkg’) and filenames.
+Must correspond with folders parameter.</p></li>
+<li><p><strong>object_channel</strong> (<em>str</em>) – Channel to be used for finding MRBLEs</p></li>
+<li><p><strong>reference_channels</strong> (<em>list</em>) – List of channel names to be used for generating reference spectra.</p></li>
+<li><p><strong>bead_size</strong> (<em>int</em>) – Bead diamater set in pixels.
+Defaults to 16.</p></li>
+<li><p><strong>dark_noise</strong> (<em>int</em>) – Dark noise of the camera used for the images.
+Defaults to 99 (median dark noise of Andor Zyla 4.2 PLUS sCMOS).</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>background</strong> (<em>str</em>) – Name of the background spectrum.
-Defaults to ‘bkg’.</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_x" title="mrbles.data.ImageDataFrame.crop_x"><strong>crop_x</strong></a> (<em>slice</em>) – Crop X slice. Set with slice().</li>
-<li><a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame.crop_y" title="mrbles.data.ImageDataFrame.crop_y"><strong>crop_y</strong></a> (<em>slice</em>) – Crop Y slice. Set with slice().</li>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>background</strong> (<em>str</em>) – Name of the background spectrum.
+Defaults to ‘bkg’.</p></li>
+<li><p><strong>crop_x</strong> (<em>slice</em>) – Crop X slice. Set with slice().</p></li>
+<li><p><strong>crop_y</strong> (<em>slice</em>) – Crop Y slice. Set with slice().</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="staticmethod">
 <dt id="mrbles.pipeline.References.get_spectrum">
 <em class="property">static </em><code class="descname">get_spectrum</code><span class="sig-paren">(</span><em>dark_noise</em>, <em>channels</em>, <em>mask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/pipeline.html#References.get_spectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.pipeline.References.get_spectrum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get spectrum from image set using mask.</p>
 <p>The median of the masked area is extracted, the camera dark noise
 subtracted, and normalized.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dark_noise</strong> (<em>int</em>) – Intrinsic dark noise of camera. Image taken when shutter closed.</li>
-<li><strong>channels</strong> (<em>slice, list</em>) – Slice of channels</li>
-<li><strong>mask</strong> (<em>NumPy array</em>) – Labeled mask.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dark_noise</strong> (<em>int</em>) – Intrinsic dark noise of camera. Image taken when shutter closed.</p></li>
+<li><p><strong>channels</strong> (<em>slice, list</em>) – Slice of channels</p></li>
+<li><p><strong>mask</strong> (<em>NumPy array</em>) – Labeled mask.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -1910,42 +1736,36 @@ module.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Per-MRBLE images report.</p>
 <p>This method generates the selected images per-MRBLE.</p>
+<p>WARNING!</p>
 <p>This method can take a lot of time, since it will generate images
 per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
 each, which makes a total of 11,000 images.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Contains all the dimension, posotional, and intensity data per-MBRLE.</li>
-<li><strong>images</strong> (<em>mrbles.ImageDataFrame, Xarray DataArray</em>) – Contains images.</li>
-<li><strong>masks</strong> (<em>Xarray DataArray</em>) – Contains masks.</li>
-<li><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</li>
-<li><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
-Defaults to None.</li>
-<li><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
-Defaults to None.</li>
-<li><strong>sort</strong> (<em>boolean</em>) – Sort by code.
-Defaults to True.</li>
-<li><strong>Methods</strong></li>
-<li><strong>——–</strong></li>
-<li><strong>generate()</strong> (<em>method</em>)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Contains all the dimension, posotional, and intensity data per-MBRLE.</p></li>
+<li><p><strong>images</strong> (<em>mrbles.ImageDataFrame, Xarray DataArray</em>) – Contains images.</p></li>
+<li><p><strong>masks</strong> (<em>Xarray DataArray</em>) – Contains masks.</p></li>
+<li><p><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</p></li>
+<li><p><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
+Defaults to None.</p></li>
+<li><p><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
+Defaults to None.</p></li>
+<li><p><strong>sort</strong> (<em>boolean</em>) – Sort by code.
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time_sec</strong> (<em>float</em>) – Time required per-image generated in seconds.
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>time_sec</strong> (<em>float</em>) – Time required per-image generated in seconds.
 For instance, 300 beads times 12 images is 3600 images.
-Defaults to 0.0275</li>
-<li><strong>parallelize</strong> (<em>boolean</em>) – Wether to use parallelization. Can be slowing down on low-power
+Defaults to 0.0275</p></li>
+<li><p><strong>parallelize</strong> (<em>boolean</em>) – Wether to use parallelization. Can be slowing down on low-power
 computers.
-Defaults to True.</li>
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.report.BeadsReport.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#BeadsReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.BeadsReport.generate" title="Permalink to this definition">¶</a></dt>
@@ -1973,14 +1793,11 @@ each, which makes a total of 12,000 images.</p>
 <dt id="mrbles.report.ClusterCheck.plot_3D">
 <code class="descname">plot_3D</code><span class="sig-paren">(</span><em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#ClusterCheck.plot_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.ClusterCheck.plot_3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot ratio clusters in 3D.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -1996,20 +1813,16 @@ each, which makes a total of 12,000 images.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">GenerateCodes</code><span class="sig-paren">(</span><em>colors</em>, <em>s0s</em>, <em>slopes</em>, <em>nsigma</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generate bead code set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>colors</strong> (<em>list of str</em>) – List of coding colors in a list of strings.</li>
-<li><strong>s0s</strong> (<em>liat of float</em>) – List of standard deviations (SD) at intensity 0 for each encoding color.</li>
-<li><strong>slopes</strong> (<em>float</em>) – List of slopes of the SDs versus intensity for each encoding color.</li>
-<li><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate coding levels.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>colors</strong> (<em>list of str</em>) – List of coding colors in a list of strings.</p></li>
+<li><p><strong>s0s</strong> (<em>liat of float</em>) – List of standard deviations (SD) at intensity 0 for each encoding color.</p></li>
+<li><p><strong>slopes</strong> (<em>float</em>) – List of slopes of the SDs versus intensity for each encoding color.</p></li>
+<li><p><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate coding levels.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span> <span class="o">=</span> <span class="n">GenerateCodes</span><span class="p">([</span><span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">],</span>
 <span class="go">                                 [0.0039, 0.0055, 0.0029],</span>
@@ -2053,19 +1866,15 @@ each, which makes a total of 12,000 images.</p>
 <dt id="mrbles.report.GenerateCodes.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>nsigma=None</em>, <em>depends=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate codes with default nsigma or given nsigma.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>nsigma</strong> (<em>float, optional</em>) – The number of SD to separate coding levels.
-Defaults to initial nsigma.</li>
-<li><strong>depends</strong> (<em>any, experimental, optional</em>) – Used for Tm (3rd in array) dependence on Dy (1st array).</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nsigma</strong> (<em>float, optional</em>) – The number of SD to separate coding levels.
+Defaults to initial nsigma.</p></li>
+<li><p><strong>depends</strong> (<em>any, experimental, optional</em>) – Used for Tm (3rd in array) dependence on Dy (1st array).</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -2074,25 +1883,21 @@ Defaults to initial nsigma.</li>
 <dd><p>Predict the number of levels of a coding color.</p>
 <p>The coding levels are based on s0, the standard deviation (SD) at
 intensity 0, and the slope between intensity and SD.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>std0</strong> (<em>float</em>) – The SD at intensity 0.</li>
-<li><strong>slope</strong> (<em>float</em>) – The slope of the SD versus intensity.</li>
-<li><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate levels.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>std0</strong> (<em>float</em>) – The SD at intensity 0.</p></li>
+<li><p><strong>slope</strong> (<em>float</em>) – The slope of the SD versus intensity.</p></li>
+<li><p><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate levels.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>levels</strong> – Returns list of codes values for a given coding color.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of float</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>levels</strong> – Returns list of codes values for a given coding color.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -2100,23 +1905,19 @@ intensity 0, and the slope between intensity and SD.</p>
 <code class="descname">iterate</code><span class="sig-paren">(</span><em>num</em>, <em>nsimga_start=None</em>, <em>nsigma_step=0.01</em>, <em>max_iter=1000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.iterate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate nsigma until number of codes are found.</p>
 <p>Does not work with dependence, such as Tm dependence on Dy.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>num</strong> (<em>int</em>) – Number of required codes.</li>
-<li><strong>nsigma_start</strong> (<em>float, optional</em>) – Start value of nsigma.
-Defaults to initial nsigma.</li>
-<li><strong>nsigma_step</strong> (<em>float, optional</em>) – Iterarion step.
-Defaults to 0.01</li>
-<li><strong>max_iter</strong> (<em>int, optional</em>) – Maximum iteration steps.
-Defaults to 1000.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num</strong> (<em>int</em>) – Number of required codes.</p></li>
+<li><p><strong>nsigma_start</strong> (<em>float, optional</em>) – Start value of nsigma.
+Defaults to initial nsigma.</p></li>
+<li><p><strong>nsigma_step</strong> (<em>float, optional</em>) – Iterarion step.
+Defaults to 0.01</p></li>
+<li><p><strong>max_iter</strong> (<em>int, optional</em>) – Maximum iteration steps.
+Defaults to 1000.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -2159,18 +1960,17 @@ iterables, a list of iterables, or a combination of both.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">PeptideScramble</code><span class="sig-paren">(</span><em>seq</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#PeptideScramble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.PeptideScramble" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Randomizes amino acid sequence</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seq</strong> (<em>string</em>) – Inset amino acid sequence as a string.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>seq</strong> – Returns string of shuffled amino acid sequence.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seq</strong> (<em>string</em>) – Inset amino acid sequence as a string.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>seq</strong> – Returns string of shuffled amino acid sequence.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.report.PeptideScramble.random">
 <code class="descname">random</code><span class="sig-paren">(</span><em>seq=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#PeptideScramble.random"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.PeptideScramble.random" title="Permalink to this definition">¶</a></dt>
@@ -2184,14 +1984,11 @@ iterables, a list of iterables, or a combination of both.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">QCReport</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>MRBLE library Quality Control report.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>Pandas DataFrame</em>) – Per beads data.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Per beads data.</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.report.QCReport.assay_contamination">
 <code class="descname">assay_contamination</code><span class="sig-paren">(</span><em>pdf_object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.assay_contamination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.assay_contamination" title="Permalink to this definition">¶</a></dt>
@@ -2218,19 +2015,15 @@ iterables, a list of iterables, or a combination of both.</p>
 <dt id="mrbles.report.QCReport.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate QC report.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</li>
-<li><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
-Defaults to False.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</p></li>
+<li><p><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
+Defaults to False.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -2313,8 +2106,6 @@ affinity information based on titrations of MRBLEs assays.</p>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -2332,12 +2123,12 @@ affinity information based on titrations of MRBLEs assays.</p>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.0.
     </div>
   </body>
 </html>

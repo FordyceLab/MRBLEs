@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.pipeline &#8212; mrbles 1.0.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>mrbles.pipeline &#8212; mrbles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +26,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -117,8 +115,10 @@
 <span class="sd">    For loading OME-TIFF image it uses mrbles.data.ImageSetRead.</span>
 <span class="sd">    Please see this class documentation for more information.</span>
 
-<span class="sd">    Method 1 - Example</span>
-<span class="sd">    ------------------</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Method 1.</span>
+
 <span class="sd">    &gt;&gt;&gt; assay_folder = &#39;../data&#39;</span>
 <span class="sd">    &gt;&gt;&gt; assay_folders = {&#39;Set 1&#39;: &#39;../data1&#39;,</span>
 <span class="sd">                         &#39;Set 2&#39;: &#39;../data2&#39;}</span>
@@ -128,15 +128,15 @@
 <span class="sd">        Found 12 files in Set 1</span>
 <span class="sd">        Found 11 files in Set 2</span>
 
-<span class="sd">    Method 2 - Example</span>
-<span class="sd">    ------------------</span>
+<span class="sd">    Method 2.</span>
+
 <span class="sd">    &gt;&gt;&gt; image_arrays = {&#39;Set 1&#39;: numpy_array_1,</span>
 <span class="sd">                        &#39;Set 2&#39;: numpy_array_2}</span>
 <span class="sd">    &gt;&gt;&gt; channel_names = [&#39;Brightfield&#39;, &#39;Cy5&#39;, &#39;l-435&#39;, &#39;l-546&#39;, &#39;l-620&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; assay_images = mrbles.Images(data=image_arrays, channels=channel_names)</span>
 
-<span class="sd">    Output - Example</span>
-<span class="sd">    ----------------</span>
+<span class="sd">    Output - Example.</span>
+
 <span class="sd">    &gt;&gt;&gt; assay_images</span>
 <span class="sd">        {&#39;Set 1&#39;: &lt;xarray.DataArray (f: 12, c: 5, y: 1024, x: 1024)&gt;</span>
 <span class="sd">            array([[[[169., ..., 166.],</span>
@@ -209,8 +209,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_dataframe</span><span class="p">[</span><span class="n">data_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
                         <span class="n">data_array</span><span class="p">,</span>
                         <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">],</span>
-                        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="n">coords</span><span class="p">},</span>
-                        <span class="n">encoding</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">})</span>
+                        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="n">coords</span><span class="p">})</span>
 
 <div class="viewcode-block" id="Images.load"><a class="viewcode-back" href="../../source/mrbles.pipeline.html#mrbles.pipeline.Images.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">series</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load images in memory.&quot;&quot;&quot;</span>
@@ -354,7 +353,7 @@
 <span class="sd">                      ...,</span>
 <span class="sd">                     [0, ..., 0]]]], dtype=uint16)</span>
 <span class="sd">            Coordinates:</span>
-<span class="sd">            * c        (c) &lt;U12 &#39;mask_full&#39; &#39;mask_ring&#39; &#39;mask_inside&#39; &#39;mask_outside&#39; ...</span>
+<span class="sd">            * c        (c) &lt;U12 &#39;mask_full&#39; &#39;mask_ring&#39; &#39;mask_inside&#39; ...</span>
 <span class="sd">            Dimensions without coordinates: f, y, x,</span>
 <span class="sd">        &#39;Set 2&#39;: ...</span>
 <span class="sd">    &gt;&gt;&gt; find_mrbles[&#39;Set 2&#39;, 3, &#39;mask_ring&#39;]</span>
@@ -1091,12 +1090,14 @@
 <span class="sd">    ----------</span>
 <span class="sd">    functions : dict</span>
 <span class="sd">        Dictionary of functions and their corresponding names.</span>
-<span class="sd">        Default: {&#39;mean&#39;: np.mean,</span>
-<span class="sd">                  &#39;median&#39;: np.median,</span>
-<span class="sd">                  &#39;sd&#39;: np.std,</span>
-<span class="sd">                  &#39;se&#39;: sp.stats.sem,</span>
-<span class="sd">                  &#39;N&#39;: len,</span>
-<span class="sd">                  &#39;CV&#39;: sp.stats.variation}</span>
+<span class="sd">        Default:</span>
+<span class="sd">        {</span>
+<span class="sd">            &#39;mean&#39;: np.mean,</span>
+<span class="sd">            &#39;median&#39;: np.median,</span>
+<span class="sd">            &#39;sd&#39;: np.std,</span>
+<span class="sd">            &#39;se&#39;: sp.stats.sem,</span>
+<span class="sd">            &#39;N&#39;: len,</span>
+<span class="sd">            &#39;CV&#39;: sp.stats.variation}</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -1362,8 +1363,6 @@
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -1381,13 +1380,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">mrbles 1.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.0.
     </div>
   </body>
 </html>

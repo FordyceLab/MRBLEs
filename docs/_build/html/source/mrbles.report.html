@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.report module &#8212; mrbles 1.0.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>mrbles.report module &#8212; mrbles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -28,7 +26,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -48,42 +46,36 @@ module.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Per-MRBLE images report.</p>
 <p>This method generates the selected images per-MRBLE.</p>
+<p>WARNING!</p>
 <p>This method can take a lot of time, since it will generate images
 per-MRBLE. It takes about 5 minutes per 1,000 beads, for 12 images
 each, which makes a total of 11,000 images.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<em>Pandas DataFrame</em>) – Contains all the dimension, posotional, and intensity data per-MBRLE.</li>
-<li><strong>images</strong> (<em>mrbles.ImageDataFrame, Xarray DataArray</em>) – Contains images.</li>
-<li><strong>masks</strong> (<em>Xarray DataArray</em>) – Contains masks.</li>
-<li><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</li>
-<li><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
-Defaults to None.</li>
-<li><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
-Defaults to None.</li>
-<li><strong>sort</strong> (<em>boolean</em>) – Sort by code.
-Defaults to True.</li>
-<li><strong>Methods</strong></li>
-<li><strong>——–</strong></li>
-<li><strong>generate()</strong> (<em>method</em>)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Contains all the dimension, posotional, and intensity data per-MBRLE.</p></li>
+<li><p><strong>images</strong> (<em>mrbles.ImageDataFrame, Xarray DataArray</em>) – Contains images.</p></li>
+<li><p><strong>masks</strong> (<em>Xarray DataArray</em>) – Contains masks.</p></li>
+<li><p><strong>assay_channel</strong> (<em>str</em>) – Assay channel name, e.g. ‘Cy5_FF’</p></li>
+<li><p><strong>codes</strong> (<em>int, list of int</em>) – Integer or list of integers with selected codes.
+Defaults to None.</p></li>
+<li><p><strong>files</strong> (<em>int, list of int</em>) – Integer or list of integers with selected files.
+Defaults to None.</p></li>
+<li><p><strong>sort</strong> (<em>boolean</em>) – Sort by code.
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time_sec</strong> (<em>float</em>) – Time required per-image generated in seconds.
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>time_sec</strong> (<em>float</em>) – Time required per-image generated in seconds.
 For instance, 300 beads times 12 images is 3600 images.
-Defaults to 0.0275</li>
-<li><strong>parallelize</strong> (<em>boolean</em>) – Wether to use parallelization. Can be slowing down on low-power
+Defaults to 0.0275</p></li>
+<li><p><strong>parallelize</strong> (<em>boolean</em>) – Wether to use parallelization. Can be slowing down on low-power
 computers.
-Defaults to True.</li>
+Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.report.BeadsReport.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#BeadsReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.BeadsReport.generate" title="Permalink to this definition">¶</a></dt>
@@ -111,14 +103,11 @@ each, which makes a total of 12,000 images.</p>
 <dt id="mrbles.report.ClusterCheck.plot_3D">
 <code class="descname">plot_3D</code><span class="sig-paren">(</span><em>min_prob=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#ClusterCheck.plot_3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.ClusterCheck.plot_3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot ratio clusters in 3D.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>min_prob</strong> (<em>float</em>) – Set minimal probability level.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -134,20 +123,16 @@ each, which makes a total of 12,000 images.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">GenerateCodes</code><span class="sig-paren">(</span><em>colors</em>, <em>s0s</em>, <em>slopes</em>, <em>nsigma</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generate bead code set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>colors</strong> (<em>list of str</em>) – List of coding colors in a list of strings.</li>
-<li><strong>s0s</strong> (<em>liat of float</em>) – List of standard deviations (SD) at intensity 0 for each encoding color.</li>
-<li><strong>slopes</strong> (<em>float</em>) – List of slopes of the SDs versus intensity for each encoding color.</li>
-<li><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate coding levels.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>colors</strong> (<em>list of str</em>) – List of coding colors in a list of strings.</p></li>
+<li><p><strong>s0s</strong> (<em>liat of float</em>) – List of standard deviations (SD) at intensity 0 for each encoding color.</p></li>
+<li><p><strong>slopes</strong> (<em>float</em>) – List of slopes of the SDs versus intensity for each encoding color.</p></li>
+<li><p><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate coding levels.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">code_set_gen</span> <span class="o">=</span> <span class="n">GenerateCodes</span><span class="p">([</span><span class="s1">&#39;Dy&#39;</span><span class="p">,</span> <span class="s1">&#39;Sm&#39;</span><span class="p">,</span> <span class="s1">&#39;Tm&#39;</span><span class="p">],</span>
 <span class="go">                                 [0.0039, 0.0055, 0.0029],</span>
@@ -191,19 +176,15 @@ each, which makes a total of 12,000 images.</p>
 <dt id="mrbles.report.GenerateCodes.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>nsigma=None</em>, <em>depends=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate codes with default nsigma or given nsigma.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>nsigma</strong> (<em>float, optional</em>) – The number of SD to separate coding levels.
-Defaults to initial nsigma.</li>
-<li><strong>depends</strong> (<em>any, experimental, optional</em>) – Used for Tm (3rd in array) dependence on Dy (1st array).</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nsigma</strong> (<em>float, optional</em>) – The number of SD to separate coding levels.
+Defaults to initial nsigma.</p></li>
+<li><p><strong>depends</strong> (<em>any, experimental, optional</em>) – Used for Tm (3rd in array) dependence on Dy (1st array).</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -212,25 +193,21 @@ Defaults to initial nsigma.</li>
 <dd><p>Predict the number of levels of a coding color.</p>
 <p>The coding levels are based on s0, the standard deviation (SD) at
 intensity 0, and the slope between intensity and SD.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>std0</strong> (<em>float</em>) – The SD at intensity 0.</li>
-<li><strong>slope</strong> (<em>float</em>) – The slope of the SD versus intensity.</li>
-<li><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate levels.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>std0</strong> (<em>float</em>) – The SD at intensity 0.</p></li>
+<li><p><strong>slope</strong> (<em>float</em>) – The slope of the SD versus intensity.</p></li>
+<li><p><strong>nsigma</strong> (<em>float</em>) – The number of SD to separate levels.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>levels</strong> – Returns list of codes values for a given coding color.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of float</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>levels</strong> – Returns list of codes values for a given coding color.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -238,23 +215,19 @@ intensity 0, and the slope between intensity and SD.</p>
 <code class="descname">iterate</code><span class="sig-paren">(</span><em>num</em>, <em>nsimga_start=None</em>, <em>nsigma_step=0.01</em>, <em>max_iter=1000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#GenerateCodes.iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.GenerateCodes.iterate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate nsigma until number of codes are found.</p>
 <p>Does not work with dependence, such as Tm dependence on Dy.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>num</strong> (<em>int</em>) – Number of required codes.</li>
-<li><strong>nsigma_start</strong> (<em>float, optional</em>) – Start value of nsigma.
-Defaults to initial nsigma.</li>
-<li><strong>nsigma_step</strong> (<em>float, optional</em>) – Iterarion step.
-Defaults to 0.01</li>
-<li><strong>max_iter</strong> (<em>int, optional</em>) – Maximum iteration steps.
-Defaults to 1000.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num</strong> (<em>int</em>) – Number of required codes.</p></li>
+<li><p><strong>nsigma_start</strong> (<em>float, optional</em>) – Start value of nsigma.
+Defaults to initial nsigma.</p></li>
+<li><p><strong>nsigma_step</strong> (<em>float, optional</em>) – Iterarion step.
+Defaults to 0.01</p></li>
+<li><p><strong>max_iter</strong> (<em>int, optional</em>) – Maximum iteration steps.
+Defaults to 1000.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -297,18 +270,17 @@ iterables, a list of iterables, or a combination of both.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">PeptideScramble</code><span class="sig-paren">(</span><em>seq</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#PeptideScramble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.PeptideScramble" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Randomizes amino acid sequence</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seq</strong> (<em>string</em>) – Inset amino acid sequence as a string.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>seq</strong> – Returns string of shuffled amino acid sequence.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seq</strong> (<em>string</em>) – Inset amino acid sequence as a string.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>seq</strong> – Returns string of shuffled amino acid sequence.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.report.PeptideScramble.random">
 <code class="descname">random</code><span class="sig-paren">(</span><em>seq=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#PeptideScramble.random"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.PeptideScramble.random" title="Permalink to this definition">¶</a></dt>
@@ -322,14 +294,11 @@ iterables, a list of iterables, or a combination of both.</p>
 <em class="property">class </em><code class="descclassname">mrbles.report.</code><code class="descname">QCReport</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>MRBLE library Quality Control report.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>Pandas DataFrame</em>) – Per beads data.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Pandas DataFrame</em>) – Per beads data.</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.report.QCReport.assay_contamination">
 <code class="descname">assay_contamination</code><span class="sig-paren">(</span><em>pdf_object</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.assay_contamination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.assay_contamination" title="Permalink to this definition">¶</a></dt>
@@ -356,19 +325,15 @@ iterables, a list of iterables, or a combination of both.</p>
 <dt id="mrbles.report.QCReport.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><em>filename</em>, <em>savefig=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/report.html#QCReport.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.report.QCReport.generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate QC report.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</li>
-<li><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
-Defaults to False.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Filename to save QC PDF report to.</p></li>
+<li><p><strong>savefig</strong> (<em>boolean</em>) – Save figures separately to ‘report’ folder.
+Defaults to False.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -424,8 +389,6 @@ Overlay of 2 images using alpha blend.</p>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -443,12 +406,12 @@ Overlay of 2 images using alpha blend.</p>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.0.
     </div>
   </body>
 </html>

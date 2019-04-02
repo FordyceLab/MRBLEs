@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mrbles.core module &#8212; mrbles 1.0.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>mrbles.core module &#8212; mrbles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -28,7 +26,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -46,26 +44,22 @@
 <em class="property">class </em><code class="descclassname">mrbles.core.</code><code class="descname">Classify</code><span class="sig-paren">(</span><em>target</em>, <em>sigma=1e-05</em>, <em>train=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Classification of beads by Gaussian Mixture Model.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>target</strong> (<em>list, NumPy array</em>) – List of target ratios.</li>
-<li><strong>tol</strong> (<em>float</em>) – Tolerance.
-Defaults to 1e-5.</li>
-<li><strong>min_covar</strong> (<em>float</em>) – Minimum covariance.
-Defaults to 1e-7.</li>
-<li><strong>sigma</strong> (<em>float</em>) – Minimum significance.
-Defaults to 1e-5.</li>
-<li><strong>train</strong> (<em>boolean</em>) – Sets training mode. Remembers covariance matrix or resets to initial
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>list, NumPy array</em>) – List of target ratios.</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Tolerance.
+Defaults to 1e-5.</p></li>
+<li><p><strong>min_covar</strong> (<em>float</em>) – Minimum covariance.
+Defaults to 1e-7.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Minimum significance.
+Defaults to 1e-5.</p></li>
+<li><p><strong>train</strong> (<em>boolean</em>) – Sets training mode. Remembers covariance matrix or resets to initial
 covariance matrix.
-Defaults to False.</li>
+Defaults to False.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.core.Classify.code_metrics">
 <code class="descname">code_metrics</code><span class="sig-paren">(</span><em>nsigma=3</em>, <em>resolution=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#Classify.code_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.Classify.code_metrics" title="Permalink to this definition">¶</a></dt>
@@ -152,27 +146,23 @@ Defaults to False.</li>
 <dd><p>Bases: <a class="reference internal" href="#mrbles.core.FindBeadsImaging" title="mrbles.core.FindBeadsImaging"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.core.FindBeadsImaging</span></code></a></p>
 <p>Find and identify bead objects from image.</p>
 <p>Parameters changes for each setup/magnification/bead-set.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>min_r</strong> (<em>int</em>) – Sets the minimum diameter of the bead in pixels.</li>
-<li><strong>max_r</strong> (<em>int</em>) – Sets the maximum diameter of the bead in pixels.</li>
-<li><strong>param_1</strong> (<em>int</em>) – Sets the gradient steepness. CHECK</li>
-<li><strong>param_2</strong> (<em>int</em>) – Sets the sparsity. CHECK</li>
-<li><strong>annulus_width</strong> (<em>int, optional</em>) – Sets the width of the annulus in pixels.
-Defaults to 2 pixels.</li>
-<li><strong>min_dist</strong> (<em>int, optional</em>) – Sets the minimal distance between the centers of the beads in pixels.
-Defaults to 2x of the minimum diameter (min_r).</li>
-<li><strong>enlarge</strong> (<em>float, optional</em>) – Enlarges the found diameter by this factor.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_r</strong> (<em>int</em>) – Sets the minimum diameter of the bead in pixels.</p></li>
+<li><p><strong>max_r</strong> (<em>int</em>) – Sets the maximum diameter of the bead in pixels.</p></li>
+<li><p><strong>param_1</strong> (<em>int</em>) – Sets the gradient steepness. CHECK</p></li>
+<li><p><strong>param_2</strong> (<em>int</em>) – Sets the sparsity. CHECK</p></li>
+<li><p><strong>annulus_width</strong> (<em>int, optional</em>) – Sets the width of the annulus in pixels.
+Defaults to 2 pixels.</p></li>
+<li><p><strong>min_dist</strong> (<em>int, optional</em>) – Sets the minimal distance between the centers of the beads in pixels.
+Defaults to 2x of the minimum diameter (min_r).</p></li>
+<li><p><strong>enlarge</strong> (<em>float, optional</em>) – Enlarges the found diameter by this factor.
 1 remains equal, 1.1 enlarges by 10% and 0.9 shrinks by 10%.
-Defaults to 1, no enlarging/shrinking.</li>
+Defaults to 1, no enlarging/shrinking.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="staticmethod">
 <dt id="mrbles.core.FindBeadsCircle.circle_mask">
 <em class="property">static </em><code class="descname">circle_mask</code><span class="sig-paren">(</span><em>image</em>, <em>min_dist</em>, <em>min_r</em>, <em>max_r</em>, <em>param_1</em>, <em>param_2</em>, <em>enlarge</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsCircle.circle_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsCircle.circle_mask" title="Permalink to this definition">¶</a></dt>
@@ -211,31 +201,27 @@ Defaults to 1, no enlarging/shrinking.</li>
 <dd><p>Bases: <a class="reference internal" href="mrbles.data.html#mrbles.data.ImageDataFrame" title="mrbles.data.ImageDataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">mrbles.data.ImageDataFrame</span></code></a></p>
 <p>Find and identify beads and their regions using imaging.</p>
 <p>Parallel computing version.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</li>
-<li><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
-Defaults to True.</li>
-<li><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bead_size</strong> (<em>int</em>) – Approximate width of beads (circles) in pixels.</p></li>
+<li><p><strong>border_clear</strong> (<em>boolean</em>) – Beads touching border or ROI will be removed.
+Defaults to True.</p></li>
+<li><p><strong>circle_size</strong> (<em>int</em>) – Set circle size for auto find circular ROI.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference internal" href="#mrbles.core.FindBeadsImaging.area_min" title="mrbles.core.FindBeadsImaging.area_min"><strong>area_min</strong></a> (<em>float</em>) – Sets the minimum area in pixels. Set to minimum size inside of ring.
-Defaults to 0.1 * area of set bead_size.</li>
-<li><a class="reference internal" href="#mrbles.core.FindBeadsImaging.area_max" title="mrbles.core.FindBeadsImaging.area_max"><strong>area_max</strong></a> (<em>float</em>) – Sets the maximum area in pixels. Set maximum size outside of ring.
-Defaults to 1.5 * area of set bead_size.</li>
-<li><a class="reference internal" href="#mrbles.core.FindBeadsImaging.eccen_max" title="mrbles.core.FindBeadsImaging.eccen_max"><strong>eccen_max</strong></a> (<em>float</em>) – Get or set maximum eccentricity of beads in value 0 to 1, where a
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#mrbles.core.FindBeadsImaging.area_min" title="mrbles.core.FindBeadsImaging.area_min"><strong>area_min</strong></a> (<em>float</em>) – Sets the minimum area in pixels. Set to minimum size inside of ring.
+Defaults to 0.1 * area of set bead_size.</p></li>
+<li><p><a class="reference internal" href="#mrbles.core.FindBeadsImaging.area_max" title="mrbles.core.FindBeadsImaging.area_max"><strong>area_max</strong></a> (<em>float</em>) – Sets the maximum area in pixels. Set maximum size outside of ring.
+Defaults to 1.5 * area of set bead_size.</p></li>
+<li><p><a class="reference internal" href="#mrbles.core.FindBeadsImaging.eccen_max" title="mrbles.core.FindBeadsImaging.eccen_max"><strong>eccen_max</strong></a> (<em>float</em>) – Get or set maximum eccentricity of beads in value 0 to 1, where a
 perfect circle is 0.
-Defaults to 0.65.</li>
+Defaults to 0.65.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="attribute">
 <dt id="mrbles.core.FindBeadsImaging.area_max">
 <code class="descname">area_max</code><a class="headerlink" href="#mrbles.core.FindBeadsImaging.area_max" title="Permalink to this definition">¶</a></dt>
@@ -276,33 +262,26 @@ Defaults to 0.65.</li>
 <dt id="mrbles.core.FindBeadsImaging.circle_area">
 <em class="property">static </em><code class="descname">circle_area</code><span class="sig-paren">(</span><em>diameter</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.circle_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.circle_area" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return area of circle.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>diameter</strong> (<em>float</em>) – Diameter of circle.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>diameter</strong> (<em>float</em>) – Diameter of circle.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="mrbles.core.FindBeadsImaging.circle_roi">
 <em class="property">classmethod </em><code class="descname">circle_roi</code><span class="sig-paren">(</span><em>image</em>, <em>circle_size</em>, <em>hough_settings=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.circle_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.circle_roi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a circular image ROI.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>image</strong> (<em>NumPy array image</em>)</li>
-<li><strong>hough_settings</strong> (<em>list, int</em>) – Settings for HoughCircles in list.
-list[0] = dp, list[1] = param1, list[2] = param2</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>NumPy array image</em>)</p></li>
+<li><p><strong>hough_settings</strong> (<em>list, int</em>) – Settings for HoughCircles in list.
+list[0] = dp, list[1] = param1, list[2] = param2</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -322,18 +301,14 @@ list[0] = dp, list[1] = param1, list[2] = param2</li>
 <dt id="mrbles.core.FindBeadsImaging.eccentricity">
 <em class="property">static </em><code class="descname">eccentricity</code><span class="sig-paren">(</span><em>axis_a</em>, <em>axis_b</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.eccentricity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.eccentricity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return eccentricity by major axes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axis_a</strong> (<em>float</em>) – Size major axis a.</li>
-<li><strong>axis_b</strong> (<em>float</em>) – Size major axis b.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axis_a</strong> (<em>float</em>) – Size major axis a.</p></li>
+<li><p><strong>axis_b</strong> (<em>float</em>) – Size major axis b.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
@@ -352,27 +327,23 @@ list[0] = dp, list[1] = param1, list[2] = param2</li>
 <dt id="mrbles.core.FindBeadsImaging.filter_property">
 <em class="property">static </em><code class="descname">filter_property</code><span class="sig-paren">(</span><em>properties</em>, <em>filter_param</em>, <em>filter_name</em>, <em>slice_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.filter_property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.filter_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get labels of beads outside/inside/up/down of propert limits.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>properties</strong> (<em>photutils table</em>) – Table with feature properties from labeled mask.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>properties</strong> (<em>photutils table</em>) – Table with feature properties from labeled mask.
 &gt;&gt;&gt; from photutils import source_properties, properties_table
 &gt;&gt;&gt; tbl = properties_table(properties)
-&gt;&gt;&gt; properties = source_properties(mask, mask)</li>
-<li><strong>filter_param</strong> (<em>float, int, list</em>) – Parameters to filter by.
+&gt;&gt;&gt; properties = source_properties(mask, mask)</p></li>
+<li><p><strong>filter_param</strong> (<em>float, int, list</em>) – Parameters to filter by.
 If provided a list it will filter by range, inside or outside).
-If provided a value it filter up or down that value.</li>
-<li><strong>slice_type</strong> (<em>string</em>) – ‘outside’ : &lt; &gt;
+If provided a value it filter up or down that value.</p></li>
+<li><p><strong>slice_type</strong> (<em>string</em>) – ‘outside’ : &lt; &gt;
 ‘inside’  : &gt;= &lt;=
 ‘up’      : &gt;
-‘down’    : &lt;</li>
+‘down’    : &lt;</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -433,22 +404,18 @@ If provided a value it filter up or down that value.</li>
 <dt id="mrbles.core.FindBeadsImaging.show_image_overlay">
 <em class="property">static </em><code class="descname">show_image_overlay</code><span class="sig-paren">(</span><em>image</em>, <em>image_blend</em>, <em>alpha=0.3</em>, <em>cmap1='Greys_r'</em>, <em>cmap2='jet'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#FindBeadsImaging.show_image_overlay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.FindBeadsImaging.show_image_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay of 2 images using alpha blend.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>image</strong> (<em>NumPy array</em>) – Base image.</li>
-<li><strong>image_blend</strong> (<em>NumPy arra</em>) – Image to blend over base image.</li>
-<li><strong>aplha</strong> (<em>float</em>) – Amount of blending. Value between 0 and 1.
-Defaults to 0.3.</li>
-<li><strong>c_map1</strong> (<em>cmap</em>) – Color scheme using cmap. See matplotlib for color schemes.
-Defaults to ‘Greys_r’, which are reversed grey values.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>NumPy array</em>) – Base image.</p></li>
+<li><p><strong>image_blend</strong> (<em>NumPy arra</em>) – Image to blend over base image.</p></li>
+<li><p><strong>aplha</strong> (<em>float</em>) – Amount of blending. Value between 0 and 1.
+Defaults to 0.3.</p></li>
+<li><p><strong>c_map1</strong> (<em>cmap</em>) – Color scheme using cmap. See matplotlib for color schemes.
+Defaults to ‘Greys_r’, which are reversed grey values.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -460,45 +427,41 @@ Defaults to ‘Greys_r’, which are reversed grey values.</li>
 <p>Iterative Closest Point (ICP).</p>
 <p>Iterative Closest Point (ICP) algorithm to minimize the difference
 between two clouds of points.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix_method</strong> (<em>string/function/list, optional</em>) – Transformation matrix method. Standard methods: ‘max’, ‘mean’, ‘std’.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix_method</strong> (<em>string/function/list, optional</em>) – Transformation matrix method. Standard methods: ‘max’, ‘mean’, ‘std’.
 Other options: own function or list of initial guesses.
-Defaults to ‘std’.</li>
-<li><strong>offset</strong> (<em>list of float, optional</em>)</li>
-<li><strong>max_iter</strong> (<em>int, optional</em>) – Maximum number of iterations.
-Defaults to 100.</li>
-<li><strong>tol</strong> (<em>float, optional</em>) – Convergence threshold. ICP will stop after delta &lt; tol.
-Defaults to 1e-4.</li>
-<li><strong>outlier_pct</strong> (<em>float, optional</em>) – Discard percentile 0.x of furthest distance from target. Percentile
+Defaults to ‘std’.</p></li>
+<li><p><strong>offset</strong> (<em>list of float, optional</em>)</p></li>
+<li><p><strong>max_iter</strong> (<em>int, optional</em>) – Maximum number of iterations.
+Defaults to 100.</p></li>
+<li><p><strong>tol</strong> (<em>float, optional</em>) – Convergence threshold. ICP will stop after delta &lt; tol.
+Defaults to 1e-4.</p></li>
+<li><p><strong>outlier_pct</strong> (<em>float, optional</em>) – Discard percentile 0.x of furthest distance from target. Percentile
 given in fraction [0-1], e.g. ‘0.001’.
-Defaults to 0.</li>
-<li><strong>train</strong> (<em>boolean</em>) – Turn on (True) or off (False) traning mode.
+Defaults to 0.</p></li>
+<li><p><strong>train</strong> (<em>boolean</em>) – Turn on (True) or off (False) traning mode.
 This will keep the current tranformation from resetting to default
 initial values.
-Defaults to True.</li>
-<li><strong>echo</strong> (<em>boolean</em>) – Turn on (True) or off (False) printing information while in process.
+Defaults to True.</p></li>
+<li><p><strong>echo</strong> (<em>boolean</em>) – Turn on (True) or off (False) printing information while in process.
 Prints the delta for each iteration, the final number of iterations,
-and the final transformation and offset matrices.</li>
+and the final transformation and offset matrices.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>matrix</strong> (<em>NumPy array</em>) – This stores the transformation matrix.</li>
-<li><strong>offset</strong> (<em>NumPy vector</em>) – This stores the offset vector.</li>
-<li><strong>Functions</strong> – </li>
-<li><strong>---------</strong> – </li>
-<li><a class="reference internal" href="#mrbles.core.ICP.fit" title="mrbles.core.ICP.fit"><strong>fit</strong></a> (<em>function</em>) – Function to find ICP using set parameters and attributes.</li>
-<li><a class="reference internal" href="#mrbles.core.ICP.transform" title="mrbles.core.ICP.transform"><strong>transform</strong></a> (<em>function</em>) – Function to apply transformat data using current transformation matrix
-and offset vector.</li>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>matrix</strong> (<em>NumPy array</em>) – This stores the transformation matrix.</p></li>
+<li><p><strong>offset</strong> (<em>NumPy vector</em>) – This stores the offset vector.</p></li>
+<li><p><strong>Functions</strong> – </p></li>
+<li><p><strong>---------</strong> – </p></li>
+<li><p><a class="reference internal" href="#mrbles.core.ICP.fit" title="mrbles.core.ICP.fit"><strong>fit</strong></a> (<em>function</em>) – Function to find ICP using set parameters and attributes.</p></li>
+<li><p><a class="reference internal" href="#mrbles.core.ICP.transform" title="mrbles.core.ICP.transform"><strong>transform</strong></a> (<em>function</em>) – Function to apply transformat data using current transformation matrix
+and offset vector.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.core.ICP.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>data</em>, <em>target=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.fit" title="Permalink to this definition">¶</a></dt>
@@ -509,26 +472,22 @@ and offset vector.</li>
 <dt id="mrbles.core.ICP.matrix_create">
 <em class="property">static </em><code class="descname">matrix_create</code><span class="sig-paren">(</span><em>func</em>, <em>input1</em>, <em>input2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#ICP.matrix_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.ICP.matrix_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create identity matrix and set values with function on inputs e.g ‘np.mean’.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>func</strong> (<em>function</em>) – Function to apply on input1 divided by input2, e.g. ‘np.std’.
-Insert function without function call: ().</li>
-<li><strong>input1</strong> (<em>list, ndarray</em>)</li>
-<li><strong>input2</strong> (<em>list, ndarray</em>)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – Function to apply on input1 divided by input2, e.g. ‘np.std’.
+Insert function without function call: ().</p></li>
+<li><p><strong>input1</strong> (<em>list, ndarray</em>)</p></li>
+<li><p><strong>input2</strong> (<em>list, ndarray</em>)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matrix</strong> – Returns func(input1/input2)</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>matrix</strong> – Returns func(input1/input2)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -547,15 +506,12 @@ Insert function without function call: ().</li>
 <p>Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm images
 to Dy, Sm and Tm nanophospohorous lanthanides using reference spectra for
 each dye.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ref_data</strong> (<em>list, ndarray, Pandas DataFrame, mrbles.data.References</em>) – Reference spectra for each dye channel as Numpy Array: N x M, where N
-are the spectral channels and M the dye channels.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ref_data</strong> (<em>list, ndarray, Pandas DataFrame, mrbles.data.References</em>) – Reference spectra for each dye channel as Numpy Array: N x M, where N
+are the spectral channels and M the dye channels.</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mrbles.core.SpectralUnmixing.unmix">
 <code class="descname">unmix</code><span class="sig-paren">(</span><em>images</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mrbles/core.html#SpectralUnmixing.unmix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mrbles.core.SpectralUnmixing.unmix" title="Permalink to this definition">¶</a></dt>
@@ -563,16 +519,13 @@ are the spectral channels and M the dye channels.</td>
 <p>Unmix the spectral images to dye images, e.g., 620nm, 630nm, 650nm
 images to Dy, Sm and Tm nanophospohorous lanthanides using reference
 spectra for each dye.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image_data</strong> (<em>NumPy array, Xarry DataArray, mrbles.Images</em>) – Spectral images as NumPy array: N x M x P,
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image_data</strong> (<em>NumPy array, Xarry DataArray, mrbles.Images</em>) – Spectral images as NumPy array: N x M x P,
 where N are the spectral channels and M x P the image pixels
-(Y x X).</td>
-</tr>
-</tbody>
-</table>
+(Y x X).</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -604,8 +557,6 @@ where N are the spectral channels and M x P the image pixels
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -623,12 +574,12 @@ where N are the spectral channels and M x P the image pixels
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">mrbles 1.0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Bjorn Harink.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.0.
     </div>
   </body>
 </html>
