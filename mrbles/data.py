@@ -610,8 +610,7 @@ class ImageSetRead(ImageDataFrame):
             panel_data = xr.DataArray(
                 data,
                 dims=dims,
-                coords={'c': channels},
-                encoding={'dtype': np.uint16}  # TODO: Change encoding...
+                coords={'c': channels}
             )
         return panel_data
 

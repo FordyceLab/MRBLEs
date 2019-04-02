@@ -243,8 +243,7 @@ class FindBeadsImaging(ImageDataFrame):
                                            'mask_inside',
                                            'mask_outside',
                                            'mask_bkg',
-                                           'mask_check']},
-                             encoding={'dtype': np.uint16})
+                                           'mask_check']})
         return [masks, bead_dims]
 
     def _find_inside(self, bin_img):
@@ -649,7 +648,6 @@ class FindBeadsImaging(ImageDataFrame):
         return sqrt(1 - (minor**2 / major**2))
 
 
-# TODO: re-write in same way as FindBeadsImaging
 class FindBeadsCircle(FindBeadsImaging):
     """Find and identify bead objects from image.
 
@@ -857,8 +855,7 @@ class FindBeadsCircle(FindBeadsImaging):
                                            'mask_inside',
                                            'mask_outside',
                                            'mask_bkg',
-                                           'mask_check']},
-                             encoding={'dtype': np.uint16})
+                                           'mask_check']})
         return [masks, bead_dims]
 
     def create_annulus_mask(self, labeled_mask):

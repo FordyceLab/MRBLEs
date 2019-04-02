@@ -168,8 +168,7 @@ class Images(ImageDataFrame):
                     self._dataframe[data_key] = xr.DataArray(
                         data_array,
                         dims=['f', 'c', 'y', 'x'],
-                        coords={'c': coords},
-                        encoding={'dtype': np.uint16})
+                        coords={'c': coords})
 
     def load(self, series=0):
         """Load images in memory."""
@@ -313,7 +312,7 @@ class Find(ImageDataFrame):
                       ...,
                      [0, ..., 0]]]], dtype=uint16)
             Coordinates:
-            * c        (c) <U12 'mask_full' 'mask_ring' 'mask_inside' 'mask_outside' ...
+            * c        (c) <U12 'mask_full' 'mask_ring' 'mask_inside' ...
             Dimensions without coordinates: f, y, x,
         'Set 2': ...
     >>> find_mrbles['Set 2', 3, 'mask_ring']
