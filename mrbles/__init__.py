@@ -51,7 +51,7 @@ __all__ = ['core', 'data']
 
 # Citation of scientific publication
 __bibtex__ = r"""@article{10.1371/journal.pone.0203725,
-    author = {Harink, BjÃ¶rn AND Nguyen, Huy AND Thorn, Kurt AND Fordyce, Polly},
+    author = {Harink, Björn AND Nguyen, Huy AND Thorn, Kurt AND Fordyce, Polly},
     journal = {PLOS ONE},
     publisher = {Public Library of Science},
     title = {An open-source software analysis package for Microspheres with Ratiometric Barcode Lanthanide Encoding (MRBLEs)},
