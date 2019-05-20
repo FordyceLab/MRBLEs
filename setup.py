@@ -88,7 +88,7 @@ setup(
                       'opencv-python>=3.2.0',
                       'scikit-learn',
                       'scikit-image',
-                      'photutils>=0.6.0',
+                      'photutils>=0.6',
                       'packaging',
                       'matplotlib',
                       'plotly',
