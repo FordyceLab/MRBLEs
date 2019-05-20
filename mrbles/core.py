@@ -705,37 +705,6 @@ class FindBeadsCircle(FindBeadsImaging):
         self._circles_dim = None
         self._dataframe = None
 
-    # @property
-    # def labeled_mask(self):
-    #     """Return labeled mask."""
-    #     return self._labeled_mask
-
-    # @property
-    # def labeled_annulus_mask(self):
-    #     """Return labeled annulus mask."""
-    #     return self._labeled_annulus_mask
-
-    # @property
-    # def circles_dim(self):
-    #     """Return circle dimensions."""
-    #     return self._circles_dim
-
-    # @staticmethod
-    # def convert(image):
-    #     """8 Bit Convert.
-
-    #     Checks image data type and converts if necessary to uint8 array.
-    #     image : M x N image array
-    #     """
-    #     try:
-    #         img_type = image.dtype
-    #     except ValueError:
-    #         print("Not a NumPy array of image: %s" % image)
-    #     else:
-    #         if img_type == 'uint16':
-    #             image = np.array(((image / 2**16) * 2**8), dtype='uint8')
-    #     return image
-
     @staticmethod
     def circle_mask(image, min_dist, min_r, max_r, param_1, param_2, enlarge):
         """Find initial circles using Hough transform and return mask."""
