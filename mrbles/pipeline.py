@@ -35,7 +35,7 @@ from sklearn.metrics import silhouette_score
 import pandas as pd
 import xarray as xr
 from matplotlib import pyplot as plt
-from skimage.external import tifffile as tff
+import tifffile as tff
 # Python 2 compatibility
 from six import string_types
 from six.moves import input
@@ -51,7 +51,7 @@ from mrbles.report import ClusterCheck, BeadsReport, QCReport
 # General methods
 
 
-class Settings(object):
+class Settings:
     """Settings object."""
 
     def __init__(self, objects, object_names):
@@ -144,7 +144,7 @@ class Images(ImageDataFrame):
 
     def __init__(self, folders=None, file_patterns=None,
                  data=None, channels=None):
-        super(Images, self).__init__()
+        super().__init__()
         self.folders = folders
         self.file_patterns = file_patterns
         self._dataframe = None
@@ -280,13 +280,10 @@ class Images(ImageDataFrame):
         for root, _, files in os.walk(path):
             file_list = [os.path.join(root, x)
                          for x in files if reg_object.match(x)]
-            if file_list:
-                image_files.append(file_list)
+            image_files += file_list
         if not image_files:
-            file_names = None
-        else:
-            file_names = np.hstack(image_files).tolist()
-        return file_names
+            return None
+        return image_files
 
 
 class Find(ImageDataFrame):
@@ -370,7 +367,7 @@ class Find(ImageDataFrame):
     def __init__(self, bead_size, pixel_size=None, border_clear=True,
                  circle_size=None, min_r=None, max_r=None, annulus_width=None,
                  **kwargs):
-        super(Find, self).__init__()
+        super().__init__()
         self._bead_size = bead_size
         self._pixel_size = pixel_size
         if (min_r and max_r and annulus_width) is None:

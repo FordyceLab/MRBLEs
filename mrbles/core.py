@@ -105,7 +105,7 @@ class FindBeadsImaging(ImageDataFrame):
     def __init__(self, bead_size,
                  border_clear=True, circle_size=None, parallelize=False):
         """Find and identify beads and their regions using imaging."""
-        super(FindBeadsImaging, self).__init__()
+        super().__init__()
         self._bead_size = bead_size
         self.border_clear = border_clear
         self.circle_size = circle_size
@@ -515,19 +515,16 @@ class FindBeadsImaging(ImageDataFrame):
     @staticmethod
     def get_dimensions(mask):
         """Get dimensions of labeled regions in labeled mask."""
-        properties = photutils.source_properties(mask, mask)
+        properties = photutils.SourceCatalog(mask, photutils.SegmentationImage(mask))
         if not properties:
             return None
-        tbl = properties.to_table()  # Convert to table
-        lbl = np.array(tbl['min_value'], dtype=np.int16)
-        reg_x = tbl['xcentroid']
-        reg_y = tbl['ycentroid']
-        reg_r = tbl['equivalent_radius']
-        reg_area = tbl['area']
-        perimeter = tbl['perimeter']
-        eccentricity = tbl['eccentricity']
-        pdata = np.array([lbl, reg_x, reg_y, reg_r, reg_area,
-                          perimeter, eccentricity]).T
+        pdata = np.array([properties.min_value,
+                          properties.xcentroid,
+                          properties.ycentroid,
+                          properties.equivalent_radius,
+                          properties.area,
+                          properties.perimeter,
+                          properties.eccentricity]).T
         dims = pd.DataFrame(data=pdata,
                             columns=['label',
                                      'x_centroid',
@@ -683,7 +680,7 @@ class FindBeadsCircle(FindBeadsImaging):
                  auto_filt=True, border_clear=False,
                  parallelize=True):
         """Instantiate FindBeadsCircle."""
-        super(FindBeadsCircle, self).__init__(bead_size)
+        super().__init__(bead_size)
         self.min_r = min_r
         self.max_r = max_r
         self.annulus_width = annulus_width

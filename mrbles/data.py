@@ -29,14 +29,14 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 # File import
-from skimage.external import tifffile as tff
+import tifffile as tff
 # Python 2 compatibility
 from six import string_types
 
 # Descriptor classes
 
 
-class TableDataFrame(object):
+class TableDataFrame:
     """Pandas based dataframe object for table data.
 
     Attributes
@@ -154,7 +154,7 @@ class TableDataFrame(object):
         return flag_out_data
 
 
-class ImageDataFrame(object):
+class ImageDataFrame:
     """Xarray based dataframe object for images.
 
     Attributes
@@ -173,7 +173,6 @@ class ImageDataFrame(object):
     """
 
     def __init__(self, data=None):
-        super(ImageDataFrame, self).__init__()
         self._dataframe = data
         self._crop_x = slice(None, None, None)
         self._crop_y = slice(None, None, None)
@@ -367,7 +366,7 @@ class ImageSetRead(ImageDataFrame):
 
     def __init__(self, file_path, series=0, output='xr'):
         """Initialize file load object."""
-        super(ImageSetRead, self).__init__()
+        super().__init__()
         self._dataframe, self._metadata, self._files = \
             self.load(file_path, series)
         self.output = output
@@ -403,6 +402,7 @@ class ImageSetRead(ImageDataFrame):
         """
         if isinstance(file_path, str):
             file_path = [file_path]
+        tff.TiffSequence(file_path, pattern='XYCZT')
         with tff.TiffSequence(file_path, pattern='XYCZT') as ts, \
                 tff.TiffFile(file_path[0]) as tf:
             files = ts.files
@@ -598,7 +598,7 @@ class ImageSetRead(ImageDataFrame):
                 dims[dims.index('i')] = 'c'
             if len(file_path) > 1:
                 dims.insert(0, 'f')
-            md_channels = metadata['summary']['ChNames']
+            md_channels = metadata['Summary']['ChNames']
             # Micro-Manager re-stack bug fix: returns string instead of list.
             if isinstance(md_channels, list):
                 channels = md_channels
@@ -616,7 +616,7 @@ class ImageSetRead(ImageDataFrame):
 
     @staticmethod
     def _get_metadata(image_object):
-        if image_object.is_micromanager is True:
+        if image_object.is_micromanager:
             metadata = image_object.micromanager_metadata
             metadata['series'] = image_object.series
             return metadata
