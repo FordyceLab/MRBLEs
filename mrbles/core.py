@@ -892,7 +892,7 @@ class SpectralUnmixing(ImageDataFrame):
 
     def __init__(self, ref_data):
         """Instantiate SpectralUnmixing."""
-        super(SpectralUnmixing, self).__init__()
+        super().__init__()
         self._ref_object = ref_data
         if isinstance(ref_data, pd.DataFrame):
             self._ref_data = ref_data.values

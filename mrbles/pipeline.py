@@ -122,7 +122,7 @@ class Images(ImageDataFrame):
         String of single folder or dict of multiple folders.
         The folder(s) provided will searched recursively.
         Dict keys must match file_patterns dict.
-    file_patterns : dict
+    path_patterns : dict
         Dict of multiple file patterns.
         Dict keys must match folders keys, if multiple folders.
     data : NumPy array
@@ -142,14 +142,11 @@ class Images(ImageDataFrame):
 
     """
 
-    def __init__(self, folders=None, file_patterns=None,
-                 data=None, channels=None):
+    def __init__(self, file_paths=None, data=None, channels=None):
         super().__init__()
-        self.folders = folders
-        self.file_patterns = file_patterns
         self._dataframe = None
         self.files = None
-        if (folders and file_patterns) is not None:
+        if file_paths is not None:
             self.files = self._find_images(self.folders, self.file_patterns)
             if isinstance(self.files, dict):
                 for key, value in self.files.items():
