@@ -13,7 +13,7 @@ affinity information based on titrations of MRBLEs assays.
 """
 
 # [Future imports]
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 from future import standard_library
 
 # [File header]     | Copy and edit for each file in this project!
@@ -28,25 +28,25 @@ from future import standard_library
 __name__ = "mrbles"
 __package__ = "mrbles"
 # Copyright and credits
-__copyright__ = ("Copyright 2015-2019 - "
-                 "The Encoded Beads Project - "
-                 "ThornLab@UCSF and "
-                 "FordyceLab@Stanford")
+__copyright__ = (
+    "Copyright 2015-2019 - "
+    "The Encoded Beads Project - "
+    "ThornLab@UCSF and "
+    "FordyceLab@Stanford"
+)
 # Original author(s) of this Python project:
 __author__ = "Bjorn Harink"
 # People who contributed to this Python project:
-__credits__ = ["Kurt Thorn",
-               "Huy Nguyen",
-               "Polly Fordyce"]
+__credits__ = ["Kurt Thorn", "Huy Nguyen", "Polly Fordyce"]
 # Maintainer contact information
 __maintainer__ = "Bjorn Harink"
 __email__ = "bjorn@harink.info"
 # Software information
 __license__ = "MIT"
-__version__ = '1.0.1'
+__version__ = "1.0.1"
 __status__ = "Development"
 # Package settings
-__all__ = ['core', 'data']
+__all__ = ["core", "data"]
 
 
 # Citation of scientific publication

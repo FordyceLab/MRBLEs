@@ -8,7 +8,7 @@ module.
 """
 
 # [Future imports]
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : path.py
@@ -22,10 +22,12 @@ from __future__ import (absolute_import, division, print_function)
 # [Modules]
 # General Python
 from random import randrange
+
 # Data Structure
 import numpy as np
 from scipy.stats.mstats import zscore
 import pandas as pd
+
 # Project
 from mrbles.data import TableDataFrame
 
@@ -69,19 +71,19 @@ class PathUnmix(TableDataFrame):
 
         """
         data_conv = pd.DataFrame(
-            {'signal': data.groupby(["set", "code"])[signal].median()}
+            {"signal": data.groupby(["set", "code"])[signal].median()}
         ).reset_index()
         sets = self.get_set_names(data_conv)
-        data_sets = {s_name: self._unmix(data_conv[data_conv.set == s_name],
-                                         z_score)
-                     for s_name in sets}
-        dataframe = pd.DataFrame.from_dict(data_sets,
-                                           orient='index',
-                                           columns=self.references.columns)
+        data_sets = {
+            s_name: self._unmix(data_conv[data_conv.set == s_name], z_score) for s_name in sets
+        }
+        dataframe = pd.DataFrame.from_dict(
+            data_sets, orient="index", columns=self.references.columns
+        )
         self._dataframe = dataframe
 
     def _unmix(self, data, z_score=True):
-        data = data.groupby('code')['signal'].median()
+        data = data.groupby("code")["signal"].median()
         if z_score is True:
             data = zscore(data)
         elif isinstance(z_score, list):
@@ -98,8 +100,7 @@ class PathUnmix(TableDataFrame):
         return refs_log
 
     @staticmethod
-    def generate_test_refs(channels, spike_channel=None, signal_max=2**16,
-                           scale=True):
+    def generate_test_refs(channels, spike_channel=None, signal_max=2**16, scale=True):
         """Generate test reference spectra.
 
         spike_channel : list

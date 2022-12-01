@@ -8,8 +8,8 @@ module.
 """
 
 # [Future imports]
-from __future__ import (absolute_import, division, print_function)
-from builtins import (range, object)
+from __future__ import absolute_import, division, print_function
+from builtins import range, object
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : kinetics.py
@@ -24,8 +24,10 @@ from builtins import (range, object)
 # General Python
 # import sys
 from math import sqrt
+
 # Data Structure
 import numpy as np
+
 # Data analysis
 import lmfit
 
@@ -77,7 +79,7 @@ class KModelSim(object):
 
     """
 
-    def __init__(self, c_substrate, c_complex, kd_init, tol=1E-4):
+    def __init__(self, c_substrate, c_complex, kd_init, tol=1e-4):
         self.n_substrate = len(c_substrate)
         self.n_complex = len(c_complex)
         self.c_substrate = c_substrate
@@ -96,8 +98,7 @@ class KModelSim(object):
         Access result with object.result.
         """
         self.MPfinal = np.zeros((self.n_complex, self.n_substrate))
-        MPapproxM = self.comp_excess(
-            self.c_complex, self.c_substrate, self.kds)
+        MPapproxM = self.comp_excess(self.c_complex, self.c_substrate, self.kds)
         MPapproxP = self.sub_excess(self.c_complex, self.c_substrate, self.kds)
         MPnew = np.zeros((self.n_substrate))
         for m in range(self.n_complex):
@@ -122,8 +123,7 @@ class KModelSim(object):
     @staticmethod
     def kd_init(kd_init, n_substrate):
         """Initialize Kd values."""
-        Kd = np.logspace(
-            0, kd_init, n_substrate)  # Kd for each protein-peptide complex
+        Kd = np.logspace(0, kd_init, n_substrate)  # Kd for each protein-peptide complex
         return Kd
 
     @staticmethod
@@ -175,21 +175,19 @@ class GlobalFit(object):
         """Return fit metrics."""
         if self._result is None:
             return None
-        print('Chi2: ', self._result.chisqr)
-        print('Reduced Chi2: ', self._result.redchi)
-        print('Degrees of freedom: ', self._result.nfree, '\n')
+        print("Chi2: ", self._result.chisqr)
+        print("Reduced Chi2: ", self._result.redchi)
+        print("Degrees of freedom: ", self._result.nfree, "\n")
         return lmfit.report_fit(self._result.params)
 
     def fit(self, concentrations, fit_all, fit_all_se):
         """Fit data."""
         self._init_params(fit_all)
-        self.lm_model = lmfit.Minimizer(self.objective,
-                                        self.fit_params,
-                                        fcn_args=(concentrations,
-                                                  fit_all,
-                                                  fit_all_se))
+        self.lm_model = lmfit.Minimizer(
+            self.objective, self.fit_params, fcn_args=(concentrations, fit_all, fit_all_se)
+        )
         self._result = self.lm_model.minimize()
-        print('Success: ', self._result.success)
+        print("Success: ", self._result.success)
 
     def conf_int(self):
         """Return confidence intervals."""
@@ -205,18 +203,23 @@ class GlobalFit(object):
         # Kd_initial = np.abs(np.nan_to_num([Kd_init/(np.max(select_data_median[p])/np.max(select_data_median)) for p in range(len(select_data_median))]))
 
         for p_idx, p_data in enumerate(select_data_median):
-            self.fit_params.add('Kd_%i' % (
-                p_idx + 1), value=Kd_initial[p_idx], min=0, vary=True)  # Initial values from max
+            self.fit_params.add(
+                "Kd_%i" % (p_idx + 1), value=Kd_initial[p_idx], min=0, vary=True
+            )  # Initial values from max
             # fit_params.add( 'Kd_%i' % (p_idx+1), value=KDs[p_idx], min=0, vary=True) # Values initial global fit
 
             # fit_params.add( 'Rmax_%i' % (p_idx+1), value=np.max(select_data_median), min=0, vary=True)
-            self.fit_params.add('Rmax_%i' % (p_idx + 1), value=np.max(
-                select_data_median), min=0.5 * np.max(select_data_median), vary=True)
+            self.fit_params.add(
+                "Rmax_%i" % (p_idx + 1),
+                value=np.max(select_data_median),
+                min=0.5 * np.max(select_data_median),
+                vary=True,
+            )
             # fit_params.add( 'Rmax_%i' % (p_idx+1), value=Rmaxs[p_idx], min=0.5*Rmaxs[p_idx], vary=True) # Values initial global fit
 
         # Pegging parameters
         for iy in range(2, len(select_data_median) + 1):
-            self.fit_params['Rmax_%i' % iy].expr = 'Rmax_1'  # Rmax is shared.
+            self.fit_params["Rmax_%i" % iy].expr = "Rmax_1"  # Rmax is shared.
 
     @classmethod
     def model_dataset(cls, params, i, Mt):
@@ -224,8 +227,8 @@ class GlobalFit(object):
 
         This extracts the data from the Parameters, used by lmfit.
         """
-        Kd = params['Kd_%i' % (i + 1)].value
-        Rmax = params['Rmax_%i' % (i + 1)].value
+        Kd = params["Kd_%i" % (i + 1)].value
+        Rmax = params["Rmax_%i" % (i + 1)].value
         return cls.model_bind(Mt, Kd, Rmax)
 
     @classmethod
@@ -238,8 +241,7 @@ class GlobalFit(object):
         resid = np.zeros_like(data)
         # make residual per data set
         for i in range(ndata):
-            resid[i, :] = cls.objective(
-                data[i, :], cls.model_dataset(params, i, Mt), sigma[i, :])
+            resid[i, :] = cls.objective(data[i, :], cls.model_dataset(params, i, Mt), sigma[i, :])
         # Now flatten this to a 1D array, as minimize() requires.
         return resid.flatten()
 
@@ -266,5 +268,5 @@ class GlobalFit(object):
             Maximum response level in abitrary units.
 
         """
-        model = ((Mt * Rmax) / (Kd + Mt))
+        model = (Mt * Rmax) / (Kd + Mt)
         return model

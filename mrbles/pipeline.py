@@ -11,8 +11,8 @@ This files contains the pipeline for the MRBLEs analysis.
 """
 
 # [Future imports]
-from __future__ import (absolute_import, division, print_function)
-from builtins import (str, super, range, int, object)
+from __future__ import absolute_import, division, print_function
+from builtins import str, super, range, int, object
 
 # [File header]     | Copy and edit for each file in this project!
 # title             : simp.py
@@ -27,6 +27,7 @@ import os
 import re
 import gc
 from random import randint
+
 # Other
 import numpy as np
 import scipy as sp
@@ -36,14 +37,14 @@ import pandas as pd
 import xarray as xr
 from matplotlib import pyplot as plt
 import tifffile as tff
+
 # Python 2 compatibility
 from six import string_types
 from six.moves import input
 
 # Intra-Package dependencies
 import mrbles
-from mrbles.core import (FindBeadsImaging, FindBeadsCircle, ICP, Classify,
-                         SpectralUnmixing)
+from mrbles.core import FindBeadsImaging, FindBeadsCircle, ICP, Classify, SpectralUnmixing
 from mrbles.data import ImageSetRead, ImageDataFrame, TableDataFrame
 from mrbles.report import ClusterCheck, BeadsReport, QCReport
 
@@ -151,11 +152,9 @@ class Images(ImageDataFrame):
             if isinstance(self.files, dict):
                 for key, value in self.files.items():
                     if value is None:
-                        print("No files found in %s with given parameters."
-                              % (key))
+                        print("No files found in %s with given parameters." % (key))
                     else:
-                        print("Found %i files in %s"
-                              % (len(value), key))
+                        print("Found %i files in %s" % (len(value), key))
         else:
             self._dataframe = {}
             if channels is None:
@@ -165,16 +164,16 @@ class Images(ImageDataFrame):
             if isinstance(data, dict):
                 for data_key, data_array in data.items():
                     self._dataframe[data_key] = xr.DataArray(
-                        data_array,
-                        dims=['f', 'c', 'y', 'x'],
-                        coords={'c': coords})
+                        data_array, dims=["f", "c", "y", "x"], coords={"c": coords}
+                    )
 
     def load(self, series=0):
         """Load images in memory."""
         if self.files is None:
             return False
-        self._dataframe = {key: ImageSetRead(file_set, series).xdata
-                           for key, file_set in self.files.items()}
+        self._dataframe = {
+            key: ImageSetRead(file_set, series).xdata for key, file_set in self.files.items()
+        }
 
     def add_images(self, images):
         """Add images to dataframe."""
@@ -194,19 +193,13 @@ class Images(ImageDataFrame):
         """
         if isinstance(self._dataframe, dict):
             for key, data_array in self._dataframe.items():
-                channels = data_array.coords['c'].values
+                channels = data_array.coords["c"].values
                 if old_name in channels:
-                    self._dataframe[key] = self._rename_coord(data_array,
-                                                              'c',
-                                                              old_name,
-                                                              new_name)
+                    self._dataframe[key] = self._rename_coord(data_array, "c", old_name, new_name)
         else:
-            self._dataframe = self._rename_coord(self._dataframe,
-                                                 'c',
-                                                 old_name,
-                                                 new_name)
+            self._dataframe = self._rename_coord(self._dataframe, "c", old_name, new_name)
 
-    def flat_field(self, ff_image, channel, affix='_FF'):
+    def flat_field(self, ff_image, channel, affix="_FF"):
         """Flat-Field correction.
 
         Parameters
@@ -231,7 +224,8 @@ class Images(ImageDataFrame):
                 ff_df = self._dataframe[key].loc[:, [channel]]
                 ff_dict_df[key] = ff_df / flat_field
                 ff_dict_df[key] = self._rename_coord(
-                    ff_dict_df[key], 'c', channel, "%s%s" % (channel, affix))
+                    ff_dict_df[key], "c", channel, "%s%s" % (channel, affix)
+                )
         self.combine(ff_dict_df)
 
     @staticmethod
@@ -239,20 +233,16 @@ class Images(ImageDataFrame):
         """Rename dimension coordinate in an Xarray DataArray."""
         coordinates = dataframe.coords[dim].values
         np.place(coordinates, coordinates == old_name, new_name)
-        renamed_dataframe = xr.DataArray(dataframe,
-                                         dims=dataframe.dims,
-                                         coords={'c': coordinates})
+        renamed_dataframe = xr.DataArray(dataframe, dims=dataframe.dims, coords={"c": coordinates})
         return renamed_dataframe
 
     # Private methods
     @classmethod
     def _find_images(cls, folders, files):
         if isinstance(folders, dict):
-            files = {key: cls.scan_path(folders[key], pattern)
-                     for key, pattern in files.items()}
+            files = {key: cls.scan_path(folders[key], pattern) for key, pattern in files.items()}
         elif isinstance(folders, string_types):
-            files = {key: cls.scan_path(folders, pattern)
-                     for key, pattern in files.items()}
+            files = {key: cls.scan_path(folders, pattern) for key, pattern in files.items()}
         else:
             return None
         return files
@@ -275,8 +265,7 @@ class Images(ImageDataFrame):
         image_files = []
         reg_object = re.compile(pattern)
         for root, _, files in os.walk(path):
-            file_list = [os.path.join(root, x)
-                         for x in files if reg_object.match(x)]
+            file_list = [os.path.join(root, x) for x in files if reg_object.match(x)]
             image_files += file_list
         if not image_files:
             return None
@@ -361,44 +350,44 @@ class Find(ImageDataFrame):
 
     """
 
-    def __init__(self, bead_size, pixel_size=None, border_clear=True,
-                 circle_size=None, min_r=None, max_r=None, annulus_width=None,
-                 **kwargs):
+    def __init__(
+        self,
+        bead_size,
+        pixel_size=None,
+        border_clear=True,
+        circle_size=None,
+        min_r=None,
+        max_r=None,
+        annulus_width=None,
+        **kwargs,
+    ):
         super().__init__()
         self._bead_size = bead_size
         self._pixel_size = pixel_size
         if (min_r and max_r and annulus_width) is None:
-            self._bead_objects = FindBeadsImaging(bead_size=bead_size,
-                                                  border_clear=border_clear,
-                                                  circle_size=circle_size)
+            self._bead_objects = FindBeadsImaging(
+                bead_size=bead_size, border_clear=border_clear, circle_size=circle_size
+            )
         else:
-            self._bead_objects = FindBeadsCircle(bead_size=bead_size,
-                                                 min_r=min_r,
-                                                 max_r=max_r,
-                                                 annulus_width=annulus_width,
-                                                 **kwargs)
+            self._bead_objects = FindBeadsCircle(
+                bead_size=bead_size, min_r=min_r, max_r=max_r, annulus_width=annulus_width, **kwargs
+            )
         self._dataframe = None
         self._bead_dims = None
 
     def find(self, object_images, combine_data=None):
         """Execute finding images."""
         if isinstance(object_images, dict):
-            self._dataframe, self._bead_dims = \
-                self._find_multi_set(object_images)
+            self._dataframe, self._bead_dims = self._find_multi_set(object_images)
         else:
-            self._dataframe, self._bead_dims = \
-                self._return_data(object_images)
+            self._dataframe, self._bead_dims = self._return_data(object_images)
         self._bead_dims.reset_index(inplace=True)
-        self._bead_dims['diameter'] = self._bead_dims['radius'] * 2
+        self._bead_dims["diameter"] = self._bead_dims["radius"] * 2
         if self._pixel_size is not None:
-            self._bead_dims['radius_conv'] = \
-                self._bead_dims['radius'] * self._pixel_size
-            self._bead_dims['perimeter_conv'] = \
-                self._bead_dims['perimeter'] * self._pixel_size
-            self._bead_dims['diameter_conv'] = \
-                self._bead_dims['diameter'] * self._pixel_size
-            self._bead_dims['area_conv'] = \
-                self._bead_dims['area'] * self._pixel_size**2
+            self._bead_dims["radius_conv"] = self._bead_dims["radius"] * self._pixel_size
+            self._bead_dims["perimeter_conv"] = self._bead_dims["perimeter"] * self._pixel_size
+            self._bead_dims["diameter_conv"] = self._bead_dims["diameter"] * self._pixel_size
+            self._bead_dims["area_conv"] = self._bead_dims["area"] * self._pixel_size**2
             beads_diameter_mean = self.bead_dims.diameter_conv.mean()
             beads_diameter_sd = self.bead_dims.diameter_conv.std()
             converted = " (converted)"
@@ -432,8 +421,9 @@ class Find(ImageDataFrame):
         """Return total bead count in set(s)."""
         if self.sets is not None:
             bead_no_list = {
-                set_x: self._bead_dims.loc[self._bead_dims['set'] == set_x].shape[0]  # NOQA
-                for set_x in self.sets}
+                set_x: self._bead_dims.loc[self._bead_dims["set"] == set_x].shape[0]  # NOQA
+                for set_x in self.sets
+            }
         else:
             bead_no_list = None
         return bead_no_list
@@ -446,7 +436,7 @@ class Find(ImageDataFrame):
     def plot_size_dist(self):
         """Plot size distribution."""
         plt.figure(dpi=150)
-        if 'diameter_conv' in self.bead_dims.columns:
+        if "diameter_conv" in self.bead_dims.columns:
             b_std = self.bead_dims.diameter_conv.std()
             b_mean = self.bead_dims.diameter_conv.mean()
         else:
@@ -454,20 +444,24 @@ class Find(ImageDataFrame):
             b_mean = self.bead_dims.diameter.mean()
         x_left = b_mean - (5 * b_std)
         x_right = b_mean + (5 * b_std)
-        if 'diameter_conv' in self.bead_dims.columns:
+        if "diameter_conv" in self.bead_dims.columns:
+            self.bead_dims.diameter_conv.plot(kind="hist", bins=100, color="lightgray").set_xlim(
+                left=x_left, right=x_right
+            )
+            # NOQA
             self.bead_dims.diameter_conv.plot(
-                kind='hist', bins=100, color='lightgray').set_xlim(
-                    left=x_left, right=x_right);  # NOQA
-            self.bead_dims.diameter_conv.plot(
-                kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(
-                    bottom=0);  # NOQA
+                kind="kde", secondary_y=True, color="black", alpha=0.7
+            ).set_ylim(bottom=0)
+            # NOQA
         else:
+            self.bead_dims.diameter.plot(kind="hist", bins=100, color="lightgray").set_xlim(
+                left=x_left, right=x_right
+            )
+            # NOQA
             self.bead_dims.diameter.plot(
-                kind='hist', bins=100, color='lightgray').set_xlim(
-                    left=x_left, right=x_right);  # NOQA
-            self.bead_dims.diameter.plot(
-                kind='kde', secondary_y=True, color='black', alpha=0.7).set_ylim(
-                    bottom=0);  # NOQA
+                kind="kde", secondary_y=True, color="black", alpha=0.7
+            ).set_ylim(bottom=0)
+            # NOQA
 
     def inspect(self, set_name=None, fig_num=3):
         """Display random images from set for inspection."""
@@ -475,8 +469,7 @@ class Find(ImageDataFrame):
             img_num = self._dataframe.f.size
             self._inspect(self._dataframe, img_num, fig_num)
         elif set_name is None:
-            img_num = {key: data.f.size
-                       for key, data in self._dataframe.items()}
+            img_num = {key: data.f.size for key, data in self._dataframe.items()}
             for key, data in self._dataframe.items():
                 self._inspect(data, img_num[key], fig_num)
                 plt.suptitle(key)
@@ -491,20 +484,15 @@ class Find(ImageDataFrame):
             rand_fig = randint(0, img_num)
             plt.subplot(1, fig_num, plt_num)
             plt.imshow(data.loc[rand_fig])
-            plt.title('Figure #%s' % rand_fig)
+            plt.title("Figure #%s" % rand_fig)
 
     def _find_multi_set(self, object_image_sets):
         sets = list(object_image_sets.keys())
-        data = [self._return_data(image_set)
-                for key, image_set in object_image_sets.items()]
+        data = [self._return_data(image_set) for key, image_set in object_image_sets.items()]
         data_masks = [i[0] for i in data]
         data_dims = [i[1] for i in data]
-        result_masks = {
-            sets[idx]: value for idx, value in enumerate(data_masks)
-        }
-        result_dims = pd.concat(data_dims,
-                                keys=sets,
-                                names=['set'])
+        result_masks = {sets[idx]: value for idx, value in enumerate(data_masks)}
+        result_dims = pd.concat(data_dims, keys=sets, names=["set"])
         return result_masks, result_dims
 
     def _return_data(self, object_images):
@@ -570,25 +558,24 @@ class References(TableDataFrame):
 
     """
 
-    def __init__(self, folders, files, object_channel, reference_channels,
-                 bead_size=16, dark_noise=99):
+    def __init__(
+        self, folders, files, object_channel, reference_channels, bead_size=16, dark_noise=99
+    ):
         super(References, self).__init__()
         self._object_channel = object_channel
         self._ref_channels = reference_channels
         self._dark_noise = dark_noise
         self._images = Images(folders, files)
-        self._find = Find(bead_size=bead_size,
-                          border_clear=True,
-                          circle_size=None)
+        self._find = Find(bead_size=bead_size, border_clear=True, circle_size=None)
         self._dataframe = None
         self._bkg_image = None
         # Attributes
-        self.background = 'bkg'
+        self.background = "bkg"
         self.crop_x = slice(None)
         self.crop_y = slice(None)
         self.bkg_roi = [slice(None), slice(None)]
         # Settings options
-        self.settings = Settings([self._images, self._find], ['icp', 'gmm'])
+        self.settings = Settings([self._images, self._find], ["icp", "gmm"])
         self.settings.__doc__ = """Return Images and Find objects for settings purposes.
 
         Attributes
@@ -607,32 +594,37 @@ class References(TableDataFrame):
         self._images.load()
         spectra = list(self._images.data.keys())
         if len(self.bkg_roi) == 3:
-            bkg_images = self._images[self.background, self.bkg_roi[2],
-                                      self.bkg_roi[0], self.bkg_roi[1]]
+            bkg_images = self._images[
+                self.background, self.bkg_roi[2], self.bkg_roi[0], self.bkg_roi[1]
+            ]
         else:
-            bkg_images = self._images[self.background, self._ref_channels,
-                                      self.bkg_roi[0], self.bkg_roi[1]]
-        self._bkg_image = self._images[self.background, self._object_channel,
-                                       self.bkg_roi[0], self.bkg_roi[1]]
+            bkg_images = self._images[
+                self.background, self._ref_channels, self.bkg_roi[0], self.bkg_roi[1]
+            ]
+        self._bkg_image = self._images[
+            self.background, self._object_channel, self.bkg_roi[0], self.bkg_roi[1]
+        ]
         spec_images = ImageDataFrame(self._images.data)
         spec_images._dataframe.pop(self.background, None)
         spec_images.crop_x = self.crop_x
         spec_images.crop_y = self.crop_y
         self._find.find(spec_images[:, self._object_channel])
-        ref_channels = self._images[
-            spectra[0], self._ref_channels].c.values
-        data = [self.get_spectrum(self._dark_noise,
-                                  spec_images[x_set, self._ref_channels],
-                                  self._find[x_set, 'mask_inside'])
-                for x_set in spectra if x_set != self.background]
+        ref_channels = self._images[spectra[0], self._ref_channels].c.values
+        data = [
+            self.get_spectrum(
+                self._dark_noise,
+                spec_images[x_set, self._ref_channels],
+                self._find[x_set, "mask_inside"],
+            )
+            for x_set in spectra
+            if x_set != self.background
+        ]
         if self.background in spectra:
             spectra.remove(self.background)
             spectra.append(self.background)
             data.append(self._get_back(bkg_images))
-        self._dataframe = pd.DataFrame(data=np.array(data).T,
-                                       columns=spectra,
-                                       index=ref_channels)
-        self._dataframe.index.name = 'channels'
+        self._dataframe = pd.DataFrame(data=np.array(data).T, columns=spectra, index=ref_channels)
+        self._dataframe.index.name = "channels"
         self._clean_up()
 
     def _clean_up(self):
@@ -641,8 +633,7 @@ class References(TableDataFrame):
         gc.collect()
 
     def _get_back(self, bkg_images):
-        mask = np.ones((bkg_images.y.size,
-                        bkg_images.x.size))
+        mask = np.ones((bkg_images.y.size, bkg_images.x.size))
         bkg_data = self.get_spectrum(0, bkg_images, mask)
         return bkg_data
 
@@ -650,7 +641,7 @@ class References(TableDataFrame):
         """Plot Reference spectra."""
         self._dataframe.plot()
         plt.figure(dpi=dpi)
-        plt.title('Background slice')
+        plt.title("Background slice")
         if self.background in self._dataframe:
             plt.imshow(self._bkg_image)
 
@@ -691,7 +682,7 @@ class Ratio(ImageDataFrame):
 
     """
 
-    def __init__(self, reference_spectra, background='bkg'):
+    def __init__(self, reference_spectra, background="bkg"):
         super(Ratio, self).__init__()
         self.reference_spectra = reference_spectra
         self.background = background
@@ -720,24 +711,20 @@ class Ratio(ImageDataFrame):
 
     def _find_multi_set(self, image_sets, reference):
         sets = list(image_sets.keys())
-        data = [self._return_data(image_sets[s], reference)
-                for s in sets]
-        result = {
-            sets[idx]: value for idx, value in enumerate(data)
-        }
+        data = [self._return_data(image_sets[s], reference) for s in sets]
+        result = {sets[idx]: value for idx, value in enumerate(data)}
         return result
 
     def _return_data(self, images, reference):
         self.spec_unmix.unmix(images)
         unmix_images = self.spec_unmix.data
-        channels = ImageDataFrame.get_dim_names(unmix_images, set_dim='c')
+        channels = ImageDataFrame.get_dim_names(unmix_images, set_dim="c")
         channels.remove(reference)
         if self.background in channels:
             channels.remove(self.background)
-        ratio_images = unmix_images.loc[dict(c=channels)] / \
-            unmix_images.loc[dict(c=reference)]
-        ratio_images.coords['c'] = [s + '_ratio' for s in channels]
-        result = xr.concat([unmix_images, ratio_images], dim='c')
+        ratio_images = unmix_images.loc[dict(c=channels)] / unmix_images.loc[dict(c=reference)]
+        ratio_images.coords["c"] = [s + "_ratio" for s in channels]
+        result = xr.concat([unmix_images, ratio_images], dim="c")
         return result
 
 
@@ -786,43 +773,35 @@ class Extract(TableDataFrame):
         """
         if isinstance(images, xr.DataArray):
             if images.ndim == 4:
-                f_list = ImageDataFrame.get_dim_names(
-                    images, set_dim=images.dims[0])
-                data = [self._get_data_images(images.loc[f], masks.loc[f])
-                        for f in f_list]
+                f_list = ImageDataFrame.get_dim_names(images, set_dim=images.dims[0])
+                data = [self._get_data_images(images.loc[f], masks.loc[f]) for f in f_list]
                 self._dataframe = pd.concat(data, keys=f_list)
             else:
-                self._dataframe = pd.DataFrame(
-                    self._get_data_images(images, masks))
+                self._dataframe = pd.DataFrame(self._get_data_images(images, masks))
         else:
             data_append = []
             s_list = list(images.keys())
             for set_x in s_list:
-                f_list = ImageDataFrame.get_dim_names(
-                    images[set_x], set_dim=images[set_x].dims[0])
-                data = [self._get_data_images(images[set_x][f],
-                                              masks[set_x][f])
-                        for f in f_list]
+                f_list = ImageDataFrame.get_dim_names(images[set_x], set_dim=images[set_x].dims[0])
+                data = [self._get_data_images(images[set_x][f], masks[set_x][f]) for f in f_list]
                 data_append.append(pd.concat(data, keys=f_list))
             self._dataframe = pd.concat(data_append, keys=s_list)
         self._dataframe[self.flag_name] = False
         if len(self._dataframe.index.names) == 3:
-            self._dataframe.index.rename(
-                ['set', 'file', 'bead_index'], inplace=True)
+            self._dataframe.index.rename(["set", "file", "bead_index"], inplace=True)
         else:
-            self._dataframe.index.rename(['f', 'bead_index'], inplace=True)
+            self._dataframe.index.rename(["f", "bead_index"], inplace=True)
         if combine_data is not None:
             self.combine(combine_data)
         self._dataframe.reset_index(inplace=True)
 
     def _get_data_images(self, images, masks):
         data = {
-            str(image[images.dims[0]].values):
-            self._get_data_masks(image, masks, self._func)
+            str(image[images.dims[0]].values): self._get_data_masks(image, masks, self._func)
             for image in images
         }
-        data_flatten = self._flatten_dict(data, prefix='.')
-        dataframe = pd.DataFrame.from_dict(data_flatten, orient='columns')
+        data_flatten = self._flatten_dict(data, prefix=".")
+        dataframe = pd.DataFrame.from_dict(data_flatten, orient="columns")
         return dataframe
 
     @classmethod
@@ -836,16 +815,12 @@ class Extract(TableDataFrame):
         else:
             if masks.ndim == 3:
                 data = {
-                    str(mask[masks.dims[0]].values):
-                    cls._get_data(image, mask, func, idx)
+                    str(mask[masks.dims[0]].values): cls._get_data(image, mask, func, idx)
                     for mask in masks
                 }
             else:
-                data = {
-                    str(masks[masks.dims[0]].values):
-                    cls._get_data(image, masks, func, idx)
-                }
-            data['mask_lbl'] = idx
+                data = {str(masks[masks.dims[0]].values): cls._get_data(image, masks, func, idx)}
+            data["mask_lbl"] = idx
         return data
 
     @classmethod
@@ -854,12 +829,7 @@ class Extract(TableDataFrame):
         if idx is None:
             data = [None]
         else:
-            data = ndi.labeled_comprehension(image,
-                                             mask,
-                                             idx,
-                                             func,
-                                             float,
-                                             None)
+            data = ndi.labeled_comprehension(image, mask, idx, func, float, None)
         return data
 
     @staticmethod
@@ -882,14 +852,15 @@ class Extract(TableDataFrame):
 
         """
         if isinstance(bkg_data, string_types):
-            self._dataframe['%s_min_bkg' % assay_channel] = \
+            self._dataframe["%s_min_bkg" % assay_channel] = (
                 self._dataframe[assay_channel] - self._dataframe[bkg_data]
+            )
         elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
-            self._dataframe['%s_min_bkg' % assay_channel] = \
+            self._dataframe["%s_min_bkg" % assay_channel] = (
                 self._dataframe[assay_channel] - bkg_data
+            )
 
-    def filter(self, bkg_factor=2.0, ref_factor=2.0,
-               bkg='bkg.mask_full', ref='Eu.mask_inside'):
+    def filter(self, bkg_factor=2.0, ref_factor=2.0, bkg="bkg.mask_full", ref="Eu.mask_inside"):
         """Filter and flag based on unmixed background and reference signal.
 
         Parameters
@@ -913,19 +884,21 @@ class Extract(TableDataFrame):
         bkg_data = self._dataframe[bkg]
         bkg_mean = bkg_data.mean()
         bkg_sd = bkg_data.std()
-        mask_bkg = ((bkg_data > (bkg_mean - bkg_factor * bkg_sd)) &
-                    (bkg_data < (bkg_mean + bkg_factor * bkg_sd)))
+        mask_bkg = (bkg_data > (bkg_mean - bkg_factor * bkg_sd)) & (
+            bkg_data < (bkg_mean + bkg_factor * bkg_sd)
+        )
         ref_data = self._dataframe[ref]
         ref_mean = ref_data.mean()
         ref_sd = ref_data.std()
-        mask_ref = ((ref_data > (ref_mean - ref_factor * ref_sd)) &
-                    (ref_data < (ref_mean + ref_factor * ref_sd)))
-        filter_all = (mask_bkg & mask_ref)
+        mask_ref = (ref_data > (ref_mean - ref_factor * ref_sd)) & (
+            ref_data < (ref_mean + ref_factor * ref_sd)
+        )
+        filter_all = mask_bkg & mask_ref
         self._dataframe[self.flag_name] = ~filter_all
         num_out = len(self._dataframe[self._dataframe.flag == True])  # NOQA
         num_remain = len(self._dataframe[self._dataframe.flag == False])  # NOQA
         num_total = len(self._dataframe)
-        num_percentage = ((num_out / num_total) * 100)
+        num_percentage = (num_out / num_total) * 100
         print("Pre-filter: %i" % num_total)
         print("Post-filter: %i" % num_remain)
         print("Filtered: %i (%0.1f%%)" % (num_out, num_percentage))
@@ -958,7 +931,7 @@ class Decode(TableDataFrame):
         self._dataframe = None
         self._cluster_check = None
         # Setup settings object
-        self.settings = Settings([self._icp, self._gmm], ['icp', 'gmm'])
+        self.settings = Settings([self._icp, self._gmm], ["icp", "gmm"])
         self.settings.__doc__ = """
             Return Decode object for settings purposes.
 
@@ -1058,19 +1031,18 @@ class Analyze(TableDataFrame):
 
     def __init__(self, dataframe, seq_list=None, images=None, masks=None):
         super(Analyze, self).__init__()
-        if isinstance(dataframe, (mrbles.pipeline.Extract,
-                                  mrbles.pipeline.Decode,
-                                  mrbles.data.TableDataFrame)):
+        if isinstance(
+            dataframe, (mrbles.pipeline.Extract, mrbles.pipeline.Decode, mrbles.data.TableDataFrame)
+        ):
             dataframe = dataframe.data
         self._data_per_bead = dataframe
         self.seq_list = seq_list
-        if isinstance(images, (mrbles.pipeline.Images,
-                               mrbles.pipeline.Ratio,
-                               mrbles.data.ImageDataFrame)):
+        if isinstance(
+            images, (mrbles.pipeline.Images, mrbles.pipeline.Ratio, mrbles.data.ImageDataFrame)
+        ):
             images = images.data
         self._images = images
-        if isinstance(masks, (mrbles.pipeline.Find,
-                              mrbles.data.ImageDataFrame)):
+        if isinstance(masks, (mrbles.pipeline.Find, mrbles.data.ImageDataFrame)):
             masks = masks.data
         self._masks = masks
         self._norm_data = None
@@ -1078,12 +1050,12 @@ class Analyze(TableDataFrame):
         # Attributes
         self.flag_filt = True
         self.functions = {  # Default set of functions
-            'mean': np.mean,
-            'median': np.median,
-            'sd': np.std,
-            'se': sp.stats.sem,
-            'N': len,
-            'CV': sp.stats.variation
+            "mean": np.mean,
+            "median": np.median,
+            "sd": np.std,
+            "se": sp.stats.sem,
+            "N": len,
+            "CV": sp.stats.variation,
         }
 
     def analyze(self, assay_channel, min_prob=None, bkg_data=None):
@@ -1108,27 +1080,27 @@ class Analyze(TableDataFrame):
         """
         if bkg_data is not None:
             self._background(assay_channel, bkg_data)
-            assay_channel = '%s_min_bkg' % assay_channel
+            assay_channel = "%s_min_bkg" % assay_channel
         if min_prob is not None:
-            data_filter = self._data_per_bead.loc[
-                self._data_per_bead.prob >= min_prob]
+            data_filter = self._data_per_bead.loc[self._data_per_bead.prob >= min_prob]
         else:
             data_filter = self._data_per_bead
-        if 'set' in data_filter.columns:
-            data_filter = data_filter.loc[:, ('set', 'code', assay_channel)]
+        if "set" in data_filter.columns:
+            data_filter = data_filter.loc[:, ("set", "code", assay_channel)]
             self._dataframe = self._multi(data_filter)
         else:
-            data_filter = data_filter.loc[:, ('code', assay_channel)]
+            data_filter = data_filter.loc[:, ("code", assay_channel)]
             self._dataframe = self._single(data_filter)
 
     def _background(self, assay_channel, bkg_data):
         if isinstance(bkg_data, string_types):
-            self._data_per_bead['%s_min_bkg' % assay_channel] = \
-                self._data_per_bead[assay_channel] - \
-                self._data_per_bead[bkg_data]
+            self._data_per_bead["%s_min_bkg" % assay_channel] = (
+                self._data_per_bead[assay_channel] - self._data_per_bead[bkg_data]
+            )
         elif isinstance(bkg_data, (list, np.array, pd.DataFrame)):
-            self._data_per_bead['%s_min_bkg' % assay_channel] = \
+            self._data_per_bead["%s_min_bkg" % assay_channel] = (
                 self._data_per_bead[assay_channel] - bkg_data
+            )
 
     def normalize(self, norm_data, scaled=True):
         """Normalize data.
@@ -1143,38 +1115,40 @@ class Analyze(TableDataFrame):
 
         """
         per_code = self._single(norm_data)
-        per_code['code'] = per_code.index
+        per_code["code"] = per_code.index
         if scaled is True:
-            per_code['mean_scaled'] = per_code['mean'] / per_code['mean'].max()
-            per_code['median_scaled'] = per_code['median'] / per_code['median'].max()
-            per_code['sd_scaled'] = per_code['sd'] / per_code['mean'].max()
-            per_code['se_scaled'] = per_code['sd_scaled'] / np.sqrt(per_code['N'])
+            per_code["mean_scaled"] = per_code["mean"] / per_code["mean"].max()
+            per_code["median_scaled"] = per_code["median"] / per_code["median"].max()
+            per_code["sd_scaled"] = per_code["sd"] / per_code["mean"].max()
+            per_code["se_scaled"] = per_code["sd_scaled"] / np.sqrt(per_code["N"])
         self._norm_data = per_code
-        set_codes = np.unique(self._data_per_bead['code'])
+        set_codes = np.unique(self._data_per_bead["code"])
         for code in set_codes:
             if scaled is True:
-                norm_mean = per_code.loc[per_code['code'] == code, 'mean_scaled'].values
-                norm_sd = per_code.loc[per_code['code'] == code, 'sd_scaled'].values
+                norm_mean = per_code.loc[per_code["code"] == code, "mean_scaled"].values
+                norm_sd = per_code.loc[per_code["code"] == code, "sd_scaled"].values
             else:
-                norm_mean = per_code.loc[per_code['code'] == code, 'mean'].values
-                norm_sd = per_code.loc[per_code['code'] == code, 'sd'].values
+                norm_mean = per_code.loc[per_code["code"] == code, "mean"].values
+                norm_sd = per_code.loc[per_code["code"] == code, "sd"].values
 
-            data_mean = self._dataframe.loc[self._dataframe['code'] == code, 'mean'].values
-            data_median = self._dataframe.loc[self._dataframe['code'] == code, 'median'].values
-            data_sd = self._dataframe.loc[self._dataframe['code'] == code, 'sd'].values
-            data_n = self._dataframe.loc[self._dataframe['code'] == code, 'N'].values
+            data_mean = self._dataframe.loc[self._dataframe["code"] == code, "mean"].values
+            data_median = self._dataframe.loc[self._dataframe["code"] == code, "median"].values
+            data_sd = self._dataframe.loc[self._dataframe["code"] == code, "sd"].values
+            data_n = self._dataframe.loc[self._dataframe["code"] == code, "N"].values
 
-            mean_norm = (data_mean / norm_mean)
-            median_norm = (data_median / norm_mean)
-            sd_norm = np.abs(mean_norm) * (np.sqrt((data_sd / data_mean) ** 2 + (norm_sd / norm_mean)**2))
+            mean_norm = data_mean / norm_mean
+            median_norm = data_median / norm_mean
+            sd_norm = np.abs(mean_norm) * (
+                np.sqrt((data_sd / data_mean) ** 2 + (norm_sd / norm_mean) ** 2)
+            )
             cv_norm = mean_norm / sd_norm
             se_norm = sd_norm / np.sqrt(data_n)
 
-            self._dataframe.loc[self._dataframe['code'] == code, 'mean_norm'] = mean_norm
-            self._dataframe.loc[self._dataframe['code'] == code, 'median_norm'] = median_norm
-            self._dataframe.loc[self._dataframe['code'] == code, 'sd_norm'] = sd_norm
-            self._dataframe.loc[self._dataframe['code'] == code, 'cv_norm'] = cv_norm
-            self._dataframe.loc[self._dataframe['code'] == code, 'se_norm'] = se_norm
+            self._dataframe.loc[self._dataframe["code"] == code, "mean_norm"] = mean_norm
+            self._dataframe.loc[self._dataframe["code"] == code, "median_norm"] = median_norm
+            self._dataframe.loc[self._dataframe["code"] == code, "sd_norm"] = sd_norm
+            self._dataframe.loc[self._dataframe["code"] == code, "cv_norm"] = cv_norm
+            self._dataframe.loc[self._dataframe["code"] == code, "se_norm"] = se_norm
 
     @property
     def norm_data(self):
@@ -1193,19 +1167,20 @@ class Analyze(TableDataFrame):
 
     def _single(self, data):
         channels = list(data.columns)
-        channels.remove('code')
+        channels.remove("code")
         if self.flag_name in channels:
             channels.remove(self.flag_name)
-        if 'set' in channels:
-            channels.remove('set')
+        if "set" in channels:
+            channels.remove("set")
         codes = np.unique(data.code.values).astype(int)
         result = {}
         for code in codes:
             for channel in channels:
                 result[code] = self._iter_functions(
-                    self.functions, data.loc[(data.code == code), channel])
-        dataframe = pd.DataFrame.from_dict(result, orient='index')
-        dataframe.index.rename('code', inplace=True)
+                    self.functions, data.loc[(data.code == code), channel]
+                )
+        dataframe = pd.DataFrame.from_dict(result, orient="index")
+        dataframe.index.rename("code", inplace=True)
         if self.seq_list is not None:
             dataframe = self._add_info(self.seq_list, dataframe, codes=codes)
         return dataframe
@@ -1213,11 +1188,9 @@ class Analyze(TableDataFrame):
     def _multi(self, data):
         levels = list(np.unique(data.set))
         # levels.remove('set')
-        result = [
-            self._single(data.loc[data.set == level]) for level in levels
-        ]
+        result = [self._single(data.loc[data.set == level]) for level in levels]
         dataframe = pd.concat(result, keys=levels)
-        dataframe.index.rename(('set', 'code'), inplace=True)
+        dataframe.index.rename(("set", "code"), inplace=True)
         return dataframe.reset_index()
 
     def _norm_per_code(self):
@@ -1229,13 +1202,20 @@ class Analyze(TableDataFrame):
     @staticmethod
     def _iter_functions(functions, data):
         data_na_omit = data.values[~np.isnan(data.values)]
-        result = {
-            key: func(data_na_omit) for (key, func) in functions.items()
-        }
+        result = {key: func(data_na_omit) for (key, func) in functions.items()}
         return result
 
-    def mrble_report(self, assay_channel, filename, set_name=None, codes=None,
-                     files=None, sort=True, image_names=None, mask_names=None):
+    def mrble_report(
+        self,
+        assay_channel,
+        filename,
+        set_name=None,
+        codes=None,
+        files=None,
+        sort=True,
+        image_names=None,
+        mask_names=None,
+    ):
         """Generate per-MRBLE PDF image report.
 
         Parameters
@@ -1264,9 +1244,9 @@ class Analyze(TableDataFrame):
 
         """
         if image_names is None:
-            image_names = ['Dy', 'Sm', 'Tm', 'bkg', 'Eu', assay_channel]
+            image_names = ["Dy", "Sm", "Tm", "bkg", "Eu", assay_channel]
         if mask_names is None:
-            mask_names = ['mask_ring', 'mask_inside', 'mask_full', 'mask_bkg']
+            mask_names = ["mask_ring", "mask_inside", "mask_full", "mask_bkg"]
         if (self._images is None) or (self._masks is None):
             print("Images and/or masks are not loaded into object.")
             return None
@@ -1278,15 +1258,9 @@ class Analyze(TableDataFrame):
             images = self._images[set_name].sel(c=image_names)
             masks = self._masks[set_name].sel(c=mask_names)
             data = self._data_per_bead[self._data_per_bead.set == set_name]
-        report = BeadsReport(data,
-                             images,
-                             masks,
-                             assay_channel,
-                             codes,
-                             files,
-                             sort)
+        report = BeadsReport(data, images, masks, assay_channel, codes, files, sort)
         answer = input("Do you wan to continue (y for yes, or n for no)?: ")
-        if answer == 'y':
+        if answer == "y":
             report.generate(filename)
         else:
             print("Aborted.")
